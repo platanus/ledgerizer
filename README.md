@@ -14,6 +14,10 @@ gem "ledgerizer"
 bundle install
 ```
 
+```bash
+rails g ledgerizer:install
+```
+
 ## Usage
 
 TODO

@@ -1,0 +1,2 @@
+Ledgerizer.setup do
+end
