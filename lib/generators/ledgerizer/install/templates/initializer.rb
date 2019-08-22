@@ -1,2 +1,2 @@
-Ledgerizer.setup do
+Ledgerizer.setup do |_config|
 end

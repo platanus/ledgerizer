@@ -19,7 +19,7 @@ SimpleCov.start do
 end
 
 ENV["RAILS_ENV"] ||= "test"
-require File.expand_path("../../spec/dummy/config/environment", __FILE__)
+require File.expand_path("../spec/dummy/config/environment", __dir__)
 abort("The Rails environment is running in production mode!") if Rails.env.production?
 require "pry"
 require "spec_helper"
