@@ -107,5 +107,11 @@ RSpec.describe Ledgerizer::Definition::Dsl do
       end
     end
   end
+
+  it_behaves_like 'definition dsl account', :asset
+  it_behaves_like 'definition dsl account', :liability
+  it_behaves_like 'definition dsl account', :expense
+  it_behaves_like 'definition dsl account', :income
+  it_behaves_like 'definition dsl account', :equity
 end
 # rubocop:enable RSpec/FilePath, RSpec/DescribedClass

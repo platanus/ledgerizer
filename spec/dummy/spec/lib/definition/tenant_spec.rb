@@ -21,5 +21,23 @@ RSpec.describe Ledgerizer::Definition::Tenant do
       it { expect(tenant.currency).to eq(:usd) }
     end
   end
+
+  describe "#add_account" do
+    let(:account_name) { :cash }
+    let(:account_type) { :asset }
+
+    def perform
+      tenant.add_account(account_name, account_type)
+    end
+
+    it { expect(perform.name).to eq(account_name) }
+    it { expect(perform.type).to eq(account_type) }
+
+    context "with repeated account" do
+      before { perform }
+
+      it { expect { perform }.to raise_error("the cash account already exists in tenant") }
+    end
+  end
 end
 # rubocop:enable RSpec/FilePath

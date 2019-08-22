@@ -20,8 +20,37 @@ module Ledgerizer
           end
         end
 
-        def in_context
-          current_method = caller_locations(1, 1)[0].label.to_sym
+        def asset(account_name, &block)
+          account(account_name, :asset, &block)
+        end
+
+        def liability(account_name, &block)
+          account(account_name, :liability, &block)
+        end
+
+        def income(account_name, &block)
+          account(account_name, :income, &block)
+        end
+
+        def expense(account_name, &block)
+          account(account_name, :expense, &block)
+        end
+
+        def equity(account_name, &block)
+          account(account_name, :equity, &block)
+        end
+
+        def account(account_name, account_type, &block)
+          in_context(account_type) do
+            @current_account = @current_tenant.add_account(account_name, account_type)
+            block&.call
+          end
+        ensure
+          @current_account = nil
+        end
+
+        def in_context(current_method = nil)
+          current_method ||= caller_locations(1, 1)[0].label.to_sym
           validate_context!(current_method)
           current_context << current_method
           yield
@@ -44,7 +73,12 @@ module Ledgerizer
         def ctx_dependencies_map
           {
             tenant: [],
-            accounts: [:tenant]
+            accounts: [:tenant],
+            asset: [:tenant, :accounts],
+            liability: [:tenant, :accounts],
+            income: [:tenant, :accounts],
+            expense: [:tenant, :accounts],
+            equity: [:tenant, :accounts]
           }
         end
 
