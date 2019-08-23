@@ -57,5 +57,29 @@ RSpec.describe Ledgerizer::Definition::Tenant do
       it { expect { perform }.to raise_error("the cash account already exists in tenant") }
     end
   end
+
+  describe "#add_account" do
+    let(:code) { :deposit }
+    let(:document) { :portfolio }
+
+    def perform
+      tenant.add_entry(code, document)
+    end
+
+    it { expect(perform.code).to eq(code) }
+    it { expect(perform.document).to eq(Portfolio) }
+
+    context "with repeated account" do
+      before { perform }
+
+      it { expect { perform }.to raise_error("the deposit entry already exists in tenant") }
+    end
+
+    context "with invalid document" do
+      let(:document) { :invalid }
+
+      it { expect { perform }.to raise_error("name must be an ActiveRecord model name") }
+    end
+  end
 end
 # rubocop:enable RSpec/FilePath

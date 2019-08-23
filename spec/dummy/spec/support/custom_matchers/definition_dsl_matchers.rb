@@ -40,3 +40,18 @@ RSpec::Matchers.define :have_tenant_account do |model_class, account_name, accou
     "#{account_type} named #{account_name} is not in tenant"
   end
 end
+
+RSpec::Matchers.define :have_tenant_entry do |tenant_class, code, document|
+  match do |dsl_holder|
+    entry = dsl_holder&.definition&.find_tenant(tenant_class)&.find_entry(code)
+    entry && entry.document == document && entry.code == code
+  end
+
+  description do
+    "include #{code} entry in #{tenant_class} tenant with #{document} document"
+  end
+
+  failure_message do
+    "#{code} entry is not in tenant"
+  end
+end

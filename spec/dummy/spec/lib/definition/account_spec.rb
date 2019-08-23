@@ -1,13 +1,13 @@
 require "spec_helper"
 
 # rubocop:disable RSpec/FilePath
-RSpec.describe Ledgerizer::Definition::Account do
-  subject(:account) { described_class.new(account_name, account_type) }
+RSpec.describe Ledgerizer::Definition::Entry do
+  subject(:entry) { described_class.new(code, document) }
 
-  let(:account_name) { :cash }
-  let(:account_type) { :asset }
+  let(:code) { :cash }
+  let(:document) { Portfolio }
 
-  it { expect(account.name).to eq(account_name) }
-  it { expect(account.type).to eq(account_type) }
+  it { expect(entry.code).to eq(code) }
+  it { expect(entry.document).to eq(document) }
 end
 # rubocop:enable RSpec/FilePath
