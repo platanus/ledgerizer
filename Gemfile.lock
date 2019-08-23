@@ -3,7 +3,7 @@ PATH
   specs:
     ledgerizer (0.1.0)
       money-rails
-      rails (>= 4.2.0)
+      rails (>= 5.2.0)
       require_all
 
 GEM

@@ -35,7 +35,7 @@ RSpec.describe Ledgerizer::Definition::Dsl do
     end
 
     it "raises DSL error with non Active Record tenant" do
-      expect_error_in_class_definition("tenant name must be an ActiveRecord model name") do
+      expect_error_in_class_definition("name must be an ActiveRecord model name") do
         include Ledgerizer::Definition::Dsl
 
         tenant('noartenant')
