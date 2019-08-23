@@ -6,8 +6,7 @@ module Ledgerizer
       class_methods do
         def tenant(model_name, currency: nil, &block)
           in_context do
-            @current_tenant = definition.add_tenant(infer_tenant_class!(model_name))
-            @current_tenant.currency = format_currency!(currency)
+            @current_tenant = definition.add_tenant(model_name, currency)
             block&.call
           end
         ensure
@@ -42,6 +41,14 @@ module Ledgerizer
           @current_account = nil
         end
 
+        def entry(entry_code, document: nil)
+          in_context do
+            @current_entry = @current_tenant.add_entry(entry_code, document)
+          end
+        ensure
+          @current_entry = nil
+        end
+
         def in_context(current_method = nil)
           current_method ||= caller_locations(1, 1)[0].label.to_sym
           validate_context!(current_method)
@@ -70,26 +77,13 @@ module Ledgerizer
             liability: [:tenant],
             income: [:tenant],
             expense: [:tenant],
-            equity: [:tenant]
+            equity: [:tenant],
+            entry: [:tenant]
           }
         end
 
         def current_context
           @current_context ||= []
-        end
-
-        def format_currency!(currency)
-          formatted_currency = currency.to_s.downcase.to_sym
-          return :usd if formatted_currency.blank?
-          return formatted_currency if Money::Currency.table.key?(formatted_currency)
-
-          raise_error("invalid currency '#{currency}' given")
-        end
-
-        def infer_tenant_class!(model_name)
-          model_name.to_s.classify.constantize
-        rescue NameError
-          raise_error("tenant name must be an ActiveRecord model name")
         end
 
         def raise_error(msg)

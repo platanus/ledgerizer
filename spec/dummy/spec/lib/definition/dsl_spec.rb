@@ -7,31 +7,11 @@ RSpec.describe Ledgerizer::Definition::Dsl do
       define_test_class do
         include Ledgerizer::Definition::Dsl
 
-        tenant('portfolio')
-      end
-
-      it { expect(LedgerizerTest).to have_tenant(Portfolio) }
-      it { expect(LedgerizerTest).to have_tenant_base_currency(Portfolio, :usd) }
-    end
-
-    context "with symbol name" do
-      define_test_class do
-        include Ledgerizer::Definition::Dsl
-
         tenant(:portfolio)
       end
 
       it { expect(LedgerizerTest).to have_tenant(Portfolio) }
-    end
-
-    context "with camel name" do
-      define_test_class do
-        include Ledgerizer::Definition::Dsl
-
-        tenant("Portfolio")
-      end
-
-      it { expect(LedgerizerTest).to have_tenant(Portfolio) }
+      it { expect(LedgerizerTest).to have_tenant_base_currency(Portfolio, :usd) }
     end
 
     context "with different currency" do
@@ -42,15 +22,6 @@ RSpec.describe Ledgerizer::Definition::Dsl do
       end
 
       it { expect(LedgerizerTest).to have_tenant_base_currency(Portfolio, :clp) }
-    end
-
-    it "raises invalid currency" do
-      expect_error_in_class_definition("invalid currency 'petro-del-mal' given") do
-        include Ledgerizer::Definition::Dsl
-
-        tenant('portfolio', currency: 'petro-del-mal') do
-        end
-      end
     end
 
     it "raises DSL error with nested tenants" do
