@@ -11,6 +11,7 @@ RSpec.describe Ledgerizer::Definition::Dsl do
       end
 
       it { expect(LedgerizerTest).to have_tenant(Portfolio) }
+      it { expect(LedgerizerTest).to have_tenant_base_currency(Portfolio, :usd) }
     end
 
     context "with symbol name" do
@@ -31,6 +32,25 @@ RSpec.describe Ledgerizer::Definition::Dsl do
       end
 
       it { expect(LedgerizerTest).to have_tenant(Portfolio) }
+    end
+
+    context "with different currency" do
+      define_test_class do
+        include Ledgerizer::Definition::Dsl
+
+        tenant('portfolio', currency: :clp)
+      end
+
+      it { expect(LedgerizerTest).to have_tenant_base_currency(Portfolio, :clp) }
+    end
+
+    it "raises invalid currency" do
+      expect_error_in_class_definition("invalid currency 'petro-del-mal' given") do
+        include Ledgerizer::Definition::Dsl
+
+        tenant('portfolio', currency: 'petro-del-mal') do
+        end
+      end
     end
 
     it "raises DSL error with nested tenants" do
@@ -57,53 +77,6 @@ RSpec.describe Ledgerizer::Definition::Dsl do
 
         tenant('portfolio')
         tenant('portfolio')
-      end
-    end
-  end
-
-  describe "#accounts" do
-    it "raises error with no tenant" do
-      expect_error_in_class_definition("'accounts' needs to run inside 'tenant' block") do
-        include Ledgerizer::Definition::Dsl
-
-        accounts
-      end
-    end
-
-    context "with default currency" do
-      define_test_class do
-        include Ledgerizer::Definition::Dsl
-
-        tenant('portfolio') do
-          accounts do
-          end
-        end
-      end
-
-      it { expect(LedgerizerTest).to have_tenant_base_currency(Portfolio, :usd) }
-    end
-
-    context "with different valid currency" do
-      define_test_class do
-        include Ledgerizer::Definition::Dsl
-
-        tenant('portfolio') do
-          accounts(currency: 'clp') do
-          end
-        end
-      end
-
-      it { expect(LedgerizerTest).to have_tenant_base_currency(Portfolio, :clp) }
-    end
-
-    it "raises invalid currency" do
-      expect_error_in_class_definition("invalid currency 'petro-del-mal' given") do
-        include Ledgerizer::Definition::Dsl
-
-        tenant('portfolio') do
-          accounts(currency: 'petro-del-mal') do
-          end
-        end
       end
     end
   end

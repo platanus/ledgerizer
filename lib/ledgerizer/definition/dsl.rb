@@ -4,46 +4,39 @@ module Ledgerizer
       extend ActiveSupport::Concern
 
       class_methods do
-        def tenant(model_name, &block)
+        def tenant(model_name, currency: nil, &block)
           in_context do
             @current_tenant = definition.add_tenant(infer_tenant_class!(model_name))
+            @current_tenant.currency = format_currency!(currency)
             block&.call
           end
         ensure
           @current_tenant = nil
         end
 
-        def accounts(currency: nil, &block)
-          in_context do
-            @current_tenant.currency = format_currency!(currency)
-            block&.call
-          end
+        def asset(account_name)
+          account(account_name, :asset)
         end
 
-        def asset(account_name, &block)
-          account(account_name, :asset, &block)
+        def liability(account_name)
+          account(account_name, :liability)
         end
 
-        def liability(account_name, &block)
-          account(account_name, :liability, &block)
+        def income(account_name)
+          account(account_name, :income)
         end
 
-        def income(account_name, &block)
-          account(account_name, :income, &block)
+        def expense(account_name)
+          account(account_name, :expense)
         end
 
-        def expense(account_name, &block)
-          account(account_name, :expense, &block)
+        def equity(account_name)
+          account(account_name, :equity)
         end
 
-        def equity(account_name, &block)
-          account(account_name, :equity, &block)
-        end
-
-        def account(account_name, account_type, &block)
+        def account(account_name, account_type)
           in_context(account_type) do
             @current_account = @current_tenant.add_account(account_name, account_type)
-            block&.call
           end
         ensure
           @current_account = nil
@@ -73,12 +66,11 @@ module Ledgerizer
         def ctx_dependencies_map
           {
             tenant: [],
-            accounts: [:tenant],
-            asset: [:tenant, :accounts],
-            liability: [:tenant, :accounts],
-            income: [:tenant, :accounts],
-            expense: [:tenant, :accounts],
-            equity: [:tenant, :accounts]
+            asset: [:tenant],
+            liability: [:tenant],
+            income: [:tenant],
+            expense: [:tenant],
+            equity: [:tenant]
           }
         end
 
