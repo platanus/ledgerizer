@@ -2,25 +2,24 @@ require "spec_helper"
 
 # rubocop:disable RSpec/FilePath
 RSpec.describe Ledgerizer::Definition::Tenant do
-  subject(:tenant) { described_class.new(model_name, currency) }
+  subject(:tenant) { described_class.new(model_class_name, currency) }
 
-  let(:model_name) { "portfolio" }
-  let(:model_class) { Portfolio }
+  let(:model_class_name) { "portfolio" }
   let(:currency) { nil }
 
-  describe "#model_name" do
-    it { expect(tenant.model_class).to eq(model_class) }
+  describe "#model_class_name" do
+    it { expect(tenant.model_class_name).to eq(:portfolio) }
 
     context "with symbol model name" do
-      let(:model_name) { :portfolio }
+      let(:model_class_name) { :portfolio }
 
-      it { expect(tenant.model_class).to eq(model_class) }
+      it { expect(tenant.model_class_name).to eq(:portfolio) }
     end
 
     context "with camel model name" do
-      let(:model_name) { "Portfolio" }
+      let(:model_class_name) { "Portfolio" }
 
-      it { expect(tenant.model_class).to eq(model_class) }
+      it { expect(tenant.model_class_name).to eq(:portfolio) }
     end
   end
 
@@ -67,7 +66,7 @@ RSpec.describe Ledgerizer::Definition::Tenant do
     end
 
     it { expect(perform.code).to eq(code) }
-    it { expect(perform.document).to eq(Portfolio) }
+    it { expect(perform.document).to eq(:portfolio) }
 
     context "with repeated account" do
       before { perform }
@@ -95,7 +94,7 @@ RSpec.describe Ledgerizer::Definition::Tenant do
 
     it { expect { perform }.to change { entry.debits.count }.from(0).to(1) }
     it { expect(perform.account_name).to eq(:cash) }
-    it { expect(perform.accountable).to eq(Portfolio) }
+    it { expect(perform.accountable).to eq(:portfolio) }
 
     context "when provided entry code does not match existent entry" do
       let(:entry_code) { :register }

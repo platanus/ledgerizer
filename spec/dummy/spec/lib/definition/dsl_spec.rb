@@ -10,8 +10,8 @@ RSpec.describe Ledgerizer::Definition::Dsl do
         tenant(:portfolio)
       end
 
-      it { expect(LedgerizerTest).to have_tenant(Portfolio) }
-      it { expect(LedgerizerTest).to have_tenant_base_currency(Portfolio, :usd) }
+      it { expect(LedgerizerTest).to have_tenant(:portfolio) }
+      it { expect(LedgerizerTest).to have_tenant_base_currency(:portfolio, :usd) }
     end
 
     context "with different currency" do
@@ -21,7 +21,7 @@ RSpec.describe Ledgerizer::Definition::Dsl do
         tenant('portfolio', currency: :clp)
       end
 
-      it { expect(LedgerizerTest).to have_tenant_base_currency(Portfolio, :clp) }
+      it { expect(LedgerizerTest).to have_tenant_base_currency(:portfolio, :clp) }
     end
 
     it "raises DSL error with nested tenants" do
@@ -91,7 +91,7 @@ RSpec.describe Ledgerizer::Definition::Dsl do
         end
       end
 
-      it { expect(LedgerizerTest).to have_tenant_entry(Portfolio, :deposit, Portfolio) }
+      it { expect(LedgerizerTest).to have_tenant_entry(:portfolio, :deposit, :portfolio) }
     end
 
     context "with more than one entry" do
@@ -104,8 +104,8 @@ RSpec.describe Ledgerizer::Definition::Dsl do
         end
       end
 
-      it { expect(LedgerizerTest).to have_tenant_entry(Portfolio, :deposit, Portfolio) }
-      it { expect(LedgerizerTest).to have_tenant_entry(Portfolio, :distribute, Portfolio) }
+      it { expect(LedgerizerTest).to have_tenant_entry(:portfolio, :deposit, :portfolio) }
+      it { expect(LedgerizerTest).to have_tenant_entry(:portfolio, :distribute, :portfolio) }
     end
   end
 

@@ -9,7 +9,7 @@ module Ledgerizer
 
       def initialize(account, accountable)
         @account = account
-        @accountable = infer_active_record_class!("entry's accountable", accountable)
+        @accountable = infer_active_record_class_name!("entry's accountable", accountable)
       end
     end
   end

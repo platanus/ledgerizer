@@ -2,7 +2,7 @@ require "spec_helper"
 
 # rubocop:disable RSpec/FilePath, RSpec/DescribedClass
 RSpec.describe Ledgerizer::Formatters do
-  describe '#infer_active_record_class!' do
+  describe '#infer_active_record_class_name!' do
     let(:model_name) { :portfolio }
     let(:error_prefix) { 'name' }
 
@@ -11,27 +11,27 @@ RSpec.describe Ledgerizer::Formatters do
     end
 
     def perform
-      test_class.new.infer_active_record_class!(error_prefix, model_name)
+      test_class.new.infer_active_record_class_name!(error_prefix, model_name)
     end
 
-    it { expect(perform).to eq(Portfolio) }
+    it { expect(perform).to eq(:portfolio) }
 
     context "when string model name" do
       let(:model_name) { "portfolio" }
 
-      it { expect(perform).to eq(Portfolio) }
+      it { expect(perform).to eq(:portfolio) }
     end
 
     context "with camel model name" do
       let(:model_name) { "Portfolio" }
 
-      it { expect(perform).to eq(Portfolio) }
+      it { expect(perform).to eq(:portfolio) }
     end
 
     context "when model name is the class" do
       let(:model_name) { Portfolio }
 
-      it { expect(perform).to eq(Portfolio) }
+      it { expect(perform).to eq(:portfolio) }
     end
 
     context "when name does not match AR model" do

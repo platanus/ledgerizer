@@ -3,10 +3,10 @@ module Ledgerizer
     class Tenant
       include Ledgerizer::Formatters
 
-      attr_reader :model_class
+      attr_reader :model_class_name
 
       def initialize(model_name, currency = nil)
-        @model_class = infer_active_record_class!('tenant name', model_name)
+        @model_class_name = infer_active_record_class_name!('tenant name', model_name)
         @currency = format_currency!(currency)
       end
 

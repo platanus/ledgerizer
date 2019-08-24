@@ -28,7 +28,7 @@ shared_examples 'definition dsl account' do |account_type|
         end
       end
 
-      it { expect(LedgerizerTest).to have_tenant_account(Portfolio, :account1, account_type) }
+      it { expect(LedgerizerTest).to have_tenant_account(:portfolio, :account1, account_type) }
     end
 
     context "with string account name" do
@@ -40,7 +40,7 @@ shared_examples 'definition dsl account' do |account_type|
         end
       end
 
-      it { expect(LedgerizerTest).to have_tenant_account(Portfolio, :account1, account_type) }
+      it { expect(LedgerizerTest).to have_tenant_account(:portfolio, :account1, account_type) }
     end
 
     context "with more than one account" do
@@ -53,8 +53,8 @@ shared_examples 'definition dsl account' do |account_type|
         end
       end
 
-      it { expect(LedgerizerTest).to have_tenant_account(Portfolio, :account1, account_type) }
-      it { expect(LedgerizerTest).to have_tenant_account(Portfolio, :account2, account_type) }
+      it { expect(LedgerizerTest).to have_tenant_account(:portfolio, :account1, account_type) }
+      it { expect(LedgerizerTest).to have_tenant_account(:portfolio, :account2, account_type) }
     end
   end
 end

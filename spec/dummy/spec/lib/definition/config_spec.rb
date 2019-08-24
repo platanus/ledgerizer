@@ -5,14 +5,13 @@ RSpec.describe Ledgerizer::Definition::Config do
   subject(:config) { described_class.new }
 
   describe "#add_tenant" do
-    let(:model_name) { "portfolio" }
-    let(:model_class) { Portfolio }
+    let(:model_class_name) { "portfolio" }
 
     def perform
-      config.add_tenant(model_name)
+      config.add_tenant(model_class_name)
     end
 
-    it { expect(perform.model_class).to eq(Portfolio) }
+    it { expect(perform.model_class_name).to eq(:portfolio) }
 
     context "with repeated tenant" do
       before { perform }
@@ -22,17 +21,16 @@ RSpec.describe Ledgerizer::Definition::Config do
   end
 
   describe "#find_tenant" do
-    let(:model_name) { "portfolio" }
-    let(:model_class) { Portfolio }
+    let(:model_class_name) { :portfolio }
 
     def perform
-      config.find_tenant(model_class)
+      config.find_tenant(model_class_name)
     end
 
     it { expect(perform).to be_nil }
 
-    context "with repeated tenant" do
-      before { config.add_tenant(model_name) }
+    context "with existent tenant" do
+      before { config.add_tenant(model_class_name) }
 
       it { expect(perform).to be_a(Ledgerizer::Definition::Tenant) }
     end

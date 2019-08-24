@@ -5,7 +5,7 @@ RSpec.describe Ledgerizer::Definition::Entry do
   subject(:entry) { described_class.new(code, document) }
 
   let(:code) { :deposit }
-  let(:document) { Portfolio }
+  let(:document) { :portfolio }
 
   it { expect(entry.code).to eq(code) }
   it { expect(entry.document).to eq(document) }

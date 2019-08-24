@@ -61,11 +61,11 @@ shared_examples 'definition dsl entry account' do |type|
         {
           entry_account_type: type,
           account: :cash,
-          accountable: Portfolio
+          accountable: :portfolio
         }
       end
 
-      it { expect(LedgerizerTest).to have_tenant_account_entry(Portfolio, :deposit, expected) }
+      it { expect(LedgerizerTest).to have_tenant_account_entry(:portfolio, :deposit, expected) }
     end
 
     context "with multiple debits" do
@@ -87,7 +87,7 @@ shared_examples 'definition dsl entry account' do |type|
         {
           entry_account_type: type,
           account: :cash,
-          accountable: Portfolio
+          accountable: :portfolio
         }
       end
 
@@ -95,12 +95,12 @@ shared_examples 'definition dsl entry account' do |type|
         {
           entry_account_type: type,
           account: :bank,
-          accountable: Portfolio
+          accountable: :portfolio
         }
       end
 
-      it { expect(LedgerizerTest).to have_tenant_account_entry(Portfolio, :deposit, exp_cash) }
-      it { expect(LedgerizerTest).to have_tenant_account_entry(Portfolio, :deposit, exp_bank) }
+      it { expect(LedgerizerTest).to have_tenant_account_entry(:portfolio, :deposit, exp_cash) }
+      it { expect(LedgerizerTest).to have_tenant_account_entry(:portfolio, :deposit, exp_bank) }
     end
 
     context "with debits in multiple entries" do
@@ -126,7 +126,7 @@ shared_examples 'definition dsl entry account' do |type|
         {
           entry_account_type: type,
           account: :cash,
-          accountable: Portfolio
+          accountable: :portfolio
         }
       end
 
@@ -134,7 +134,7 @@ shared_examples 'definition dsl entry account' do |type|
         {
           entry_account_type: type,
           account: :bank,
-          accountable: Portfolio
+          accountable: :portfolio
         }
       end
 
@@ -142,13 +142,13 @@ shared_examples 'definition dsl entry account' do |type|
         {
           entry_account_type: type,
           account: :cash,
-          accountable: Portfolio
+          accountable: :portfolio
         }
       end
 
-      it { expect(LedgerizerTest).to have_tenant_account_entry(Portfolio, :deposit, exp_cash) }
-      it { expect(LedgerizerTest).to have_tenant_account_entry(Portfolio, :deposit, exp_bank) }
-      it { expect(LedgerizerTest).to have_tenant_account_entry(Portfolio, :distribute, exp_cash1) }
+      it { expect(LedgerizerTest).to have_tenant_account_entry(:portfolio, :deposit, exp_cash) }
+      it { expect(LedgerizerTest).to have_tenant_account_entry(:portfolio, :deposit, exp_bank) }
+      it { expect(LedgerizerTest).to have_tenant_account_entry(:portfolio, :distribute, exp_cash1) }
     end
   end
 end

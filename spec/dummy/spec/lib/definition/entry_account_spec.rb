@@ -9,7 +9,7 @@ RSpec.describe Ledgerizer::Definition::EntryAccount do
 
   it { expect(entry_account.account).to eq(account) }
   it { expect(entry_account.account_name).to eq(:cash) }
-  it { expect(entry_account.accountable).to eq(Portfolio) }
+  it { expect(entry_account.accountable).to eq(:portfolio) }
 
   context "with invalid accountable" do
     let(:accountable) { :invalid }
