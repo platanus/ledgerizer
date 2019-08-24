@@ -35,7 +35,7 @@ RSpec.describe Ledgerizer::Definition::Dsl do
     end
 
     it "raises DSL error with non Active Record tenant" do
-      expect_error_in_class_definition("name must be an ActiveRecord model name") do
+      expect_error_in_class_definition(/must be an ActiveRecord model name/) do
         include Ledgerizer::Definition::Dsl
 
         tenant('noartenant')
@@ -51,12 +51,6 @@ RSpec.describe Ledgerizer::Definition::Dsl do
       end
     end
   end
-
-  it_behaves_like 'definition dsl account', :asset
-  it_behaves_like 'definition dsl account', :liability
-  it_behaves_like 'definition dsl account', :expense
-  it_behaves_like 'definition dsl account', :income
-  it_behaves_like 'definition dsl account', :equity
 
   describe "#entry" do
     it "raises error with no tenant" do
@@ -79,7 +73,7 @@ RSpec.describe Ledgerizer::Definition::Dsl do
     end
 
     it "raises error with invalid document" do
-      expect_error_in_class_definition("name must be an ActiveRecord model name") do
+      expect_error_in_class_definition(/must be an ActiveRecord model name/) do
         include Ledgerizer::Definition::Dsl
 
         tenant('portfolio') do
@@ -114,5 +108,14 @@ RSpec.describe Ledgerizer::Definition::Dsl do
       it { expect(LedgerizerTest).to have_tenant_entry(Portfolio, :distribute, Portfolio) }
     end
   end
+
+  it_behaves_like 'definition dsl account', :asset
+  it_behaves_like 'definition dsl account', :liability
+  it_behaves_like 'definition dsl account', :expense
+  it_behaves_like 'definition dsl account', :income
+  it_behaves_like 'definition dsl account', :equity
+
+  it_behaves_like 'definition dsl entry account', :debit
+  it_behaves_like 'definition dsl entry account', :credit
 end
 # rubocop:enable RSpec/FilePath, RSpec/DescribedClass

@@ -1,9 +1,9 @@
 module Ledgerizer
   module Formatters
-    def infer_active_record_class!(model_name)
+    def infer_active_record_class!(error_prefix, model_name)
       model_name.to_s.classify.constantize
     rescue NameError
-      raise_formatter_error("name must be an ActiveRecord model name")
+      raise_formatter_error("#{error_prefix} must be an ActiveRecord model name")
     end
 
     def format_currency!(currency)

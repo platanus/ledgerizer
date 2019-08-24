@@ -55,3 +55,19 @@ RSpec::Matchers.define :have_tenant_entry do |tenant_class, code, document|
     "#{code} entry is not in tenant"
   end
 end
+
+RSpec::Matchers.define :have_tenant_account_entry do |tenant_class, entry_code, expected|
+  match do |dsl_holder|
+    type = expected[:entry_account_type].to_s.pluralize
+    entry = dsl_holder&.definition&.find_tenant(tenant_class)&.find_entry(entry_code)
+    entry&.find_entry_account(entry&.send(type), expected[:account], expected[:accountable])
+  end
+
+  description do
+    "include #{expected} in #{entry_code} entry of #{tenant_class} tenant"
+  end
+
+  failure_message do
+    "#{expected} entry is not in #{entry_code} entry of #{tenant_class} tenant"
+  end
+end

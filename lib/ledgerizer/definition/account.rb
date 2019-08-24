@@ -3,9 +3,27 @@ module Ledgerizer
     class Account
       attr_reader :name, :type
 
+      TYPES = %i{asset liability income expense equity}
+
       def initialize(name, type)
-        @name = name
-        @type = type
+        ensure_name!(name)
+        ensure_type!(type)
+        @name = name.to_sym
+        @type = type.to_sym
+      end
+
+      private
+
+      def ensure_name!(name)
+        raise Ledgerizer::ConfigError.new("account name is mandatory") if name.blank?
+      end
+
+      def ensure_type!(type)
+        raise Ledgerizer::ConfigError.new("account type is mandatory") if type.blank?
+
+        if !TYPES.include?(type.to_sym)
+          raise Ledgerizer::ConfigError.new("type must be one of these: #{TYPES.join(', ')}")
+        end
       end
     end
   end

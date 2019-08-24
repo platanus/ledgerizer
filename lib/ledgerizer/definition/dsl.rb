@@ -13,24 +13,10 @@ module Ledgerizer
           @current_tenant = nil
         end
 
-        def asset(account_name)
-          account(account_name, :asset)
-        end
-
-        def liability(account_name)
-          account(account_name, :liability)
-        end
-
-        def income(account_name)
-          account(account_name, :income)
-        end
-
-        def expense(account_name)
-          account(account_name, :expense)
-        end
-
-        def equity(account_name)
-          account(account_name, :equity)
+        Ledgerizer::Definition::Account::TYPES.each do |account_type|
+          define_method(account_type) do |account_name|
+            account(account_name, account_type)
+          end
         end
 
         def account(account_name, account_type)
@@ -41,12 +27,21 @@ module Ledgerizer
           @current_account = nil
         end
 
-        def entry(entry_code, document: nil)
+        def entry(entry_code, document: nil, &block)
           in_context do
             @current_entry = @current_tenant.add_entry(entry_code, document)
+            block&.call
           end
         ensure
           @current_entry = nil
+        end
+
+        def debit(account: nil, accountable: nil)
+          in_context { @current_tenant.add_debit(@current_entry.code, account, accountable) }
+        end
+
+        def credit(account: nil, accountable: nil)
+          in_context { @current_tenant.add_credit(@current_entry.code, account, accountable) }
         end
 
         def in_context(current_method = nil)
@@ -78,7 +73,9 @@ module Ledgerizer
             income: [:tenant],
             expense: [:tenant],
             equity: [:tenant],
-            entry: [:tenant]
+            entry: [:tenant],
+            debit: [:tenant, :entry],
+            credit: [:tenant, :entry]
           }
         end
 

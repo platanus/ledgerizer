@@ -58,7 +58,7 @@ RSpec.describe Ledgerizer::Definition::Tenant do
     end
   end
 
-  describe "#add_account" do
+  describe "#add_entry" do
     let(:code) { :deposit }
     let(:document) { :portfolio }
 
@@ -78,7 +78,35 @@ RSpec.describe Ledgerizer::Definition::Tenant do
     context "with invalid document" do
       let(:document) { :invalid }
 
-      it { expect { perform }.to raise_error("name must be an ActiveRecord model name") }
+      it { expect { perform }.to raise_error(/must be an ActiveRecord model name/) }
+    end
+  end
+
+  describe "#add_debit" do
+    let(:entry_code) { :deposit }
+    let(:account_name) { :cash }
+    let(:accountable) { 'portfolio' }
+    let!(:entry) { tenant.add_entry(:deposit, 'portfolio') }
+    let!(:account) { tenant.add_account(:cash, :asset) }
+
+    def perform
+      tenant.add_debit(entry_code, account_name, accountable)
+    end
+
+    it { expect { perform }.to change { entry.debits.count }.from(0).to(1) }
+    it { expect(perform.account_name).to eq(:cash) }
+    it { expect(perform.accountable).to eq(Portfolio) }
+
+    context "when provided entry code does not match existent entry" do
+      let(:entry_code) { :register }
+
+      it { expect { perform }.to raise_error('the register entry does not exist in tenant') }
+    end
+
+    context "when provided account name does not match existent entry" do
+      let(:account_name) { :bank }
+
+      it { expect { perform }.to raise_error('the bank account does not exist in tenant') }
     end
   end
 end

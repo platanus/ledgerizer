@@ -4,13 +4,14 @@ require "spec_helper"
 RSpec.describe Ledgerizer::Formatters do
   describe '#infer_active_record_class!' do
     let(:model_name) { :portfolio }
+    let(:error_prefix) { 'name' }
 
     define_test_class do
       include Ledgerizer::Formatters
     end
 
     def perform
-      test_class.new.infer_active_record_class!(model_name)
+      test_class.new.infer_active_record_class!(error_prefix, model_name)
     end
 
     it { expect(perform).to eq(Portfolio) }
@@ -36,7 +37,7 @@ RSpec.describe Ledgerizer::Formatters do
     context "when name does not match AR model" do
       let(:model_name) { "invalid" }
 
-      it { expect { perform }.to raise_error("name must be an ActiveRecord model name") }
+      it { expect { perform }.to raise_error(/must be an ActiveRecord model name/) }
     end
   end
 
