@@ -13,9 +13,13 @@ module Ledgerizer
     def format_currency!(currency)
       formatted_currency = currency.to_s.downcase.to_sym
       return :usd if formatted_currency.blank?
-      return formatted_currency if Money::Currency.table.key?(formatted_currency)
+      return formatted_currency if available_currency?(formatted_currency)
 
       raise_formatter_error("invalid currency '#{currency}' given")
+    end
+
+    def available_currency?(currency)
+      Money::Currency.all.map(&:id).include?(currency)
     end
 
     def model_names
