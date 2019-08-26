@@ -4,7 +4,7 @@ shared_examples 'definition dsl entry account' do |type|
       expect_error_in_class_definition("'#{type}' needs to run inside 'entry' block") do
         include Ledgerizer::Definition::Dsl
 
-        send(type)
+        send(type, account: nil, accountable: nil)
       end
     end
 
@@ -13,7 +13,7 @@ shared_examples 'definition dsl entry account' do |type|
         include Ledgerizer::Definition::Dsl
 
         tenant('portfolio') do
-          send(type)
+          send(type, account: nil, accountable: nil)
         end
       end
     end
@@ -24,7 +24,7 @@ shared_examples 'definition dsl entry account' do |type|
 
         tenant('portfolio') do
           entry(:deposit, document: 'portfolio') do
-            send(type, account: :cash)
+            send(type, account: :cash, accountable: nil)
           end
         end
       end

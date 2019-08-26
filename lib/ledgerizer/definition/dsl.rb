@@ -36,7 +36,7 @@ module Ledgerizer
           @current_entry = nil
         end
 
-        def debit(account: nil, accountable: nil)
+        def debit(account:, accountable:)
           in_context { @current_tenant.add_debit(@current_entry.code, account, accountable) }
         end
 
