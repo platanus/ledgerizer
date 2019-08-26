@@ -49,7 +49,6 @@ module Ledgerizer
           validate_context!(current_method)
           current_context << current_method
           yield
-        ensure
           current_context.pop
         end
 
