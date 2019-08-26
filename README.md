@@ -46,7 +46,7 @@ Ledgerizer.setup do |conf|
 
     conf.entry :entry_code2, document: :user_deposit do
       conf.debit account: :account_name4, accountable: :accountable2
-      conf.credit account: :account_name5, accountable: :accountabl1
+      conf.credit account: :account_name5, accountable: :accountable1
       conf.credit account: :account_name6, accountable: :accountable3
     end
 
