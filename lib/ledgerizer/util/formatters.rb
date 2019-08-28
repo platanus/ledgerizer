@@ -1,5 +1,9 @@
+require_rel './money_helpers.rb'
+
 module Ledgerizer
   module Formatters
+    include Ledgerizer::MoneyHelpers
+
     def infer_active_record_class_name!(error_prefix, model_name)
       klass_name = model_name.to_s.tableize.singularize.to_sym
 
@@ -16,10 +20,6 @@ module Ledgerizer
       return formatted_currency if available_currency?(formatted_currency)
 
       raise_formatter_error("invalid currency '#{currency}' given")
-    end
-
-    def available_currency?(currency)
-      Money::Currency.all.map(&:id).include?(currency)
     end
 
     def model_names

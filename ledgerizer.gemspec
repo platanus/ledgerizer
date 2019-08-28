@@ -21,6 +21,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency "rails", ">= 5.2.0"
 
+  s.add_dependency "enumerize"
   s.add_dependency "money-rails"
   s.add_dependency "require_all"
 
@@ -30,5 +31,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "pry"
   s.add_development_dependency "pry-rails"
   s.add_development_dependency "rspec-rails"
+  s.add_development_dependency "shoulda-matchers"
   s.add_development_dependency "sqlite3"
 end

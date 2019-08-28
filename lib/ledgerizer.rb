@@ -1,3 +1,4 @@
+require "enumerize"
 require "require_all"
 require "money-rails"
 
