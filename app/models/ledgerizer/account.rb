@@ -3,6 +3,7 @@ module Ledgerizer
     extend Enumerize
 
     belongs_to :tenant, polymorphic: true
+    has_many :lines, dependent: :destroy
 
     enumerize :account_type,
       in: Ledgerizer::Definition::Account::TYPES,

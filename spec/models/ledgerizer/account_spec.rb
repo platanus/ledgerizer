@@ -8,6 +8,7 @@ module Ledgerizer
 
     describe "associations" do
       it { is_expected.to belong_to(:tenant) }
+      it { is_expected.to have_many(:lines).dependent(:destroy) }
     end
 
     describe "validations" do
