@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_08_28_180322) do
+ActiveRecord::Schema.define(version: 2019_08_29_194605) do
 
   create_table "ledgerizer_accounts", force: :cascade do |t|
     t.string "tenant_type"
@@ -21,6 +21,19 @@ ActiveRecord::Schema.define(version: 2019_08_28_180322) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["tenant_type", "tenant_id"], name: "index_ledgerizer_accounts_on_tenant_type_and_tenant_id"
+  end
+
+  create_table "ledgerizer_entries", force: :cascade do |t|
+    t.string "tenant_type"
+    t.integer "tenant_id"
+    t.string "code"
+    t.string "document_type"
+    t.integer "document_id"
+    t.date "entry_date"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["document_type", "document_id"], name: "index_ledgerizer_entries_on_document_type_and_document_id"
+    t.index ["tenant_type", "tenant_id"], name: "index_ledgerizer_entries_on_tenant_type_and_tenant_id"
   end
 
   create_table "portfolios", force: :cascade do |t|
