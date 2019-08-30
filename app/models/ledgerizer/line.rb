@@ -7,7 +7,18 @@ module Ledgerizer
 
     monetize :amount_cents
 
-    validates :entry_code, :entry_date, presence: true
+    validates :entry_code, :amount_cents, :entry_date, presence: true
+
+    before_save :denormalize_attributes
+
+    private
+
+    def denormalize_attributes
+      self.tenant = entry.tenant
+      self.document = entry.document
+      self.entry_code = entry.code
+      self.entry_date = entry.entry_date
+    end
   end
 end
 

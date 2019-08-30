@@ -16,6 +16,17 @@ module Ledgerizer
     describe "validations" do
       it { is_expected.to validate_presence_of(:entry_code) }
       it { is_expected.to validate_presence_of(:entry_date) }
+      it { is_expected.to validate_presence_of(:amount_cents) }
+      it { is_expected.to monetize(:amount) }
+    end
+
+    describe "#denormalize_attributes" do
+      let(:line) { create(:ledgerizer_line) }
+
+      it { expect(line.tenant).to eq(line.entry.tenant) }
+      it { expect(line.document).to eq(line.entry.document) }
+      it { expect(line.entry_code).to eq(line.entry.code) }
+      it { expect(line.entry_date).to eq(line.entry.entry_date) }
     end
   end
 end
