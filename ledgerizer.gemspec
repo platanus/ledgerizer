@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
   s.add_dependency "money-rails"
   s.add_dependency "require_all"
 
+  s.add_development_dependency "annotate"
   s.add_development_dependency "coveralls"
   s.add_development_dependency "factory_bot_rails"
   s.add_development_dependency "guard-rspec"

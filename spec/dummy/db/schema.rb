@@ -43,8 +43,8 @@ ActiveRecord::Schema.define(version: 2019_08_29_203452) do
     t.integer "document_id"
     t.integer "entry_id"
     t.integer "account_id"
-    t.integer "amount_cents", default: 0, null: false
-    t.string "amount_currency", default: "USD", null: false
+    t.bigint "amount_cents", default: 0, null: false
+    t.string "amount_currency", default: "CLP", null: false
     t.date "entry_date"
     t.string "entry_code"
     t.datetime "created_at", null: false

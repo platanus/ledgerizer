@@ -13,3 +13,21 @@ module Ledgerizer
     validates :currency, currency: true
   end
 end
+
+# == Schema Information
+#
+# Table name: ledgerizer_accounts
+#
+#  id           :integer          not null, primary key
+#  tenant_type  :string
+#  tenant_id    :integer
+#  name         :string
+#  currency     :string
+#  account_type :string
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
+#
+# Indexes
+#
+#  index_ledgerizer_accounts_on_tenant_type_and_tenant_id  (tenant_type,tenant_id)
+#
