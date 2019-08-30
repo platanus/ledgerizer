@@ -1,10 +1,10 @@
-shared_examples 'definition dsl account' do |account_type|
-  describe "##{account_type}" do
+shared_examples 'definition dsl account' do |acc_type|
+  describe "##{acc_type}" do
     it "raises error with no tenant" do
-      expect_error_in_class_definition("'#{account_type}' needs to run inside 'tenant' block") do
+      expect_error_in_class_definition("'#{acc_type}' needs to run inside 'tenant' block") do
         include Ledgerizer::Definition::Dsl
 
-        send(account_type, :account1)
+        send(acc_type, :account1)
       end
     end
 
@@ -13,8 +13,8 @@ shared_examples 'definition dsl account' do |account_type|
         include Ledgerizer::Definition::Dsl
 
         tenant('portfolio') do
-          send(account_type, :account1)
-          send(account_type, :account1)
+          send(acc_type, :account1)
+          send(acc_type, :account1)
         end
       end
     end
@@ -24,11 +24,23 @@ shared_examples 'definition dsl account' do |account_type|
         include Ledgerizer::Definition::Dsl
 
         tenant('portfolio') do
-          send(account_type, :account1)
+          send(acc_type, :account1)
         end
       end
 
-      it { expect(LedgerizerTest).to have_tenant_account(:portfolio, :account1, account_type) }
+      it { expect(LedgerizerTest).to have_tenant_account(:portfolio, :account1, acc_type) }
+    end
+
+    context "with contra account" do
+      define_test_class do
+        include Ledgerizer::Definition::Dsl
+
+        tenant('portfolio') do
+          send(acc_type, :account1, contra: true)
+        end
+      end
+
+      it { expect(LedgerizerTest).to have_tenant_account(:portfolio, :account1, acc_type, true) }
     end
 
     context "with string account name" do
@@ -36,11 +48,11 @@ shared_examples 'definition dsl account' do |account_type|
         include Ledgerizer::Definition::Dsl
 
         tenant('portfolio') do
-          send(account_type, "account1")
+          send(acc_type, "account1")
         end
       end
 
-      it { expect(LedgerizerTest).to have_tenant_account(:portfolio, :account1, account_type) }
+      it { expect(LedgerizerTest).to have_tenant_account(:portfolio, :account1, acc_type) }
     end
 
     context "with more than one account" do
@@ -48,13 +60,13 @@ shared_examples 'definition dsl account' do |account_type|
         include Ledgerizer::Definition::Dsl
 
         tenant('portfolio') do
-          send(account_type, :account1)
-          send(account_type, :account2)
+          send(acc_type, :account1)
+          send(acc_type, :account2)
         end
       end
 
-      it { expect(LedgerizerTest).to have_tenant_account(:portfolio, :account1, account_type) }
-      it { expect(LedgerizerTest).to have_tenant_account(:portfolio, :account2, account_type) }
+      it { expect(LedgerizerTest).to have_tenant_account(:portfolio, :account1, acc_type) }
+      it { expect(LedgerizerTest).to have_tenant_account(:portfolio, :account2, acc_type) }
     end
   end
 end

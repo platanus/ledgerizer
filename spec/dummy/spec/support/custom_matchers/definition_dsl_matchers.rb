@@ -26,10 +26,13 @@ RSpec::Matchers.define :have_tenant_base_currency do |model_class_name, expected
   end
 end
 
-RSpec::Matchers.define :have_tenant_account do |model_class_name, account_name, account_type|
+RSpec::Matchers.define :have_tenant_account do
+  |model_class_name, account_name, account_type, contra = false|
   match do |dsl_holder|
     account = dsl_holder&.definition&.find_tenant(model_class_name)&.find_account(account_name)
-    account && account.type == account_type && account.name == account_name
+    account && account.type == account_type &&
+      account.name == account_name &&
+      account.contra == contra
   end
 
   description do

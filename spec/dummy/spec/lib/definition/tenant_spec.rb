@@ -42,13 +42,15 @@ RSpec.describe Ledgerizer::Definition::Tenant do
   describe "#add_account" do
     let(:account_name) { :cash }
     let(:account_type) { :asset }
+    let(:contra) { true }
 
     def perform
-      tenant.add_account(account_name, account_type)
+      tenant.add_account(account_name, account_type, contra)
     end
 
     it { expect(perform.name).to eq(account_name) }
     it { expect(perform.type).to eq(account_type) }
+    it { expect(perform.contra).to eq(contra) }
 
     context "with repeated account" do
       before { perform }

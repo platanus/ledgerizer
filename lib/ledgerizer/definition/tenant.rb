@@ -14,9 +14,9 @@ module Ledgerizer
         @currency || :usd
       end
 
-      def add_account(name, type)
+      def add_account(name, type, contra = false)
         validate_unique_account!(name)
-        Ledgerizer::Definition::Account.new(name, type).tap do |account|
+        Ledgerizer::Definition::Account.new(name, type, contra).tap do |account|
           @accounts << account
         end
       end

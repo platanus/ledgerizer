@@ -1,15 +1,16 @@
 module Ledgerizer
   module Definition
     class Account
-      attr_reader :name, :type
+      attr_reader :name, :type, :contra
 
       TYPES = %i{asset liability income expense equity}
 
-      def initialize(name, type)
+      def initialize(name, type, contra = false)
         ensure_name!(name)
         ensure_type!(type)
         @name = name.to_sym
         @type = type.to_sym
+        @contra = !!contra
       end
 
       private

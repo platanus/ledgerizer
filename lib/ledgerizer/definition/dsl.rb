@@ -14,14 +14,14 @@ module Ledgerizer
         end
 
         Ledgerizer::Definition::Account::TYPES.each do |account_type|
-          define_method(account_type) do |account_name|
-            account(account_name, account_type)
+          define_method(account_type) do |account_name, contra: false|
+            account(account_name, account_type, contra)
           end
         end
 
-        def account(account_name, account_type)
+        def account(account_name, account_type, contra)
           in_context(account_type) do
-            @current_account = @current_tenant.add_account(account_name, account_type)
+            @current_account = @current_tenant.add_account(account_name, account_type, contra)
           end
         ensure
           @current_account = nil
