@@ -11,6 +11,8 @@ RSpec.describe Ledgerizer::Definition::Account do
   it { expect(account.name).to eq(account_name) }
   it { expect(account.type).to eq(account_type) }
   it { expect(account.contra).to eq(true) }
+  it { expect(account.credit?).to eq(false) }
+  it { expect(account.debit?).to eq(true) }
 
   context "with string name" do
     let(:account_name) { "cash" }
@@ -52,6 +54,13 @@ RSpec.describe Ledgerizer::Definition::Account do
     let(:contra) { "true" }
 
     it { expect(account.contra).to eq(true) }
+  end
+
+  context "with credit account type" do
+    let(:account_type) { :liability }
+
+    it { expect(account.credit?).to eq(true) }
+    it { expect(account.debit?).to eq(false) }
   end
 end
 # rubocop:enable RSpec/FilePath

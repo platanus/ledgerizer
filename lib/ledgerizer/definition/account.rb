@@ -3,7 +3,9 @@ module Ledgerizer
     class Account
       attr_reader :name, :type, :contra
 
-      TYPES = %i{asset liability income expense equity}
+      DEBIT_TYPES = %i{asset expense}
+      CREDIT_TYPES = %i{liability income equity}
+      TYPES = CREDIT_TYPES + DEBIT_TYPES
 
       def initialize(name, type, contra = false)
         ensure_name!(name)
@@ -11,6 +13,14 @@ module Ledgerizer
         @name = name.to_sym
         @type = type.to_sym
         @contra = !!contra
+      end
+
+      def credit?
+        CREDIT_TYPES.include?(type)
+      end
+
+      def debit?
+        DEBIT_TYPES.include?(type)
       end
 
       private
