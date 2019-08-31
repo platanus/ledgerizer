@@ -5,11 +5,11 @@ RSpec.describe Ledgerizer::Definition::EntryAccount do
   subject(:entry_account) { described_class.new(account, accountable) }
 
   let(:account) { Ledgerizer::Definition::Account.new(:cash, :asset) }
-  let(:accountable) { "portfolio" }
+  let(:accountable) { "user" }
 
   it { expect(entry_account.account).to eq(account) }
   it { expect(entry_account.account_name).to eq(:cash) }
-  it { expect(entry_account.accountable).to eq(:portfolio) }
+  it { expect(entry_account.accountable).to eq(:user) }
 
   context "with invalid accountable" do
     let(:accountable) { :invalid }

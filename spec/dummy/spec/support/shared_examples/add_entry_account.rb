@@ -2,7 +2,7 @@ shared_examples 'add entry account' do |type|
   describe "#add_#{type}" do
     let(:entry_code) { :deposit }
     let(:account) { Ledgerizer::Definition::Account.new(:cash, :asset) }
-    let(:accountable) { 'portfolio' }
+    let(:accountable) { 'user' }
 
     def perform(account_entry_type)
       entry.send("add_#{account_entry_type}", account, accountable)
@@ -14,12 +14,12 @@ shared_examples 'add entry account' do |type|
 
     it { expect { perform(type) }.to change { account_entries_count(type).count }.from(0).to(1) }
     it { expect(perform(type).account_name).to eq(:cash) }
-    it { expect(perform(type).accountable).to eq(:portfolio) }
+    it { expect(perform(type).accountable).to eq(:user) }
 
     context "with existent debit" do
       before { perform(type) }
 
-      it { expect { perform(type) }.to raise_error(/cash with accountable portfolio already/) }
+      it { expect { perform(type) }.to raise_error(/cash with accountable user already/) }
     end
 
     context "with invalid accountable" do

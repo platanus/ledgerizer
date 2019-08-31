@@ -3,11 +3,11 @@ module Ledgerizer
     extend Enumerize
 
     belongs_to :tenant, polymorphic: true
+    belongs_to :accountable, polymorphic: true
     has_many :lines, dependent: :destroy
 
-    enumerize :account_type,
-      in: Ledgerizer::Definition::Account::TYPES,
-      predicates: { prefix: true }
+    enumerize :account_type, in: Ledgerizer::Definition::Account::TYPES,
+                             predicates: { prefix: true }
 
     validates :name, :currency, :account_type, presence: true
     validates :currency, currency: true
@@ -18,16 +18,19 @@ end
 #
 # Table name: ledgerizer_accounts
 #
-#  id           :integer          not null, primary key
-#  tenant_type  :string
-#  tenant_id    :integer
-#  name         :string
-#  currency     :string
-#  account_type :string
-#  created_at   :datetime         not null
-#  updated_at   :datetime         not null
+#  id               :integer          not null, primary key
+#  tenant_type      :string
+#  tenant_id        :integer
+#  accountable_type :string
+#  accountable_id   :integer
+#  name             :string
+#  currency         :string
+#  account_type     :string
+#  created_at       :datetime         not null
+#  updated_at       :datetime         not null
 #
 # Indexes
 #
+#  index_ledgerizer_accounts_on_acc_type_and_acc_id        (accountable_type,accountable_id)
 #  index_ledgerizer_accounts_on_tenant_type_and_tenant_id  (tenant_type,tenant_id)
 #

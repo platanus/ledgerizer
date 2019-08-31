@@ -86,8 +86,8 @@ RSpec.describe Ledgerizer::Definition::Tenant do
   describe "#add_debit" do
     let(:entry_code) { :deposit }
     let(:account_name) { :cash }
-    let(:accountable) { 'portfolio' }
-    let!(:entry) { tenant.add_entry(:deposit, 'portfolio') }
+    let(:accountable) { 'user' }
+    let!(:entry) { tenant.add_entry(:deposit, 'user') }
     let!(:account) { tenant.add_account(:cash, :asset) }
 
     def perform
@@ -96,7 +96,7 @@ RSpec.describe Ledgerizer::Definition::Tenant do
 
     it { expect { perform }.to change { entry.debits.count }.from(0).to(1) }
     it { expect(perform.account_name).to eq(:cash) }
-    it { expect(perform.accountable).to eq(:portfolio) }
+    it { expect(perform.accountable).to eq(:user) }
 
     context "when provided entry code does not match existent entry" do
       let(:entry_code) { :register }

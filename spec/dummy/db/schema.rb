@@ -10,16 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_08_29_203452) do
+ActiveRecord::Schema.define(version: 2019_08_31_235615) do
 
   create_table "ledgerizer_accounts", force: :cascade do |t|
     t.string "tenant_type"
     t.integer "tenant_id"
+    t.string "accountable_type"
+    t.integer "accountable_id"
     t.string "name"
     t.string "currency"
     t.string "account_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["accountable_type", "accountable_id"], name: "index_ledgerizer_accounts_on_acc_type_and_acc_id"
     t.index ["tenant_type", "tenant_id"], name: "index_ledgerizer_accounts_on_tenant_type_and_tenant_id"
   end
 
@@ -56,6 +59,12 @@ ActiveRecord::Schema.define(version: 2019_08_29_203452) do
   end
 
   create_table "portfolios", force: :cascade do |t|
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "users", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

@@ -52,7 +52,7 @@ shared_examples 'definition dsl entry account' do |type|
           asset(:cash)
 
           entry(:deposit, document: :portfolio) do
-            send(type, account: :cash, accountable: :portfolio)
+            send(type, account: :cash, accountable: :user)
           end
         end
       end
@@ -61,7 +61,7 @@ shared_examples 'definition dsl entry account' do |type|
         {
           entry_account_type: type,
           account: :cash,
-          accountable: :portfolio
+          accountable: :user
         }
       end
 
@@ -77,8 +77,8 @@ shared_examples 'definition dsl entry account' do |type|
           asset(:bank)
 
           entry(:deposit, document: :portfolio) do
-            send(type, account: :cash, accountable: :portfolio)
-            send(type, account: :bank, accountable: :portfolio)
+            send(type, account: :cash, accountable: :user)
+            send(type, account: :bank, accountable: :user)
           end
         end
       end
@@ -87,7 +87,7 @@ shared_examples 'definition dsl entry account' do |type|
         {
           entry_account_type: type,
           account: :cash,
-          accountable: :portfolio
+          accountable: :user
         }
       end
 
@@ -95,7 +95,7 @@ shared_examples 'definition dsl entry account' do |type|
         {
           entry_account_type: type,
           account: :bank,
-          accountable: :portfolio
+          accountable: :user
         }
       end
 
@@ -112,12 +112,12 @@ shared_examples 'definition dsl entry account' do |type|
           asset(:bank)
 
           entry(:deposit, document: :portfolio) do
-            send(type, account: :cash, accountable: :portfolio)
-            send(type, account: :bank, accountable: :portfolio)
+            send(type, account: :cash, accountable: :user)
+            send(type, account: :bank, accountable: :user)
           end
 
           entry(:distribute, document: :portfolio) do
-            send(type, account: :cash, accountable: :portfolio)
+            send(type, account: :cash, accountable: :user)
           end
         end
       end
@@ -126,7 +126,7 @@ shared_examples 'definition dsl entry account' do |type|
         {
           entry_account_type: type,
           account: :cash,
-          accountable: :portfolio
+          accountable: :user
         }
       end
 
@@ -134,7 +134,7 @@ shared_examples 'definition dsl entry account' do |type|
         {
           entry_account_type: type,
           account: :bank,
-          accountable: :portfolio
+          accountable: :user
         }
       end
 
@@ -142,7 +142,7 @@ shared_examples 'definition dsl entry account' do |type|
         {
           entry_account_type: type,
           account: :cash,
-          accountable: :portfolio
+          accountable: :user
         }
       end
 
