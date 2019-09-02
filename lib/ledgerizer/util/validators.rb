@@ -14,16 +14,22 @@ module Ledgerizer
 
     def validate_tenant_instance!(model_instance, error_prefix)
       validate_active_record_instance!(model_instance, error_prefix)
-      model_name = model_instance.model_name.singular.to_sym
-      return true if Ledgerizer.definition.find_tenant(model_name)
+      return true if Ledgerizer.definition.find_tenant(model_instance)
 
-      raise_validation_error("can't find tenant for given '#{model_name}' model")
+      raise_validation_error("can't find tenant for given #{model_instance.model_name} model")
     end
 
     def validate_active_record_instance!(model_instance, error_prefix)
       return true if model_instance.is_a?(ActiveRecord::Base)
 
       raise_validation_error("#{error_prefix} must be an ActiveRecord model")
+    end
+
+    def validate_tenant_entry!(tenant, entry_code)
+      tenant_definition = Ledgerizer.definition.find_tenant(tenant)
+      return true if tenant_definition.find_entry(entry_code)
+
+      raise_validation_error("invalid entry code #{entry_code} for given tenant")
     end
 
     def raise_validation_error(msg)

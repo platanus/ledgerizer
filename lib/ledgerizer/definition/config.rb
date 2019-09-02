@@ -8,14 +8,20 @@ module Ledgerizer
         tenant
       end
 
-      def find_tenant(model_class_name)
-        tenants.find { |tenant| tenant.model_class_name == model_class_name }
+      def find_tenant(value)
+        tenants.find { |tenant| tenant.model_class_name == infer_model_class_name(value) }
       end
 
       private
 
       def tenants
         @tenants ||= []
+      end
+
+      def infer_model_class_name(value)
+        return value.model_name.singular.to_sym if value.is_a?(ActiveRecord::Base)
+
+        value
       end
 
       def validate_unique_tenant!(model_class_name)

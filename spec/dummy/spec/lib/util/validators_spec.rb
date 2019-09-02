@@ -105,7 +105,7 @@ RSpec.describe Ledgerizer::Validators do
     context "with valid model that is not a tenant" do
       let(:instance) { create(:user) }
 
-      it { expect { perform }.to raise_error("can't find tenant for given 'user' model") }
+      it { expect { perform }.to raise_error("can't find tenant for given User model") }
     end
 
     context "with non ActiveRecord instance" do
