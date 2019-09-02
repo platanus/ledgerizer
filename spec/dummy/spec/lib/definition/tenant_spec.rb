@@ -1,6 +1,5 @@
 require "spec_helper"
 
-# rubocop:disable RSpec/FilePath
 RSpec.describe Ledgerizer::Definition::Tenant do
   subject(:tenant) { described_class.new(model_class_name, currency) }
 
@@ -111,4 +110,3 @@ RSpec.describe Ledgerizer::Definition::Tenant do
     end
   end
 end
-# rubocop:enable RSpec/FilePath

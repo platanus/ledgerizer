@@ -1,6 +1,5 @@
 require "spec_helper"
 
-# rubocop:disable RSpec/FilePath
 RSpec.describe Ledgerizer::Definition::Entry do
   subject(:entry) { described_class.new(code, document) }
 
@@ -25,4 +24,3 @@ RSpec.describe Ledgerizer::Definition::Entry do
   it_behaves_like 'add entry account', :debit
   it_behaves_like 'add entry account', :credit
 end
-# rubocop:enable RSpec/FilePath

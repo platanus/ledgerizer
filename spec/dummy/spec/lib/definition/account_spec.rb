@@ -1,6 +1,5 @@
 require "spec_helper"
 
-# rubocop:disable RSpec/FilePath
 RSpec.describe Ledgerizer::Definition::Account do
   subject(:account) { described_class.new(account_name, account_type, contra) }
 
@@ -63,4 +62,3 @@ RSpec.describe Ledgerizer::Definition::Account do
     it { expect(account.debit?).to eq(false) }
   end
 end
-# rubocop:enable RSpec/FilePath

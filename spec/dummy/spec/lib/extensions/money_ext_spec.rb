@@ -1,6 +1,5 @@
 require "spec_helper"
 
-# rubocop:disable RSpec/FilePath
 RSpec.describe Money do
   describe '#available_currency?' do
     let(:currency) { "CLP" }
@@ -36,4 +35,3 @@ RSpec.describe Money do
     end
   end
 end
-# rubocop:enable RSpec/FilePath

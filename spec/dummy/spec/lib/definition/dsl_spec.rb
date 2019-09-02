@@ -1,6 +1,5 @@
 require "spec_helper"
 
-# rubocop:disable RSpec/FilePath, RSpec/DescribedClass
 RSpec.describe Ledgerizer::Definition::Dsl do
   describe '#tenant' do
     context "with valid Active Record tenant" do
@@ -118,4 +117,3 @@ RSpec.describe Ledgerizer::Definition::Dsl do
   it_behaves_like 'definition dsl entry account', :debit
   it_behaves_like 'definition dsl entry account', :credit
 end
-# rubocop:enable RSpec/FilePath, RSpec/DescribedClass

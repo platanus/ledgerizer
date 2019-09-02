@@ -1,6 +1,5 @@
 require "spec_helper"
 
-# rubocop:disable RSpec/FilePath, RSpec/DescribedClass
 RSpec.describe Ledgerizer::Validators do
   describe '#validate_active_record_model_name!' do
     let(:model_name) { :portfolio }
@@ -83,4 +82,3 @@ RSpec.describe Ledgerizer::Validators do
     end
   end
 end
-# rubocop:enable RSpec/FilePath, RSpec/DescribedClass

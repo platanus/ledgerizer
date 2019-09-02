@@ -1,6 +1,5 @@
 require "spec_helper"
 
-# rubocop:disable RSpec/FilePath
 RSpec.describe Ledgerizer::Definition::EntryAccount do
   subject(:entry_account) { described_class.new(account, accountable) }
 
@@ -17,4 +16,3 @@ RSpec.describe Ledgerizer::Definition::EntryAccount do
     it { expect { entry_account }.to raise_error(/must be an ActiveRecord model name/) }
   end
 end
-# rubocop:enable RSpec/FilePath

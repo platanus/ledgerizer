@@ -1,6 +1,5 @@
 require "spec_helper"
 
-# rubocop:disable RSpec/FilePath
 RSpec.describe Ledgerizer::Definition::Config do
   subject(:config) { described_class.new }
 
@@ -36,4 +35,3 @@ RSpec.describe Ledgerizer::Definition::Config do
     end
   end
 end
-# rubocop:enable RSpec/FilePath

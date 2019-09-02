@@ -1,6 +1,5 @@
 require "spec_helper"
 
-# rubocop:disable RSpec/FilePath, RSpec/DescribedClass
 RSpec.describe Ledgerizer::Formatters do
   describe '#infer_active_record_class_name!' do
     let(:model_name) { :portfolio }
@@ -67,4 +66,3 @@ RSpec.describe Ledgerizer::Formatters do
     end
   end
 end
-# rubocop:enable RSpec/FilePath, RSpec/DescribedClass
