@@ -44,8 +44,8 @@ RSpec.describe Ledgerizer::Validators do
     end
   end
 
-  describe '#format_currency!' do
-    let(:currency) { "CLP" }
+  describe '#validate_currency!' do
+    let(:currency) { :clp }
 
     define_test_class do
       include Ledgerizer::Validators
@@ -58,31 +58,33 @@ RSpec.describe Ledgerizer::Validators do
     it { expect(perform).to eq(true) }
 
     context "when different currency" do
-      let(:currency) { "USD" }
+      let(:currency) { :usd }
 
       it { expect(perform).to eq(true) }
     end
 
-    context "when lower currency" do
-      let(:currency) { "usd" }
+    context "with string currency" do
+      let(:currency) { "clp" }
 
       it { expect(perform).to eq(true) }
     end
 
-    context "when symbol currency" do
-      let(:currency) { "usd" }
+    context "with upcase currency" do
+      let(:currency) { "CLP" }
 
       it { expect(perform).to eq(true) }
     end
 
     context "with invalid currency" do
-      let(:currency) { "petro-del-mal" }
+      let(:currency) { :petro }
 
-      it { expect { perform }.to raise_error("invalid currency 'petro-del-mal' given") }
+      it { expect { perform }.to raise_error("invalid currency 'petro' given") }
     end
   end
 
   describe "#validate_tenant_instance!" do
+    let(:error_prefix) { 'value' }
+
     define_test_class do
       include Ledgerizer::Definition::Dsl
       include Ledgerizer::Validators
@@ -91,19 +93,25 @@ RSpec.describe Ledgerizer::Validators do
     end
 
     def perform
-      test_class.new.validate_tenant_instance!(model_class_name)
+      test_class.new.validate_tenant_instance!(instance, error_prefix)
     end
 
     context "with valid tenant" do
-      let(:model_class_name) { :portfolio }
+      let(:instance) { create(:portfolio) }
 
       it { expect(perform).to eq(true) }
     end
 
-    context "with valid model name that is not a tenant" do
-      let(:model_class_name) { :user }
+    context "with valid model that is not a tenant" do
+      let(:instance) { create(:user) }
 
-      it { expect { perform }.to raise_error("can't find tenant for given 'user' model name") }
+      it { expect { perform }.to raise_error("can't find tenant for given 'user' model") }
+    end
+
+    context "with non ActiveRecord instance" do
+      let(:instance) { LedgerizerTest.new }
+
+      it { expect { perform }.to raise_error("value must be an ActiveRecord model") }
     end
   end
 end

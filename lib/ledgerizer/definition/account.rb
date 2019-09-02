@@ -1,6 +1,8 @@
 module Ledgerizer
   module Definition
     class Account
+      include Ledgerizer::Formatters
+
       attr_reader :name, :type, :contra
 
       DEBIT_TYPES = %i{asset expense}
@@ -10,8 +12,8 @@ module Ledgerizer
       def initialize(name, type, contra = false)
         ensure_name!(name)
         ensure_type!(type)
-        @name = name.to_sym
-        @type = type.to_sym
+        @name = format_to_symbol_identifier(name)
+        @type = format_to_symbol_identifier(type)
         @contra = !!contra
       end
 

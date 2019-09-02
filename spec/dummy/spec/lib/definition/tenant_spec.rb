@@ -32,9 +32,9 @@ RSpec.describe Ledgerizer::Definition::Tenant do
     end
 
     context "with invalid currency" do
-      let(:currency) { "platita" }
+      let(:currency) { "petro" }
 
-      it { expect { tenant }.to raise_error("invalid currency 'platita' given") }
+      it { expect { tenant }.to raise_error("invalid currency 'petro' given") }
     end
   end
 

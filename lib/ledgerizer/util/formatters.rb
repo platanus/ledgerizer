@@ -4,17 +4,24 @@ module Ledgerizer
   module Formatters
     include Ledgerizer::Validators
 
-    def infer_active_record_class_name!(error_prefix, model_name)
-      klass_name = model_name.to_s.tableize.singularize.to_sym
-      validate_active_record_model_name!(klass_name, error_prefix)
-      klass_name
+    def format_to_symbol_identifier(value)
+      value.to_s.tableize.singularize.to_sym
     end
 
-    def format_currency!(currency)
-      formatted_currency = currency.to_s.downcase.to_sym
-      return :usd if formatted_currency.blank?
+    def format_to_upcase
+      value.to_s.upcase
+    end
 
-      validate_currency!(formatted_currency)
+    def format_currency(currency, strategy: :symbol, use_default: true)
+      formatted_currency = case strategy
+                           when :symbol
+                             format_to_symbol_identifier(currency)
+                           else
+                             format_to_upcase(currency)
+                           end
+
+      return :usd if use_default && formatted_currency.blank?
+
       formatted_currency
     end
   end

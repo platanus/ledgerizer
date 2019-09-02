@@ -12,10 +12,18 @@ module Ledgerizer
       raise_validation_error("invalid currency '#{currency}' given")
     end
 
-    def validate_tenant_instance!(model_class_name)
-      return true if Ledgerizer.definition.find_tenant(model_class_name)
+    def validate_tenant_instance!(model_instance, error_prefix)
+      validate_active_record_instance!(model_instance, error_prefix)
+      model_name = model_instance.model_name.singular.to_sym
+      return true if Ledgerizer.definition.find_tenant(model_name)
 
-      raise_validation_error("can't find tenant for given '#{model_class_name}' model name")
+      raise_validation_error("can't find tenant for given '#{model_name}' model")
+    end
+
+    def validate_active_record_instance!(model_instance, error_prefix)
+      return true if model_instance.is_a?(ActiveRecord::Base)
+
+      raise_validation_error("#{error_prefix} must be an ActiveRecord model")
     end
 
     def raise_validation_error(msg)

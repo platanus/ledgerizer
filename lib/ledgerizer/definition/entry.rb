@@ -6,8 +6,10 @@ module Ledgerizer
       attr_reader :code, :document
 
       def initialize(code, document)
-        @code = code.to_s.to_sym
-        @document = infer_active_record_class_name!("entry's document", document)
+        @code = format_to_symbol_identifier(code)
+        class_model_name = format_to_symbol_identifier(document)
+        validate_active_record_model_name!(class_model_name, "entry's document")
+        @document = class_model_name
       end
 
       def add_debit(account, accountable)
@@ -36,7 +38,8 @@ module Ledgerizer
       private
 
       def add_entry_account(collection, account, accountable)
-        ar_accountable = infer_active_record_class_name!('accountable', accountable)
+        ar_accountable = format_to_symbol_identifier(accountable)
+        validate_active_record_model_name!(ar_accountable, "accountable")
         validate_unique_account!(collection, account.name, ar_accountable)
 
         Ledgerizer::Definition::EntryAccount.new(account, ar_accountable).tap do |entry_account|
