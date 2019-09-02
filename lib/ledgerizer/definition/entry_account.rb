@@ -1,6 +1,7 @@
 module Ledgerizer
   module Definition
     class EntryAccount
+      include Ledgerizer::Validators
       include Ledgerizer::Formatters
 
       attr_reader :account, :accountable

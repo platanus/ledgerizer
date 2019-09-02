@@ -82,6 +82,26 @@ RSpec.describe Ledgerizer::Validators do
     end
   end
 
+  describe '#validate_date!' do
+    let(:date) { "1984-06-04" }
+
+    define_test_class do
+      include Ledgerizer::Validators
+    end
+
+    def perform
+      test_class.new.validate_date!(date)
+    end
+
+    it { expect(perform).to eq(true) }
+
+    context "when invalid date" do
+      let(:date) { "invalid" }
+
+      it { expect { perform }.to raise_error("invalid date given") }
+    end
+  end
+
   describe "#validate_tenant_instance!" do
     let(:error_prefix) { 'value' }
 
@@ -112,6 +132,86 @@ RSpec.describe Ledgerizer::Validators do
       let(:instance) { LedgerizerTest.new }
 
       it { expect { perform }.to raise_error("value must be an ActiveRecord model") }
+    end
+  end
+
+  describe "#validate_tenant_entry!" do
+    let(:tenant) { create(:portfolio) }
+    let(:entry_code) { :deposit }
+    let(:document) { create(:user) }
+
+    define_test_class do
+      include Ledgerizer::Definition::Dsl
+      include Ledgerizer::Validators
+
+      tenant(:portfolio) do
+        entry(:deposit, document: :user)
+      end
+    end
+
+    def perform
+      test_class.new.validate_tenant_entry!(tenant, entry_code, document)
+    end
+
+    it { expect(perform).to eq(true) }
+
+    context "with invalid entry" do
+      let(:entry_code) { :register }
+
+      it { expect { perform }.to raise_error("invalid entry code register for given tenant") }
+    end
+
+    context "with invalid document" do
+      let(:document) { create(:portfolio) }
+
+      it { expect { perform }.to raise_error("invalid document Portfolio for given deposit entry") }
+    end
+  end
+
+  describe "#validate_entry_account!" do
+    let(:tenant) { create(:portfolio) }
+    let(:entry_code) { :deposit }
+    let(:accountable) { create(:user) }
+    let(:account_type) { :credit }
+    let(:account_name) { :cash }
+
+    define_test_class do
+      include Ledgerizer::Definition::Dsl
+      include Ledgerizer::Validators
+
+      tenant(:portfolio) do
+        asset(:cash)
+
+        entry(:deposit, document: :user) do
+          credit(account: :cash, accountable: :user)
+        end
+      end
+    end
+
+    def perform
+      test_class.new.validate_entry_account!(
+        tenant, entry_code, account_type, account_name, accountable
+      )
+    end
+
+    it { expect(perform).to eq(true) }
+
+    context "with invalid account name" do
+      let(:account_name) { :bank }
+
+      it { expect { perform }.to raise_error(/bank with accountable User for given deposit entry/) }
+    end
+
+    context "with valid account name but invalid accountable" do
+      let(:accountable) { create(:portfolio) }
+
+      it { expect { perform }.to raise_error(/with accountable Portfolio for given deposit entry/) }
+    end
+
+    context "with invalid account type" do
+      let(:account_type) { :debit }
+
+      it { expect { perform }.to raise_error(/User for given deposit entry in debits/) }
     end
   end
 end

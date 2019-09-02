@@ -1,12 +1,12 @@
 require "spec_helper"
 
 RSpec.describe Ledgerizer::Formatters do
+  define_test_class do
+    include Ledgerizer::Formatters
+  end
+
   describe '#format_to_symbol_identifier' do
     let(:value) { :portfolio }
-
-    define_test_class do
-      include Ledgerizer::Formatters
-    end
 
     def perform
       test_class.new.format_to_symbol_identifier(value)
@@ -33,14 +33,20 @@ RSpec.describe Ledgerizer::Formatters do
     end
   end
 
+  describe '#format_to_upcase' do
+    let(:value) { "lean" }
+
+    def perform
+      test_class.new.format_to_upcase(value)
+    end
+
+    it { expect(perform).to eq("LEAN") }
+  end
+
   describe '#format_currency' do
     let(:currency) { "CLP" }
     let(:strategy) { :symbol }
     let(:use_default) { true }
-
-    define_test_class do
-      include Ledgerizer::Formatters
-    end
 
     def perform
       test_class.new.format_currency(currency, strategy: strategy, use_default: use_default)
@@ -53,5 +59,39 @@ RSpec.describe Ledgerizer::Formatters do
 
       it { expect(perform).to eq(:usd) }
     end
+
+    context "when upcase strategy" do
+      let(:strategy) { :upcase }
+
+      it { expect(perform).to eq("CLP") }
+    end
+
+    context "with blank value" do
+      let(:currency) { "" }
+
+      it { expect(perform).to eq(:usd) }
+
+      context "with no default value" do
+        let(:use_default) { false }
+
+        it { expect(perform).to eq(:"") }
+      end
+    end
+
+    context "with nil value" do
+      let(:currency) { nil }
+
+      it { expect(perform).to eq(:usd) }
+    end
+  end
+
+  describe '#format_model_to_sym' do
+    let(:model) { create(:portfolio) }
+
+    def perform
+      test_class.new.format_model_to_sym(model)
+    end
+
+    it { expect(perform).to eq(:portfolio) }
   end
 end

@@ -1,14 +1,10 @@
-require_rel './validators'
-
 module Ledgerizer
   module Formatters
-    include Ledgerizer::Validators
-
     def format_to_symbol_identifier(value)
       value.to_s.tableize.singularize.to_sym
     end
 
-    def format_to_upcase
+    def format_to_upcase(value)
       value.to_s.upcase
     end
 
@@ -23,6 +19,10 @@ module Ledgerizer
       return :usd if use_default && formatted_currency.blank?
 
       formatted_currency
+    end
+
+    def format_model_to_sym(value)
+      value.model_name.singular.to_sym
     end
   end
 end

@@ -1,6 +1,7 @@
 module Ledgerizer
   module Definition
     class Tenant
+      include Ledgerizer::Validators
       include Ledgerizer::Formatters
 
       attr_reader :model_class_name

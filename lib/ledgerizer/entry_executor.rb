@@ -9,9 +9,10 @@ module Ledgerizer
       validate_active_record_instance!(document, "document")
       @document = document
       code = format_to_symbol_identifier(entry_code)
-      validate_tenant_entry!(tenant, code)
+      validate_tenant_entry!(tenant, code, document)
       @entry_code = code
-      @entry_date = entry_date
+      validate_date!(entry_date)
+      @entry_date = entry_date.to_date
     end
   end
 end

@@ -1,6 +1,7 @@
 module Ledgerizer
   module Definition
     class Entry
+      include Ledgerizer::Validators
       include Ledgerizer::Formatters
 
       attr_reader :code, :document
@@ -20,10 +21,18 @@ module Ledgerizer
         add_entry_account(credits, account, accountable)
       end
 
+      def find_credit(account_name, accountable)
+        find_entry_account(credits, account_name, accountable)
+      end
+
+      def find_debit(account_name, accountable)
+        find_entry_account(debits, account_name, accountable)
+      end
+
       def find_entry_account(collection, account_name, accountable)
         collection.find do |entry_account|
           entry_account.account_name == account_name &&
-            entry_account.accountable == accountable
+            entry_account.accountable == infer_model_class_name(accountable)
         end
       end
 
@@ -36,6 +45,12 @@ module Ledgerizer
       end
 
       private
+
+      def infer_model_class_name(value)
+        return format_model_to_sym(value) if value.is_a?(ActiveRecord::Base)
+
+        value
+      end
 
       def add_entry_account(collection, account, accountable)
         ar_accountable = format_to_symbol_identifier(accountable)

@@ -1,6 +1,9 @@
 module Ledgerizer
   module Definition
     class Config
+      include Ledgerizer::Validators
+      include Ledgerizer::Formatters
+
       def add_tenant(model_class_name, currency = nil)
         tenant = Ledgerizer::Definition::Tenant.new(model_class_name, currency)
         validate_unique_tenant!(tenant.model_class_name)
@@ -19,7 +22,7 @@ module Ledgerizer
       end
 
       def infer_model_class_name(value)
-        return value.model_name.singular.to_sym if value.is_a?(ActiveRecord::Base)
+        return format_model_to_sym(value) if value.is_a?(ActiveRecord::Base)
 
         value
       end
