@@ -1,16 +1,12 @@
 require "spec_helper"
 
-# rubocop:disable RSpec/FilePath, RSpec/DescribedClass
-RSpec.describe Ledgerizer::MoneyHelpers do
+# rubocop:disable RSpec/FilePath
+RSpec.describe Money do
   describe '#available_currency?' do
     let(:currency) { "CLP" }
 
-    define_test_class do
-      include Ledgerizer::MoneyHelpers
-    end
-
     def perform
-      test_class.new.available_currency?(currency)
+      described_class.available_currency?(currency)
     end
 
     it { expect(perform).to eq(true) }
@@ -40,4 +36,4 @@ RSpec.describe Ledgerizer::MoneyHelpers do
     end
   end
 end
-# rubocop:enable RSpec/FilePath, RSpec/DescribedClass
+# rubocop:enable RSpec/FilePath
