@@ -81,4 +81,29 @@ RSpec.describe Ledgerizer::Validators do
       it { expect { perform }.to raise_error("invalid currency 'petro-del-mal' given") }
     end
   end
+
+  describe "#validate_tenant_instance!" do
+    define_test_class do
+      include Ledgerizer::Definition::Dsl
+      include Ledgerizer::Validators
+
+      tenant(:portfolio)
+    end
+
+    def perform
+      test_class.new.validate_tenant_instance!(model_class_name)
+    end
+
+    context "with valid tenant" do
+      let(:model_class_name) { :portfolio }
+
+      it { expect(perform).to eq(true) }
+    end
+
+    context "with valid model name that is not a tenant" do
+      let(:model_class_name) { :user }
+
+      it { expect { perform }.to raise_error("can't find tenant for given 'user' model name") }
+    end
+  end
 end

@@ -6,7 +6,20 @@ module TestClassHelpers
   extend ActiveSupport::Concern
 
   included do
-    before { stub_const("LedgerizerTest", test_class) if respond_to?(:test_class) }
+    def test_class_include_ledgerizer?
+      LedgerizerTest.included_modules.include?(Ledgerizer::Definition::Dsl)
+    end
+
+    def mock_ledgerizer_definition
+      allow(Ledgerizer).to receive(:definition).and_return(LedgerizerTest.definition)
+    end
+
+    before do
+      if respond_to?(:test_class)
+        stub_const("LedgerizerTest", test_class)
+        mock_ledgerizer_definition if test_class_include_ledgerizer?
+      end
+    end
   end
 
   class_methods do
