@@ -5,5 +5,9 @@ module MoneyHelpers
     def clp(value)
       Money.from_amount(value, :clp)
     end
+
+    def usd(value)
+      Money.from_amount(value, :usd)
+    end
   end
 end

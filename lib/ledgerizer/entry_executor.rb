@@ -14,5 +14,33 @@ module Ledgerizer
       validate_date!(entry_date)
       @entry_date = entry_date.to_date
     end
+
+    def add_credit(account_name:, accountable:, amount:)
+      add_entry_account(credits, :credit, account_name, accountable, amount)
+    end
+
+    def credits
+      @credits ||= []
+    end
+
+    private
+
+    def add_entry_account(collection, account_type, account_name, accountable, amount)
+      validate_active_record_instance!(accountable, "accountable")
+      validate_entry_account!(@tenant, @entry_code, account_type, account_name, accountable)
+      validate_money!(amount)
+      validate_tenant_currency!(@tenant, amount.currency)
+      validate_positive_money!(amount)
+
+      data = {
+        amount: amount,
+        currency: format_currency(amount.currency, strategy: :upcase, use_default: false),
+        accountable: accountable,
+        account_name: format_to_symbol_identifier(account_name)
+      }
+
+      collection << data
+      data
+    end
   end
 end
