@@ -19,8 +19,16 @@ module Ledgerizer
       add_entry_account(credits, :credit, account_name, accountable, amount)
     end
 
+    def add_debit(account_name:, accountable:, amount:)
+      add_entry_account(debits, :debit, account_name, accountable, amount)
+    end
+
     def credits
       @credits ||= []
+    end
+
+    def debits
+      @debits ||= []
     end
 
     private
