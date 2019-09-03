@@ -18,7 +18,7 @@ module Ledgerizer
 
     def validate_tenant_instance!(model_instance, error_prefix)
       validate_active_record_instance!(model_instance, error_prefix)
-      return true if Ledgerizer.definition.find_tenant(model_instance)
+      return true if tenant_conf(model_instance)
 
       raise_validation_error("can't find tenant for given #{model_instance.model_name} model")
     end
@@ -30,8 +30,7 @@ module Ledgerizer
     end
 
     def validate_tenant_entry!(tenant, entry_code, document)
-      tenant_definition = Ledgerizer.definition.find_tenant(tenant)
-      entry_definition = tenant_definition.find_entry(entry_code)
+      entry_definition = entry_conf(tenant, entry_code)
 
       if !entry_definition
         raise_validation_error("invalid entry code #{entry_code} for given tenant")
@@ -45,9 +44,9 @@ module Ledgerizer
     end
 
     def validate_entry_account!(tenant, entry_code, account_type, account_name, accountable)
-      tenant_definition = Ledgerizer.definition.find_tenant(tenant)
-      entry_definition = tenant_definition.find_entry(entry_code)
-      entry_account = entry_definition.send("find_#{account_type}", account_name, accountable)
+      entry_account = entry_conf(tenant, entry_code).send(
+        "find_#{account_type}", account_name, accountable
+      )
 
       if !entry_account
         raise_validation_error(
@@ -59,11 +58,38 @@ module Ledgerizer
       true
     end
 
+    def validate_tenant_currency!(tenant, currency)
+      return true if tenant_conf(tenant).currency == format_to_symbol_identifier(currency)
+
+      raise_validation_error("#{currency} is not the tenant's currency")
+    end
+
+    def validate_money!(value)
+      return true if value.is_a?(Money)
+
+      raise_validation_error("invalid money")
+    end
+
+    def validate_positive_money!(value)
+      validate_money!(value)
+      return true if value.positive?
+
+      raise_validation_error("value needs to be greater than 0")
+    end
+
     def validate_date!(value)
       value.to_date
       true
     rescue ArgumentError
       raise_validation_error("invalid date given")
+    end
+
+    def tenant_conf(tenant_identifier)
+      Ledgerizer.definition.find_tenant(tenant_identifier)
+    end
+
+    def entry_conf(tenant_identifier, entry_code)
+      tenant_conf(tenant_identifier).find_entry(entry_code)
     end
 
     def raise_validation_error(msg)

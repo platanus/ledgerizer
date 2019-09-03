@@ -214,4 +214,86 @@ RSpec.describe Ledgerizer::Validators do
       it { expect { perform }.to raise_error(/User for given deposit entry in debits/) }
     end
   end
+
+  describe "#validate_money!" do
+    let(:value) { clp(1000) }
+
+    define_test_class do
+      include Ledgerizer::Validators
+    end
+
+    def perform
+      test_class.new.validate_money!(value)
+    end
+
+    it { expect(perform).to eq(true) }
+
+    context "with nil value" do
+      let(:value) { nil }
+
+      it { expect { perform }.to raise_error("invalid money") }
+    end
+
+    context "with not money value" do
+      let(:value) { 1000 }
+
+      it { expect { perform }.to raise_error("invalid money") }
+    end
+  end
+
+  describe "#validate_positive_money!" do
+    let(:value) { clp(1000) }
+
+    define_test_class do
+      include Ledgerizer::Validators
+    end
+
+    def perform
+      test_class.new.validate_positive_money!(value)
+    end
+
+    it { expect(perform).to eq(true) }
+
+    context "with not money value" do
+      let(:value) { 1000 }
+
+      it { expect { perform }.to raise_error("invalid money") }
+    end
+
+    context "with 0 value" do
+      let(:value) { clp(0) }
+
+      it { expect { perform }.to raise_error("value needs to be greater than 0") }
+    end
+
+    context "with negative value" do
+      let(:value) { clp(-1) }
+
+      it { expect { perform }.to raise_error("value needs to be greater than 0") }
+    end
+  end
+
+  describe "#validate_tenant_currency!" do
+    let(:tenant) { create(:portfolio) }
+    let(:currency) { :clp }
+
+    define_test_class do
+      include Ledgerizer::Validators
+      include Ledgerizer::Definition::Dsl
+
+      tenant(:portfolio, currency: :clp)
+    end
+
+    def perform
+      test_class.new.validate_tenant_currency!(tenant, currency)
+    end
+
+    it { expect(perform).to eq(true) }
+
+    context "with currency not matching tenant currency" do
+      let(:currency) { :usd }
+
+      it { expect { perform }.to raise_error("usd is not the tenant's currency") }
+    end
+  end
 end
