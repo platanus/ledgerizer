@@ -3,16 +3,15 @@ module Ledgerizer
     include Ledgerizer::Validators
     include Ledgerizer::Formatters
 
+    attr_reader :executable_entry
+
     def initialize(tenant:, document:, entry_code:, entry_date:)
-      validate_tenant_instance!(tenant, "tenant")
-      @tenant = tenant
-      validate_active_record_instance!(document, "document")
-      @document = document
-      code = format_to_symbol_identifier(entry_code)
-      validate_tenant_entry!(tenant, code, document)
-      @entry_code = code
-      validate_date!(entry_date)
-      @entry_date = entry_date.to_date
+      @executable_entry = Ledgerizer::Execution::Entry.new(
+        tenant: tenant,
+        document: document,
+        entry_code: entry_code,
+        entry_date: entry_date
+      )
     end
 
     def add_credit(account_name:, accountable:, amount:)
@@ -34,21 +33,16 @@ module Ledgerizer
     private
 
     def add_entry_account(collection, account_type, account_name, accountable, amount)
-      validate_active_record_instance!(accountable, "accountable")
-      validate_entry_account!(@tenant, @entry_code, account_type, account_name, accountable)
-      validate_money!(amount)
-      validate_tenant_currency!(@tenant, amount.currency)
-      validate_positive_money!(amount)
-
-      data = {
-        amount: amount,
-        currency: format_currency(amount.currency, strategy: :upcase, use_default: false),
+      entry = Ledgerizer::Execution::EntryAccount.new(
+        executable_entry: executable_entry,
+        account_type: account_type,
+        account_name: account_name,
         accountable: accountable,
-        account_name: format_to_symbol_identifier(account_name)
-      }
+        amount: amount
+      )
 
-      collection << data
-      data
+      collection << entry
+      entry
     end
   end
 end

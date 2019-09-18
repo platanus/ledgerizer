@@ -28,27 +28,9 @@ RSpec.describe Ledgerizer::EntryExecutor do
       end
     end
 
-    it { expect(executor).to be_a(Ledgerizer::EntryExecutor) }
-
-    context "with invalid tenant" do
-      let(:tenant) { create(:user) }
-
-      it { expect { executor }.to raise_error("can't find tenant for given User model") }
-    end
-
-    context "with invalid document" do
-      let(:document) { LedgerizerTest.new }
-
-      it { expect { executor }.to raise_error("document must be an ActiveRecord model") }
-    end
-
-    context "with invalid entry_code" do
-      let(:entry_code) { :register }
-
-      it { expect { executor }.to raise_error("invalid entry code register for given tenant") }
-    end
+    it { expect(executor.executable_entry).to be_a(Ledgerizer::Execution::Entry) }
   end
 
-  it_behaves_like 'add executor entry item', :credit
-  it_behaves_like 'add executor entry item', :debit
+  it_behaves_like 'add executor entry account', :credit
+  it_behaves_like 'add executor entry account', :debit
 end
