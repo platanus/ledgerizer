@@ -15,6 +15,7 @@ shared_examples 'add entry account' do |type|
     it { expect { perform(type) }.to change { account_entries_count(type).count }.from(0).to(1) }
     it { expect(perform(type).account_name).to eq(:cash) }
     it { expect(perform(type).accountable).to eq(:user) }
+    it { expect(perform(type).movement_type).to eq(type) }
 
     context "with existent debit" do
       before { perform(type) }

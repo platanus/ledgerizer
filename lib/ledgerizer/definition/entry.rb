@@ -14,11 +14,11 @@ module Ledgerizer
       end
 
       def add_debit(account, accountable)
-        add_entry_account(debits, account, accountable)
+        add_entry_account(debits, :debit, account, accountable)
       end
 
       def add_credit(account, accountable)
-        add_entry_account(credits, account, accountable)
+        add_entry_account(credits, :credit, account, accountable)
       end
 
       def find_credit(account_name, accountable)
@@ -52,12 +52,16 @@ module Ledgerizer
         value
       end
 
-      def add_entry_account(collection, account, accountable)
+      def add_entry_account(collection, movement_type, account, accountable)
         ar_accountable = format_to_symbol_identifier(accountable)
         validate_active_record_model_name!(ar_accountable, "accountable")
         validate_unique_account!(collection, account.name, ar_accountable)
 
-        Ledgerizer::Definition::EntryAccount.new(account, ar_accountable).tap do |entry_account|
+        Ledgerizer::Definition::EntryAccount.new(
+          account: account,
+          accountable: ar_accountable,
+          movement_type: movement_type
+        ).tap do |entry_account|
           collection << entry_account
         end
       end
