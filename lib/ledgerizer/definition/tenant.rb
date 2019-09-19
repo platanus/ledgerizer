@@ -22,7 +22,7 @@ module Ledgerizer
       def add_account(name:, type:, contra: false)
         validate_unique_account!(name)
         Ledgerizer::Definition::Account.new(
-          name: name, type: type, contra: contra
+          name: name, type: type, contra: contra, base_currency: currency
         ).tap do |account|
           @accounts << account
         end

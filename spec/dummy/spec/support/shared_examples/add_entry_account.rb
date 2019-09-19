@@ -1,8 +1,11 @@
 shared_examples 'add entry account' do |type|
   describe "#add_#{type}" do
     let(:entry_code) { :deposit }
-    let(:account) { Ledgerizer::Definition::Account.new(name: :cash, type: :asset) }
     let(:accountable) { 'user' }
+
+    let(:account) do
+      Ledgerizer::Definition::Account.new(name: :cash, type: :asset, base_currency: :usd)
+    end
 
     def perform(account_entry_type)
       entry.send("add_#{account_entry_type}", account: account, accountable: accountable)
