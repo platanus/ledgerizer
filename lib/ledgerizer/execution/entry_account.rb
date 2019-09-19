@@ -3,11 +3,11 @@ module Ledgerizer
     class EntryAccount
       include Ledgerizer::Validators
       include Ledgerizer::Formatters
-      include Ledgerizer::ConfigHelpers
+      include Ledgerizer::DefinitionHelpers
 
       attr_reader :executable_entry, :amount, :currency, :accountable, :account_name, :movement_type
 
-      delegate :credit?, :debit?, :contra, to: :account_definition, prefix: false
+      delegate :credit?, :debit?, :contra, to: :account_config, prefix: false
 
       def initialize(executable_entry:, movement_type:, account_name:, accountable:, amount:)
         @executable_entry = executable_entry
@@ -53,8 +53,8 @@ module Ledgerizer
         validate_positive_money!(amount)
       end
 
-      def account_definition
-        account_conf(tenant, account_name)
+      def account_config
+        account_definition(tenant, account_name)
       end
 
       def tenant
