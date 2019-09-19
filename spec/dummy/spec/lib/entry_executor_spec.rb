@@ -1,21 +1,21 @@
 require "spec_helper"
 
 RSpec.describe Ledgerizer::EntryExecutor do
+  subject(:executor) do
+    described_class.new(
+      tenant: tenant,
+      document: document,
+      entry_code: entry_code,
+      entry_date: entry_date
+    )
+  end
+
+  let(:tenant) { create(:portfolio) }
+  let(:document) { create(:user) }
+  let(:entry_code) { :deposit }
+  let(:entry_date) { "1984-06-04" }
+
   describe '#initialize' do
-    subject(:executor) do
-      described_class.new(
-        tenant: tenant,
-        document: document,
-        entry_code: entry_code,
-        entry_date: entry_date
-      )
-    end
-
-    let(:tenant) { create(:portfolio) }
-    let(:document) { create(:user) }
-    let(:entry_code) { :deposit }
-    let(:entry_date) { "1984-06-04" }
-
     define_test_class do
       include Ledgerizer::Definition::Dsl
 

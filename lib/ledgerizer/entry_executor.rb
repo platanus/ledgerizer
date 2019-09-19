@@ -32,10 +32,10 @@ module Ledgerizer
 
     private
 
-    def add_entry_account(collection, account_type, account_name, accountable, amount)
+    def add_entry_account(collection, movement_type, account_name, accountable, amount)
       entry = Ledgerizer::Execution::EntryAccount.new(
         executable_entry: executable_entry,
-        account_type: account_type,
+        movement_type: movement_type,
         account_name: account_name,
         accountable: accountable,
         amount: amount

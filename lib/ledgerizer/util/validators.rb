@@ -3,6 +3,7 @@ require_rel './formatters'
 module Ledgerizer
   module Validators
     include Ledgerizer::Formatters
+    include Ledgerizer::ConfigHelpers
 
     def validate_active_record_model_name!(model_class_name, error_prefix)
       return true if ActiveRecord::Base.model_names.include?(model_class_name)
@@ -43,15 +44,15 @@ module Ledgerizer
       true
     end
 
-    def validate_entry_account!(tenant, entry_code, account_type, account_name, accountable)
-      entry_account = entry_conf(tenant, entry_code).send(
-        "find_#{account_type}", account_name, accountable
+    def validate_entry_account!(tenant, entry_code, mov_type, account_name, accountable)
+      entry_account = entry_account_conf(
+        tenant, entry_code, mov_type, account_name, accountable
       )
 
       if !entry_account
         raise_validation_error(
           "invalid entry account #{account_name} with accountable " +
-            "#{accountable.class} for given #{entry_code} entry in #{account_type.to_s.pluralize}"
+            "#{accountable.class} for given #{entry_code} entry in #{mov_type.to_s.pluralize}"
         )
       end
 
@@ -82,14 +83,6 @@ module Ledgerizer
       true
     rescue ArgumentError
       raise_validation_error("invalid date given")
-    end
-
-    def tenant_conf(tenant_identifier)
-      Ledgerizer.definition.find_tenant(tenant_identifier)
-    end
-
-    def entry_conf(tenant_identifier, entry_code)
-      tenant_conf(tenant_identifier).find_entry(entry_code)
     end
 
     def raise_validation_error(msg)
