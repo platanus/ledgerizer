@@ -6,26 +6,26 @@ module Ledgerizer
 
       attr_reader :code, :document
 
-      def initialize(code, document)
+      def initialize(code:, document:)
         @code = format_to_symbol_identifier(code)
         class_model_name = format_to_symbol_identifier(document)
         validate_active_record_model_name!(class_model_name, "entry's document")
         @document = class_model_name
       end
 
-      def add_debit(account, accountable)
+      def add_debit(account:, accountable:)
         add_entry_account(debits, :debit, account, accountable)
       end
 
-      def add_credit(account, accountable)
+      def add_credit(account:, accountable:)
         add_entry_account(credits, :credit, account, accountable)
       end
 
-      def find_credit(account_name, accountable)
+      def find_credit(account_name:, accountable:)
         find_entry_account(credits, account_name, accountable)
       end
 
-      def find_debit(account_name, accountable)
+      def find_debit(account_name:, accountable:)
         find_entry_account(debits, account_name, accountable)
       end
 

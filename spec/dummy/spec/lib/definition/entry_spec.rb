@@ -1,7 +1,7 @@
 require "spec_helper"
 
 RSpec.describe Ledgerizer::Definition::Entry do
-  subject(:entry) { described_class.new(code, document) }
+  subject(:entry) { described_class.new(code: code, document: document) }
 
   let(:code) { :deposit }
   let(:document) { :portfolio }

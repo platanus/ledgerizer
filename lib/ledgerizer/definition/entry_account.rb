@@ -12,9 +12,7 @@ module Ledgerizer
       def initialize(account:, accountable:, movement_type:)
         @account = account
         @movement_type = format_to_symbol_identifier(movement_type)
-        class_model_name = format_to_symbol_identifier(accountable)
-        validate_active_record_model_name!(class_model_name, "entry's accountable")
-        @accountable = class_model_name
+        @accountable = format_to_symbol_identifier(accountable)
       end
     end
   end

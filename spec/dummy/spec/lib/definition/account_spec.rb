@@ -1,7 +1,13 @@
 require "spec_helper"
 
 RSpec.describe Ledgerizer::Definition::Account do
-  subject(:account) { described_class.new(account_name, account_type, contra) }
+  subject(:account) do
+    described_class.new(
+      name: account_name,
+      type: account_type,
+      contra: contra
+    )
+  end
 
   let(:account_name) { :cash }
   let(:account_type) { :asset }

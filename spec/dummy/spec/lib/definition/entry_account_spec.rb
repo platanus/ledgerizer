@@ -9,7 +9,7 @@ RSpec.describe Ledgerizer::Definition::EntryAccount do
     )
   end
 
-  let(:account) { Ledgerizer::Definition::Account.new(:cash, :asset) }
+  let(:account) { Ledgerizer::Definition::Account.new(name: :cash, type: :asset) }
   let(:accountable) { "user" }
   let(:movement_type) { "debit" }
 
@@ -19,10 +19,4 @@ RSpec.describe Ledgerizer::Definition::EntryAccount do
   it { expect(entry_account.movement_type).to eq(:debit) }
   it { expect(entry_account.debit?).to eq(true) }
   it { expect(entry_account.credit?).to eq(false) }
-
-  context "with invalid accountable" do
-    let(:accountable) { :invalid }
-
-    it { expect { entry_account }.to raise_error(/must be an ActiveRecord model name/) }
-  end
 end

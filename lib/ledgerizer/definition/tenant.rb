@@ -6,7 +6,7 @@ module Ledgerizer
 
       attr_reader :model_class_name
 
-      def initialize(model_name, currency = nil)
+      def initialize(model_name:, currency: nil)
         model_name = format_to_symbol_identifier(model_name)
         validate_active_record_model_name!(model_name, "tenant name")
         @model_class_name = model_name
@@ -19,25 +19,27 @@ module Ledgerizer
         @currency || :usd
       end
 
-      def add_account(name, type, contra = false)
+      def add_account(name:, type:, contra: false)
         validate_unique_account!(name)
-        Ledgerizer::Definition::Account.new(name, type, contra).tap do |account|
+        Ledgerizer::Definition::Account.new(
+          name: name, type: type, contra: contra
+        ).tap do |account|
           @accounts << account
         end
       end
 
-      def add_entry(code, document)
+      def add_entry(code:, document:)
         validate_unique_entry!(code)
-        Ledgerizer::Definition::Entry.new(code, document).tap do |entry|
+        Ledgerizer::Definition::Entry.new(code: code, document: document).tap do |entry|
           @entries << entry
         end
       end
 
-      def add_debit(entry_code, account_name, accountable)
+      def add_debit(entry_code:, account_name:, accountable:)
         add_entry_account(:add_debit, entry_code, account_name, accountable)
       end
 
-      def add_credit(entry_code, account_name, accountable)
+      def add_credit(entry_code:, account_name:, accountable:)
         add_entry_account(:add_credit, entry_code, account_name, accountable)
       end
 
@@ -56,7 +58,7 @@ module Ledgerizer
         tenant_entry = find_entry(entry_code)
         validate_existent_account!(account_name)
         tenant_account = find_account(account_name)
-        tenant_entry.send(entry_method, tenant_account, accountable)
+        tenant_entry.send(entry_method, account: tenant_account, accountable: accountable)
       end
 
       def find_in_collection(collection, attribute, value)

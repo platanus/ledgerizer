@@ -1,7 +1,7 @@
 require "spec_helper"
 
 RSpec.describe Ledgerizer::Definition::Tenant do
-  subject(:tenant) { described_class.new(model_class_name, currency) }
+  subject(:tenant) { described_class.new(model_name: model_class_name, currency: currency) }
 
   let(:model_class_name) { "portfolio" }
   let(:currency) { nil }
@@ -44,7 +44,11 @@ RSpec.describe Ledgerizer::Definition::Tenant do
     let(:contra) { true }
 
     def perform
-      tenant.add_account(account_name, account_type, contra)
+      tenant.add_account(
+        name: account_name,
+        type: account_type,
+        contra: contra
+      )
     end
 
     it { expect(perform.name).to eq(account_name) }
@@ -63,7 +67,7 @@ RSpec.describe Ledgerizer::Definition::Tenant do
     let(:document) { :portfolio }
 
     def perform
-      tenant.add_entry(code, document)
+      tenant.add_entry(code: code, document: document)
     end
 
     it { expect(perform.code).to eq(code) }
@@ -86,11 +90,13 @@ RSpec.describe Ledgerizer::Definition::Tenant do
     let(:entry_code) { :deposit }
     let(:account_name) { :cash }
     let(:accountable) { 'user' }
-    let!(:entry) { tenant.add_entry(:deposit, 'user') }
-    let!(:account) { tenant.add_account(:cash, :asset) }
+    let!(:entry) { tenant.add_entry(code: :deposit, document: 'user') }
+    let!(:account) { tenant.add_account(name: :cash, type: :asset) }
 
     def perform
-      tenant.add_debit(entry_code, account_name, accountable)
+      tenant.add_debit(
+        entry_code: entry_code, account_name: account_name, accountable: accountable
+      )
     end
 
     it { expect { perform }.to change { entry.debits.count }.from(0).to(1) }

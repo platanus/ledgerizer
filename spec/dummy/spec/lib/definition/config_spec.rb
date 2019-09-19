@@ -7,7 +7,7 @@ RSpec.describe Ledgerizer::Definition::Config do
     let(:model_class_name) { "portfolio" }
 
     def perform
-      config.add_tenant(model_class_name)
+      config.add_tenant(model_class_name: model_class_name)
     end
 
     it { expect(perform.model_class_name).to eq(:portfolio) }
@@ -29,7 +29,7 @@ RSpec.describe Ledgerizer::Definition::Config do
     it { expect(perform).to be_nil }
 
     context "with existent tenant" do
-      before { config.add_tenant(:portfolio) }
+      before { config.add_tenant(model_class_name: :portfolio) }
 
       it { expect(perform).to be_a(Ledgerizer::Definition::Tenant) }
 

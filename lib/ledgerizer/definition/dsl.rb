@@ -6,7 +6,10 @@ module Ledgerizer
       class_methods do
         def tenant(model_name, currency: nil, &block)
           in_context do
-            @current_tenant = definition.add_tenant(model_name, currency)
+            @current_tenant = definition.add_tenant(
+              model_class_name: model_name,
+              currency: currency
+            )
             block&.call
           end
         ensure
@@ -21,7 +24,11 @@ module Ledgerizer
 
         def account(account_name, account_type, contra)
           in_context(account_type) do
-            @current_account = @current_tenant.add_account(account_name, account_type, contra)
+            @current_account = @current_tenant.add_account(
+              name: account_name,
+              type: account_type,
+              contra: contra
+            )
           end
         ensure
           @current_account = nil
@@ -29,7 +36,10 @@ module Ledgerizer
 
         def entry(entry_code, document: nil, &block)
           in_context do
-            @current_entry = @current_tenant.add_entry(entry_code, document)
+            @current_entry = @current_tenant.add_entry(
+              code: entry_code,
+              document: document
+            )
             block&.call
           end
         ensure
@@ -37,11 +47,19 @@ module Ledgerizer
         end
 
         def debit(account:, accountable:)
-          in_context { @current_tenant.add_debit(@current_entry.code, account, accountable) }
+          in_context do
+            @current_tenant.add_debit(
+              entry_code: @current_entry.code, account_name: account, accountable: accountable
+            )
+          end
         end
 
         def credit(account: nil, accountable: nil)
-          in_context { @current_tenant.add_credit(@current_entry.code, account, accountable) }
+          in_context do
+            @current_tenant.add_credit(
+              entry_code: @current_entry.code, account_name: account, accountable: accountable
+            )
+          end
         end
 
         def in_context(current_method = nil)
