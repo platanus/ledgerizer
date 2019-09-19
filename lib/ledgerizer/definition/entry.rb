@@ -13,35 +13,30 @@ module Ledgerizer
         @document = class_model_name
       end
 
-      def add_debit(account:, accountable:)
-        add_entry_account(debits, :debit, account, accountable)
-      end
-
-      def add_credit(account:, accountable:)
-        add_entry_account(credits, :credit, account, accountable)
-      end
-
-      def find_credit(account_name:, accountable:)
-        find_entry_account(credits, account_name, accountable)
-      end
-
-      def find_debit(account_name:, accountable:)
-        find_entry_account(debits, account_name, accountable)
-      end
-
-      def find_entry_account(collection, account_name, accountable)
-        collection.find do |entry_account|
+      def find_entry_account(movement_type:, account_name:, accountable:)
+        entry_accounts.find do |entry_account|
           entry_account.account_name == account_name &&
+            entry_account.movement_type == movement_type &&
             entry_account.accountable == infer_model_class_name(accountable)
         end
       end
 
-      def debits
-        @debits ||= []
+      def add_entry_account(movement_type:, account:, accountable:)
+        ar_accountable = format_to_symbol_identifier(accountable)
+        validate_active_record_model_name!(ar_accountable, "accountable")
+        validate_unique_account!(movement_type, account.name, ar_accountable)
+
+        Ledgerizer::Definition::EntryAccount.new(
+          account: account,
+          accountable: ar_accountable,
+          movement_type: movement_type
+        ).tap do |entry_account|
+          entry_accounts << entry_account
+        end
       end
 
-      def credits
-        @credits ||= []
+      def entry_accounts
+        @entry_accounts ||= []
       end
 
       private
@@ -52,22 +47,12 @@ module Ledgerizer
         value
       end
 
-      def add_entry_account(collection, movement_type, account, accountable)
-        ar_accountable = format_to_symbol_identifier(accountable)
-        validate_active_record_model_name!(ar_accountable, "accountable")
-        validate_unique_account!(collection, account.name, ar_accountable)
-
-        Ledgerizer::Definition::EntryAccount.new(
-          account: account,
-          accountable: ar_accountable,
-          movement_type: movement_type
-        ).tap do |entry_account|
-          collection << entry_account
-        end
-      end
-
-      def validate_unique_account!(collection, account_name, accountable)
-        if find_entry_account(collection, account_name, accountable)
+      def validate_unique_account!(movement_type, account_name, accountable)
+        if find_entry_account(
+          movement_type: movement_type,
+          account_name: account_name,
+          accountable: accountable
+        )
           raise Ledgerizer::ConfigError.new(
             "entry account #{account_name} with accountable #{accountable} already exists in tenant"
           )

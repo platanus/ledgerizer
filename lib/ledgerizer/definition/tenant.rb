@@ -35,14 +35,6 @@ module Ledgerizer
         end
       end
 
-      def add_debit(entry_code:, account_name:, accountable:)
-        add_entry_account(:add_debit, entry_code, account_name, accountable)
-      end
-
-      def add_credit(entry_code:, account_name:, accountable:)
-        add_entry_account(:add_credit, entry_code, account_name, accountable)
-      end
-
       def find_account(name)
         find_in_collection(accounts, :name, name)
       end
@@ -51,15 +43,17 @@ module Ledgerizer
         find_in_collection(entries, :code, code)
       end
 
-      private
-
-      def add_entry_account(entry_method, entry_code, account_name, accountable)
+      def add_entry_account(movement_type:, entry_code:, account_name:, accountable:)
         validate_existent_entry!(entry_code)
         tenant_entry = find_entry(entry_code)
         validate_existent_account!(account_name)
         tenant_account = find_account(account_name)
-        tenant_entry.send(entry_method, account: tenant_account, accountable: accountable)
+        tenant_entry.add_entry_account(
+          movement_type: movement_type, account: tenant_account, accountable: accountable
+        )
       end
+
+      private
 
       def find_in_collection(collection, attribute, value)
         collection.find { |item| item.send(attribute).to_s.to_sym == value }

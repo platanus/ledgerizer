@@ -68,7 +68,7 @@ shared_examples 'definition dsl entry account' do |type|
       it { expect(LedgerizerTest).to have_tenant_account_entry(:portfolio, :deposit, expected) }
     end
 
-    context "with multiple debits" do
+    context "with multiple entry accounts" do
       define_test_class do
         include Ledgerizer::Definition::Dsl
 
@@ -103,7 +103,7 @@ shared_examples 'definition dsl entry account' do |type|
       it { expect(LedgerizerTest).to have_tenant_account_entry(:portfolio, :deposit, exp_bank) }
     end
 
-    context "with debits in multiple entries" do
+    context "with entry accounts in multiple entries" do
       define_test_class do
         include Ledgerizer::Definition::Dsl
 
