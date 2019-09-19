@@ -1,5 +1,3 @@
-require_rel './formatters'
-
 module Ledgerizer
   module Validators
     include Ledgerizer::Formatters
@@ -83,6 +81,18 @@ module Ledgerizer
       true
     rescue ArgumentError
       raise_validation_error("invalid date given")
+    end
+
+    def validate_not_blank!(value, msg = nil)
+      raise_validation_error(msg || "value can't be blank") if value.blank?
+    end
+
+    def validate_account_type!(type)
+      types = Ledgerizer::Definition::Account::TYPES
+
+      if !types.include?(type.to_sym)
+        raise Ledgerizer::ConfigError.new("type must be one of these: #{types.join(', ')}")
+      end
     end
 
     def raise_validation_error(msg)

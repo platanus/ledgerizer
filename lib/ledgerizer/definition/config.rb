@@ -7,7 +7,7 @@ module Ledgerizer
       def add_tenant(model_class_name, currency = nil)
         tenant = Ledgerizer::Definition::Tenant.new(model_class_name, currency)
         validate_unique_tenant!(tenant.model_class_name)
-        @tenants << tenant
+        tenants << tenant
         tenant
       end
 
