@@ -11,8 +11,6 @@ module Ledgerizer
       TYPES = CREDIT_TYPES + DEBIT_TYPES
 
       def initialize(name:, type:, base_currency:, contra: false)
-        validate_not_blank!(name, "account name is mandatory")
-        validate_not_blank!(type, "account type is mandatory")
         validate_account_type!(type)
         @name = format_to_symbol_identifier(name)
         @type = format_to_symbol_identifier(type)
@@ -26,6 +24,14 @@ module Ledgerizer
 
       def debit?
         DEBIT_TYPES.include?(type)
+      end
+
+      private
+
+      def validate_account_type!(type)
+        if !TYPES.include?(type.to_sym)
+          raise Ledgerizer::ConfigError.new("type must be one of these: #{TYPES.join(', ')}")
+        end
       end
     end
   end

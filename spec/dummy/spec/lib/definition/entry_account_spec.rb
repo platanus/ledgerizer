@@ -12,9 +12,12 @@ RSpec.describe Ledgerizer::Definition::EntryAccount do
   let(:accountable) { "user" }
   let(:movement_type) { "debit" }
   let(:base_currency) { "usd" }
+  let(:contra) { "1" }
 
   let(:account) do
-    Ledgerizer::Definition::Account.new(name: :cash, type: :asset, base_currency: base_currency)
+    Ledgerizer::Definition::Account.new(
+      name: :cash, type: :asset, base_currency: base_currency, contra: contra
+    )
   end
 
   it { expect(entry_account.account).to eq(account) }
@@ -22,6 +25,7 @@ RSpec.describe Ledgerizer::Definition::EntryAccount do
   it { expect(entry_account.accountable).to eq(:user) }
   it { expect(entry_account.movement_type).to eq(:debit) }
   it { expect(entry_account.base_currency).to eq(:usd) }
+  it { expect(entry_account.contra).to eq(true) }
   it { expect(entry_account.debit?).to eq(true) }
   it { expect(entry_account.credit?).to eq(false) }
 end

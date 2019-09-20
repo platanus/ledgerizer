@@ -28,16 +28,10 @@ RSpec.describe Ledgerizer::Definition::Account do
     it { expect(account.name).to eq(account_name.to_sym) }
   end
 
-  context "with blank name" do
-    let(:account_name) { "" }
-
-    it { expect { account }.to raise_error('account name is mandatory') }
-  end
-
   context "with blank type" do
     let(:account_type) { "" }
 
-    it { expect { account }.to raise_error('account type is mandatory') }
+    it { expect { account }.to raise_error(/type must be one of these/) }
   end
 
   context "with invalid type" do

@@ -7,7 +7,7 @@ module Ledgerizer
       attr_reader :account, :accountable, :movement_type
 
       delegate :name, to: :account, prefix: true
-      delegate :credit?, :debit?, :base_currency, to: :account, prefix: false
+      delegate :credit?, :debit?, :contra, :base_currency, to: :account, prefix: false
 
       def initialize(account:, accountable:, movement_type:)
         @account = account

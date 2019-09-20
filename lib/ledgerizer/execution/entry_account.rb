@@ -3,27 +3,19 @@ module Ledgerizer
     class EntryAccount
       include Ledgerizer::Validators
       include Ledgerizer::Formatters
-      include Ledgerizer::DefinitionHelpers
 
-      attr_reader :executable_entry, :amount, :currency, :accountable, :account_name, :movement_type
+      attr_reader :accountable, :amount
 
-      delegate :credit?, :debit?, :contra, to: :account_config, prefix: false
+      delegate :credit?, :debit?, :contra, :base_currency, :movement_type, :account_name,
+               to: :entry_account_definition, prefix: false
 
-      def initialize(executable_entry:, movement_type:, account_name:, accountable:, amount:)
-        @executable_entry = executable_entry
+      def initialize(entry_account_definition:, accountable:, amount:)
+        @entry_account_definition = entry_account_definition
+        validate_amount!(amount)
 
-        validate_input!(
-          movement_type: movement_type,
-          account_name: account_name,
-          accountable: accountable,
-          amount: amount
-        )
-
-        @movement_type = movement_type
         @amount = amount
         @currency = format_currency(amount.currency, strategy: :upcase, use_default: false)
         @accountable = accountable
-        @account_name = format_to_symbol_identifier(account_name)
       end
 
       def signed_amount
@@ -45,24 +37,18 @@ module Ledgerizer
 
       private
 
-      def validate_input!(movement_type:, account_name:, accountable:, amount:)
-        validate_active_record_instance!(accountable, "accountable")
-        validate_entry_account!(tenant, entry_code, movement_type, account_name, accountable)
+      attr_reader :entry_account_definition
+
+      def validate_amount!(amount)
         validate_money!(amount)
-        validate_tenant_currency!(tenant, amount.currency)
+        validate_account_currency!(amount.currency)
         validate_positive_money!(amount)
       end
 
-      def account_config
-        account_definition(tenant, account_name)
-      end
-
-      def tenant
-        executable_entry.tenant
-      end
-
-      def entry_code
-        executable_entry.entry_code
+      def validate_account_currency!(currency)
+        if base_currency != format_to_symbol_identifier(currency)
+          raise_validation_error("#{currency} is not the account's currency")
+        end
       end
     end
   end
