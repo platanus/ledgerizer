@@ -7,7 +7,7 @@ module Ledgerizer
         def tenant(model_name, currency: nil, &block)
           in_context do
             @current_tenant = definition.add_tenant(
-              model_class_name: model_name,
+              model_name: model_name,
               currency: currency
             )
             block&.call

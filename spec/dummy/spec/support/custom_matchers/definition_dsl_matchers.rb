@@ -1,24 +1,24 @@
-RSpec::Matchers.define :have_tenant do |model_class_name|
+RSpec::Matchers.define :have_tenant do |model_name|
   match do |dsl_holder|
-    dsl_holder&.definition&.find_tenant(model_class_name)&.model_class_name == model_class_name
+    dsl_holder&.definition&.find_tenant(model_name)&.model_name == model_name
   end
 
   description do
-    "include #{model_class_name} tenant"
+    "include #{model_name} tenant"
   end
 
   failure_message do |dsl_holder|
-    "#{dsl_holder} does not include #{model_class_name} tenant"
+    "#{dsl_holder} does not include #{model_name} tenant"
   end
 end
 
-RSpec::Matchers.define :have_tenant_base_currency do |model_class_name, expected_currency|
+RSpec::Matchers.define :have_tenant_base_currency do |model_name, expected_currency|
   match do |dsl_holder|
-    dsl_holder&.definition&.find_tenant(model_class_name)&.currency == expected_currency
+    dsl_holder&.definition&.find_tenant(model_name)&.currency == expected_currency
   end
 
   description do
-    "include #{expected_currency} in #{model_class_name} tenant"
+    "include #{expected_currency} in #{model_name} tenant"
   end
 
   failure_message do
@@ -27,16 +27,16 @@ RSpec::Matchers.define :have_tenant_base_currency do |model_class_name, expected
 end
 
 RSpec::Matchers.define :have_tenant_account do
-  |model_class_name, account_name, account_type, contra = false|
+  |model_name, account_name, account_type, contra = false|
   match do |dsl_holder|
-    account = dsl_holder&.definition&.find_tenant(model_class_name)&.find_account(account_name)
+    account = dsl_holder&.definition&.find_tenant(model_name)&.find_account(account_name)
     account && account.type == account_type &&
       account.name == account_name &&
       account.contra == contra
   end
 
   description do
-    "include #{account_type} in #{model_class_name} with name #{account_name}"
+    "include #{account_type} in #{model_name} with name #{account_name}"
   end
 
   failure_message do

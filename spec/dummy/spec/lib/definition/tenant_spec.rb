@@ -1,24 +1,24 @@
 require "spec_helper"
 
 RSpec.describe Ledgerizer::Definition::Tenant do
-  subject(:tenant) { described_class.new(model_name: model_class_name, currency: currency) }
+  subject(:tenant) { described_class.new(model_name: model_name, currency: currency) }
 
-  let(:model_class_name) { "portfolio" }
+  let(:model_name) { "portfolio" }
   let(:currency) { nil }
 
-  describe "#model_class_name" do
-    it { expect(tenant.model_class_name).to eq(:portfolio) }
+  describe "#model_name" do
+    it { expect(tenant.model_name).to eq(:portfolio) }
 
     context "with symbol model name" do
-      let(:model_class_name) { :portfolio }
+      let(:model_name) { :portfolio }
 
-      it { expect(tenant.model_class_name).to eq(:portfolio) }
+      it { expect(tenant.model_name).to eq(:portfolio) }
     end
 
     context "with camel model name" do
-      let(:model_class_name) { "Portfolio" }
+      let(:model_name) { "Portfolio" }
 
-      it { expect(tenant.model_class_name).to eq(:portfolio) }
+      it { expect(tenant.model_name).to eq(:portfolio) }
     end
   end
 

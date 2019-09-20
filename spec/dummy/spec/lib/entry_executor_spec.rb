@@ -20,7 +20,7 @@ RSpec.describe Ledgerizer::EntryExecutor do
   let(:entry_code) { :deposit }
   let(:entry_code_param) { entry_code }
   let(:entry_date) { "1984-06-04" }
-  let!(:tenant_definition) { config.add_tenant(model_class_name: tenant, currency: nil) }
+  let!(:tenant_definition) { config.add_tenant(model_name: tenant, currency: nil) }
   let!(:entry_definition) { tenant_definition.add_entry(code: entry_code, document: :user) }
 
   context "with non AR tenant" do

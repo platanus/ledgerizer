@@ -4,12 +4,12 @@ module Ledgerizer
       include Ledgerizer::Validators
       include Ledgerizer::Formatters
 
-      attr_reader :model_class_name
+      attr_reader :model_name
 
       def initialize(model_name:, currency: nil)
         model_name = format_to_symbol_identifier(model_name)
         validate_active_record_model_name!(model_name, "tenant name")
-        @model_class_name = model_name
+        @model_name = model_name
         formatted_currency = format_currency(currency)
         validate_currency!(formatted_currency)
         @currency = formatted_currency

@@ -2,8 +2,8 @@ module Ledgerizer
   module Validators
     include Ledgerizer::Formatters
 
-    def validate_active_record_model_name!(model_class_name, error_prefix)
-      return true if ActiveRecord::Base.model_names.include?(model_class_name)
+    def validate_active_record_model_name!(model_name, error_prefix)
+      return true if ActiveRecord::Base.model_names.include?(model_name)
 
       raise_validation_error("#{error_prefix} must be an ActiveRecord model name")
     end

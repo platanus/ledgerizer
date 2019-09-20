@@ -8,16 +8,16 @@ module Ledgerizer
 
       def initialize(code:, document:)
         @code = format_to_symbol_identifier(code)
-        class_model_name = format_to_symbol_identifier(document)
-        validate_active_record_model_name!(class_model_name, "entry's document")
-        @document = class_model_name
+        document_model_name = format_to_symbol_identifier(document)
+        validate_active_record_model_name!(document_model_name, "entry's document")
+        @document = document_model_name
       end
 
       def find_movement(movement_type:, account_name:, accountable:)
         movements.find do |movement|
           movement.account_name == account_name &&
             movement.movement_type == movement_type &&
-            movement.accountable == infer_model_class_name(accountable)
+            movement.accountable == infer_model_name(accountable)
         end
       end
 
@@ -41,7 +41,7 @@ module Ledgerizer
 
       private
 
-      def infer_model_class_name(value)
+      def infer_model_name(value)
         return format_model_to_sym(value) if value.is_a?(ActiveRecord::Base)
 
         value
