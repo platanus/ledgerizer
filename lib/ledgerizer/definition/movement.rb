@@ -1,6 +1,6 @@
 module Ledgerizer
   module Definition
-    class EntryAccount
+    class Movement
       include Ledgerizer::Validators
       include Ledgerizer::Formatters
 

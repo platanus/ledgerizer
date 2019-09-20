@@ -62,8 +62,8 @@ end
 RSpec::Matchers.define :have_tenant_account_entry do |tenant_class, entry_code, expected|
   match do |dsl_holder|
     entry = dsl_holder&.definition&.find_tenant(tenant_class)&.find_entry(entry_code)
-    entry&.find_entry_account(
-      movement_type: expected[:entry_account_type],
+    entry&.find_movement(
+      movement_type: expected[:movement_type],
       account_name: expected[:account],
       accountable: expected[:accountable]
     )

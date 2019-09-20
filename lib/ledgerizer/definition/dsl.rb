@@ -48,7 +48,7 @@ module Ledgerizer
 
         def debit(account:, accountable:)
           in_context do
-            @current_tenant.add_entry_account(
+            @current_tenant.add_movement(
               movement_type: :debit,
               entry_code: @current_entry.code,
               account_name: account,
@@ -59,7 +59,7 @@ module Ledgerizer
 
         def credit(account: nil, accountable: nil)
           in_context do
-            @current_tenant.add_entry_account(
+            @current_tenant.add_movement(
               movement_type: :credit,
               entry_code: @current_entry.code,
               account_name: account,

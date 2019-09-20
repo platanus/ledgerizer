@@ -41,7 +41,7 @@ RSpec.describe Ledgerizer::EntryExecutor do
     it { expect { executor }.to raise_error("invalid entry code register for given tenant") }
   end
 
-  describe "#add_entry_account" do
+  describe "#add_movement" do
     let(:movement_type) { :debit }
     let(:account_name) { :cash }
     let(:account_type) { :asset }
@@ -61,8 +61,8 @@ RSpec.describe Ledgerizer::EntryExecutor do
       )
     end
 
-    let!(:entry_account_definition) do
-      entry_definition.add_entry_account(
+    let!(:movement_definition) do
+      entry_definition.add_movement(
         movement_type: movement_type,
         account: account_definition,
         accountable: accountable
@@ -70,7 +70,7 @@ RSpec.describe Ledgerizer::EntryExecutor do
     end
 
     def perform
-      executor.add_entry_account(
+      executor.add_movement(
         movement_type: movement_type,
         account_name: account_name,
         accountable: accountable_instance,
@@ -78,6 +78,6 @@ RSpec.describe Ledgerizer::EntryExecutor do
       )
     end
 
-    it { expect(perform).to be_a(Ledgerizer::Execution::EntryAccount) }
+    it { expect(perform).to be_a(Ledgerizer::Execution::Movement) }
   end
 end

@@ -21,7 +21,7 @@ RSpec.describe Ledgerizer::Definition::Entry do
     it { expect { entry }.to raise_error(/must be an ActiveRecord model name/) }
   end
 
-  describe "#add_entry_account" do
+  describe "#add_movement" do
     let(:entry_code) { :deposit }
     let(:accountable) { 'user' }
     let(:movement_type) { :debit }
@@ -31,16 +31,16 @@ RSpec.describe Ledgerizer::Definition::Entry do
     end
 
     def perform
-      entry.add_entry_account(
+      entry.add_movement(
         movement_type: movement_type, account: account, accountable: accountable
       )
     end
 
     def account_entries_count
-      entry.entry_accounts
+      entry.movements
     end
 
-    it { expect { perform }.to change { entry.entry_accounts.count }.from(0).to(1) }
+    it { expect { perform }.to change { entry.movements.count }.from(0).to(1) }
     it { expect(perform.account_name).to eq(:cash) }
     it { expect(perform.accountable).to eq(:user) }
     it { expect(perform.movement_type).to eq(movement_type) }

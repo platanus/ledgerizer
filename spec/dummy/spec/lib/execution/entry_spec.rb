@@ -39,7 +39,7 @@ RSpec.describe Ledgerizer::Execution::Entry do
     it { expect { execution_entry }.to raise_error("invalid date given") }
   end
 
-  describe "#add_entry_account" do
+  describe "#add_movement" do
     let(:movement_type) { :debit }
     let(:account_name) { :cash }
     let(:account_type) { :asset }
@@ -59,7 +59,7 @@ RSpec.describe Ledgerizer::Execution::Entry do
     end
 
     def perform
-      execution_entry.add_entry_account(
+      execution_entry.add_movement(
         movement_type: movement_type,
         account_name: account_name,
         accountable: accountable_instance,
@@ -67,24 +67,24 @@ RSpec.describe Ledgerizer::Execution::Entry do
       )
     end
 
-    context "with no definition entry account" do
+    context "with no definition movement" do
       let(:error_msg) do
-        'invalid entry account cash with accountable User for given deposit entry in debits'
+        'invalid movement cash with accountable User for given deposit entry in debits'
       end
 
       it { expect { perform }.to raise_error(error_msg) }
     end
 
-    context "with existent definition entry account" do
+    context "with existent definition movement" do
       before do
-        entry_definition.add_entry_account(
+        entry_definition.add_movement(
           movement_type: movement_type,
           account: account,
           accountable: accountable
         )
       end
 
-      it { expect { perform }.to change { execution_entry.entry_accounts.count }.from(0).to(1) }
+      it { expect { perform }.to change { execution_entry.movements.count }.from(0).to(1) }
 
       context "with non AR document" do
         let(:accountable_instance) { LedgerizerTest.new }

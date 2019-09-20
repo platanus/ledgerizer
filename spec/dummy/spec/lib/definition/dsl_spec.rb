@@ -114,6 +114,6 @@ RSpec.describe Ledgerizer::Definition::Dsl do
   it_behaves_like 'definition dsl account', :income
   it_behaves_like 'definition dsl account', :equity
 
-  it_behaves_like 'definition dsl entry account', :debit
-  it_behaves_like 'definition dsl entry account', :credit
+  it_behaves_like 'definition dsl movement', :debit
+  it_behaves_like 'definition dsl movement', :credit
 end

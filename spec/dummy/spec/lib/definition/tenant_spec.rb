@@ -86,7 +86,7 @@ RSpec.describe Ledgerizer::Definition::Tenant do
     end
   end
 
-  describe "#add_entry_account" do
+  describe "#add_movement" do
     let(:entry_code) { :deposit }
     let(:account_name) { :cash }
     let(:movement_type) { :debit }
@@ -95,7 +95,7 @@ RSpec.describe Ledgerizer::Definition::Tenant do
     let!(:account) { tenant.add_account(name: :cash, type: :asset) }
 
     def perform
-      tenant.add_entry_account(
+      tenant.add_movement(
         movement_type: movement_type,
         entry_code: entry_code,
         account_name: account_name,
@@ -103,7 +103,7 @@ RSpec.describe Ledgerizer::Definition::Tenant do
       )
     end
 
-    it { expect { perform }.to change { entry.entry_accounts.count }.from(0).to(1) }
+    it { expect { perform }.to change { entry.movements.count }.from(0).to(1) }
     it { expect(perform.account_name).to eq(:cash) }
     it { expect(perform.accountable).to eq(:user) }
 

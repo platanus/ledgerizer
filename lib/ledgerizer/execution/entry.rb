@@ -14,20 +14,20 @@ module Ledgerizer
         @entry_date = entry_date.to_date
       end
 
-      def add_entry_account(movement_type:, account_name:, accountable:, amount:)
-        entry_account_def = get_entry_account_definition!(movement_type, account_name, accountable)
-        entry = Ledgerizer::Execution::EntryAccount.new(
-          entry_account_definition: entry_account_def,
+      def add_movement(movement_type:, account_name:, accountable:, amount:)
+        movement_definition = get_movement_definition!(movement_type, account_name, accountable)
+        entry = Ledgerizer::Execution::Movement.new(
+          movement_definition: movement_definition,
           accountable: accountable,
           amount: amount
         )
 
-        entry_accounts << entry
+        movements << entry
         entry
       end
 
-      def entry_accounts
-        @entry_accounts ||= []
+      def movements
+        @movements ||= []
       end
 
       private
@@ -44,17 +44,17 @@ module Ledgerizer
         end
       end
 
-      def get_entry_account_definition!(movement_type, account_name, accountable)
+      def get_movement_definition!(movement_type, account_name, accountable)
         validate_active_record_instance!(accountable, "accountable")
-        entry_account_def = entry_definition.find_entry_account(
+        movement_definition = entry_definition.find_movement(
           movement_type: movement_type,
           account_name: account_name,
           accountable: accountable
         )
-        return entry_account_def if entry_account_def
+        return movement_definition if movement_definition
 
         raise_validation_error(
-          "invalid entry account #{account_name} with accountable " +
+          "invalid movement #{account_name} with accountable " +
             "#{accountable.class} for given #{entry_definition.code} " +
             "entry in #{movement_type.to_s.pluralize}"
         )

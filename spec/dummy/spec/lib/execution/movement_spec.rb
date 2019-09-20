@@ -1,16 +1,16 @@
 require "spec_helper"
 
-describe Ledgerizer::Execution::EntryAccount do
-  subject(:entry_account) do
+describe Ledgerizer::Execution::Movement do
+  subject(:movement) do
     described_class.new(
-      entry_account_definition: entry_account_definition,
+      movement_definition: movement_definition,
       accountable: accountable_instance,
       amount: amount
     )
   end
 
-  let(:entry_account_definition) do
-    Ledgerizer::Definition::EntryAccount.new(
+  let(:movement_definition) do
+    Ledgerizer::Definition::Movement.new(
       account: account_definition,
       accountable: accountable,
       movement_type: movement_type
@@ -38,30 +38,30 @@ describe Ledgerizer::Execution::EntryAccount do
   context "with amount with currency that is not the tenant's currency" do
     let(:amount) { usd(1000) }
 
-    it { expect { entry_account }.to raise_error("USD is not the account's currency") }
+    it { expect { movement }.to raise_error("USD is not the account's currency") }
   end
 
   context "with not money amount" do
     let(:amount) { 1000 }
 
-    it { expect { entry_account }.to raise_error("invalid money") }
+    it { expect { movement }.to raise_error("invalid money") }
   end
 
   context "with negative money amount" do
     let(:amount) { -clp(1) }
 
-    it { expect { entry_account }.to raise_error("value needs to be greater than 0") }
+    it { expect { movement }.to raise_error("value needs to be greater than 0") }
   end
 
   context "with zero money amount" do
     let(:amount) { clp(0) }
 
-    it { expect { entry_account }.to raise_error("value needs to be greater than 0") }
+    it { expect { movement }.to raise_error("value needs to be greater than 0") }
   end
   
   describe "signed_amount" do
     def perform
-      entry_account.signed_amount
+      movement.signed_amount
     end
 
     context "with debit movement type" do

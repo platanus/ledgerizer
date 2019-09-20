@@ -1,16 +1,16 @@
 module Ledgerizer
   module Execution
-    class EntryAccount
+    class Movement
       include Ledgerizer::Validators
       include Ledgerizer::Formatters
 
       attr_reader :accountable, :amount
 
       delegate :credit?, :debit?, :contra, :base_currency, :movement_type, :account_name,
-               to: :entry_account_definition, prefix: false
+               to: :movement_definition, prefix: false
 
-      def initialize(entry_account_definition:, accountable:, amount:)
-        @entry_account_definition = entry_account_definition
+      def initialize(movement_definition:, accountable:, amount:)
+        @movement_definition = movement_definition
         validate_amount!(amount)
 
         @amount = amount
@@ -37,7 +37,7 @@ module Ledgerizer
 
       private
 
-      attr_reader :entry_account_definition
+      attr_reader :movement_definition
 
       def validate_amount!(amount)
         validate_money!(amount)

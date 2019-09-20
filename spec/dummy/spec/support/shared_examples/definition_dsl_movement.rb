@@ -1,4 +1,4 @@
-shared_examples 'definition dsl entry account' do |type|
+shared_examples 'definition dsl movement' do |type|
   describe "##{type}" do
     it "raises error with no tenant" do
       expect_error_in_class_definition("'#{type}' needs to run inside 'entry' block") do
@@ -59,7 +59,7 @@ shared_examples 'definition dsl entry account' do |type|
 
       let(:expected) do
         {
-          entry_account_type: type,
+          movement_type: type,
           account: :cash,
           accountable: :user
         }
@@ -68,7 +68,7 @@ shared_examples 'definition dsl entry account' do |type|
       it { expect(LedgerizerTest).to have_tenant_account_entry(:portfolio, :deposit, expected) }
     end
 
-    context "with multiple entry accounts" do
+    context "with multiple movements" do
       define_test_class do
         include Ledgerizer::Definition::Dsl
 
@@ -85,7 +85,7 @@ shared_examples 'definition dsl entry account' do |type|
 
       let(:exp_cash) do
         {
-          entry_account_type: type,
+          movement_type: type,
           account: :cash,
           accountable: :user
         }
@@ -93,7 +93,7 @@ shared_examples 'definition dsl entry account' do |type|
 
       let(:exp_bank) do
         {
-          entry_account_type: type,
+          movement_type: type,
           account: :bank,
           accountable: :user
         }
@@ -103,7 +103,7 @@ shared_examples 'definition dsl entry account' do |type|
       it { expect(LedgerizerTest).to have_tenant_account_entry(:portfolio, :deposit, exp_bank) }
     end
 
-    context "with entry accounts in multiple entries" do
+    context "with movements in multiple entries" do
       define_test_class do
         include Ledgerizer::Definition::Dsl
 
@@ -124,7 +124,7 @@ shared_examples 'definition dsl entry account' do |type|
 
       let(:exp_cash) do
         {
-          entry_account_type: type,
+          movement_type: type,
           account: :cash,
           accountable: :user
         }
@@ -132,7 +132,7 @@ shared_examples 'definition dsl entry account' do |type|
 
       let(:exp_bank) do
         {
-          entry_account_type: type,
+          movement_type: type,
           account: :bank,
           accountable: :user
         }
@@ -140,7 +140,7 @@ shared_examples 'definition dsl entry account' do |type|
 
       let(:exp_cash1) do
         {
-          entry_account_type: type,
+          movement_type: type,
           account: :cash,
           accountable: :user
         }

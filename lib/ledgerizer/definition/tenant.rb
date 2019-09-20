@@ -43,12 +43,12 @@ module Ledgerizer
         find_in_collection(entries, :code, code)
       end
 
-      def add_entry_account(movement_type:, entry_code:, account_name:, accountable:)
+      def add_movement(movement_type:, entry_code:, account_name:, accountable:)
         validate_existent_entry!(entry_code)
         tenant_entry = find_entry(entry_code)
         validate_existent_account!(account_name)
         tenant_account = find_account(account_name)
-        tenant_entry.add_entry_account(
+        tenant_entry.add_movement(
           movement_type: movement_type, account: tenant_account, accountable: accountable
         )
       end
