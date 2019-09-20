@@ -2,7 +2,8 @@ require "spec_helper"
 
 RSpec.describe Ledgerizer::Execution::Entry do
   subject(:execution_entry) do
-    described_class.new(
+    build(
+      :executable_entry,
       entry_definition: entry_definition,
       document: document_instance,
       entry_date: entry_date
@@ -10,7 +11,7 @@ RSpec.describe Ledgerizer::Execution::Entry do
   end
 
   let(:entry_definition) do
-    Ledgerizer::Definition::Entry.new(code: entry_code, document: document)
+    build(:entry_definition, code: entry_code, document: document)
   end
 
   let(:document) { :user }
@@ -50,7 +51,8 @@ RSpec.describe Ledgerizer::Execution::Entry do
     let(:contra) { false }
 
     let(:account) do
-      Ledgerizer::Definition::Account.new(
+      build(
+        :account_definition,
         name: account_name,
         type: account_type,
         base_currency: base_currency,

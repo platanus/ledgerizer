@@ -53,7 +53,8 @@ RSpec.describe Ledgerizer::EntryExecutor do
     let(:executable_entry) { double }
 
     let(:account_definition) do
-      Ledgerizer::Definition::Account.new(
+      build(
+        :account_definition,
         name: account_name,
         type: account_type,
         base_currency: base_currency,

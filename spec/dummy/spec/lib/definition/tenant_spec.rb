@@ -1,7 +1,7 @@
 require "spec_helper"
 
 RSpec.describe Ledgerizer::Definition::Tenant do
-  subject(:tenant) { described_class.new(model_name: model_name, currency: currency) }
+  subject(:tenant) { build(:tenant_definition, model_name: model_name, currency: currency) }
 
   let(:model_name) { "portfolio" }
   let(:currency) { nil }

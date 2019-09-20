@@ -26,15 +26,6 @@ module Ledgerizer
         end
       end
 
-      def to_hash
-        {
-          amount: amount,
-          currency: currency,
-          accountable: accountable,
-          account_name: account_name
-        }
-      end
-
       private
 
       attr_reader :movement_definition
