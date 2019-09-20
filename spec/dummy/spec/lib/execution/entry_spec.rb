@@ -101,4 +101,163 @@ RSpec.describe Ledgerizer::Execution::Entry do
       end
     end
   end
+
+  describe "#zero_trial_balance?" do
+    let(:movements) { [] }
+
+    def perform
+      execution_entry.zero_trial_balance?
+    end
+
+    before do
+      movements.each do |movement|
+        execution_entry.movements << movement
+      end
+    end
+
+    it { expect(perform).to eq(true) }
+
+    context "with debit and credit accounts" do
+      let(:m1) do
+        build(
+          :executable_movement,
+          amount: clp(1),
+          movement_def: {
+            movement_type: :debit,
+            account_def: {
+              type: :asset
+            }
+          }
+        )
+      end
+
+      let(:m2) do
+        build(
+          :executable_movement,
+          amount: clp(1),
+          movement_def: {
+            movement_type: :credit,
+            account_def: {
+              type: :liability
+            }
+          }
+        )
+      end
+
+      let(:movements) { [m1, m2] }
+
+      it { expect(perform).to eq(true) }
+    end
+
+    context "with contra account" do
+      let(:m1) do
+        build(
+          :executable_movement,
+          amount: clp(1),
+          movement_def: {
+            movement_type: :debit,
+            account_def: {
+              type: :asset
+            }
+          }
+        )
+      end
+
+      let(:m2) do
+        build(
+          :executable_movement,
+          amount: clp(1),
+          movement_def: {
+            movement_type: :debit,
+            account_def: {
+              type: :asset,
+              contra: true
+            }
+          }
+        )
+      end
+
+      let(:movements) { [m1, m2] }
+
+      it { expect(perform).to eq(true) }
+    end
+
+    context "with multiple accounts" do
+      let(:m1) do
+        build(
+          :executable_movement,
+          amount: clp(10),
+          movement_def: {
+            movement_type: :debit,
+            account_def: {
+              type: :asset
+            }
+          }
+        )
+      end
+
+      let(:m2) do
+        build(
+          :executable_movement,
+          amount: clp(7),
+          movement_def: {
+            movement_type: :debit,
+            account_def: {
+              type: :asset,
+              contra: true
+            }
+          }
+        )
+      end
+
+      let(:m3) do
+        build(
+          :executable_movement,
+          amount: clp(3),
+          movement_def: {
+            movement_type: :credit,
+            account_def: {
+              type: :liability
+            }
+          }
+        )
+      end
+
+      let(:movements) { [m1, m2, m3] }
+
+      it { expect(perform).to eq(true) }
+    end
+
+    context "when sum is not zero" do
+      let(:m1) do
+        build(
+          :executable_movement,
+          amount: clp(1),
+          movement_def: {
+            movement_type: :debit,
+            account_def: {
+              type: :asset
+            }
+          }
+        )
+      end
+
+      let(:m2) do
+        build(
+          :executable_movement,
+          amount: clp(7),
+          movement_def: {
+            movement_type: :credit,
+            account_def: {
+              type: :liability
+            }
+          }
+        )
+      end
+
+      let(:movements) { [m1, m2] }
+
+      it { expect(perform).to eq(false) }
+    end
+  end
 end

@@ -26,6 +26,15 @@ module Ledgerizer
         entry
       end
 
+      def zero_trial_balance?
+        movements.inject(0) do |sum, movement|
+          amount = movement.signed_amount
+          amount = -amount if movement.credit?
+          sum += amount
+          sum
+        end.zero?
+      end
+
       def movements
         @movements ||= []
       end
