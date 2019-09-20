@@ -38,9 +38,7 @@ module Ledgerizer
         validate_active_record_instance!(document, "document")
 
         if format_model_to_sym(document) != entry_definition.document
-          raise_validation_error(
-            "invalid document #{document.class} for given #{entry_definition.code} entry"
-          )
+          raise_error("invalid document #{document.class} for given #{entry_definition.code} entry")
         end
       end
 
@@ -53,7 +51,7 @@ module Ledgerizer
         )
         return movement_definition if movement_definition
 
-        raise_validation_error(
+        raise_error(
           "invalid movement #{account_name} with accountable " +
             "#{accountable.class} for given #{entry_definition.code} " +
             "entry in #{movement_type.to_s.pluralize}"

@@ -53,7 +53,7 @@ module Ledgerizer
           account_name: account_name,
           accountable: accountable
         )
-          raise Ledgerizer::ConfigError.new(
+          raise_config_error(
             "movement #{account_name} with accountable #{accountable} already exists in tenant"
           )
         end

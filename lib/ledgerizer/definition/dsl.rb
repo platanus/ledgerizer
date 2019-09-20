@@ -4,6 +4,8 @@ module Ledgerizer
       extend ActiveSupport::Concern
 
       class_methods do
+        include Ledgerizer::Errors
+
         def tenant(model_name, currency: nil, &block)
           in_context do
             @current_tenant = definition.add_tenant(
@@ -81,9 +83,13 @@ module Ledgerizer
 
           if current_context != dependencies
             if dependencies.any?
-              raise_error("'#{current_method}' needs to run inside '#{dependencies.last}' block")
+              raise_dsl_definition_error(
+                "'#{current_method}' needs to run inside '#{dependencies.last}' block"
+              )
             else
-              raise_error("'#{current_method}' can't run inside '#{current_context.last}' block")
+              raise_dsl_definition_error(
+                "'#{current_method}' can't run inside '#{current_context.last}' block"
+              )
             end
           end
         end
@@ -104,10 +110,6 @@ module Ledgerizer
 
         def current_context
           @current_context ||= []
-        end
-
-        def raise_error(msg)
-          raise Ledgerizer::DslError.new(msg)
         end
 
         def definition

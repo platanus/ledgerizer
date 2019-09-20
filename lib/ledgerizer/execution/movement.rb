@@ -47,7 +47,7 @@ module Ledgerizer
 
       def validate_account_currency!(currency)
         if base_currency != format_to_symbol_identifier(currency)
-          raise_validation_error("#{currency} is not the account's currency")
+          raise_error("#{currency} is not the account's currency")
         end
       end
     end

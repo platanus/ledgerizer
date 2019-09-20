@@ -30,7 +30,7 @@ module Ledgerizer
       tenant_definition = config.find_tenant(tenant)
       return tenant_definition if tenant_definition
 
-      raise_validation_error("can't find tenant for given #{tenant.model_name} model")
+      raise_error("can't find tenant for given #{tenant.model_name} model")
     end
 
     def get_entry_definition!(tenant_definition, entry_code)
@@ -38,7 +38,7 @@ module Ledgerizer
       entry_definition = tenant_definition.find_entry(code)
       return entry_definition if entry_definition
 
-      raise_validation_error("invalid entry code #{entry_code} for given tenant")
+      raise_error("invalid entry code #{entry_code} for given tenant")
     end
   end
 end

@@ -30,7 +30,7 @@ module Ledgerizer
 
       def validate_account_type!(type)
         if !TYPES.include?(type.to_sym)
-          raise Ledgerizer::ConfigError.new("type must be one of these: #{TYPES.join(', ')}")
+          raise_config_error("type must be one of these: #{TYPES.join(', ')}")
         end
       end
     end

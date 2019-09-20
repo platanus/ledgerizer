@@ -31,9 +31,7 @@ module Ledgerizer
       end
 
       def validate_unique_tenant!(model_name)
-        if find_tenant(model_name)
-          raise Ledgerizer::ConfigError.new('the tenant already exists')
-        end
+        raise_config_error('the tenant already exists') if find_tenant(model_name)
       end
     end
   end

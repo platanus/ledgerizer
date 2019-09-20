@@ -68,35 +68,21 @@ module Ledgerizer
       end
 
       def validate_existent_account!(name)
-        if !find_account(name)
-          raise Ledgerizer::ConfigError.new(
-            "the #{name} account does not exist in tenant"
-          )
-        end
+        raise_config_error("the #{name} account does not exist in tenant") unless find_account(name)
       end
 
       def validate_existent_entry!(code)
-        if !find_entry(code)
-          raise Ledgerizer::ConfigError.new(
-            "the #{code} entry does not exist in tenant"
-          )
-        end
+        raise_config_error("the #{code} entry does not exist in tenant") unless find_entry(code)
       end
 
       def validate_unique_account!(account_name)
         if find_account(account_name)
-          raise Ledgerizer::ConfigError.new(
-            "the #{account_name} account already exists in tenant"
-          )
+          raise_config_error("the #{account_name} account already exists in tenant")
         end
       end
 
       def validate_unique_entry!(code)
-        if find_entry(code)
-          raise Ledgerizer::ConfigError.new(
-            "the #{code} entry already exists in tenant"
-          )
-        end
+        raise_config_error("the #{code} entry already exists in tenant") if find_entry(code)
       end
     end
   end
