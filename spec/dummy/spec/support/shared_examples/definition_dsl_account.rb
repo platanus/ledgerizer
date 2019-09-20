@@ -37,7 +37,7 @@ shared_examples 'definition dsl account' do |acc_type|
         }
       end
 
-      it { expect(LedgerizerTest).to have_tenant_account(expected) }
+      it { expect(LedgerizerTest).to have_ledger_account_definition(expected) }
     end
 
     context "with contra account" do
@@ -58,7 +58,7 @@ shared_examples 'definition dsl account' do |acc_type|
         }
       end
 
-      it { expect(LedgerizerTest).to have_tenant_account(expected) }
+      it { expect(LedgerizerTest).to have_ledger_account_definition(expected) }
     end
 
     context "with string account name" do
@@ -79,7 +79,7 @@ shared_examples 'definition dsl account' do |acc_type|
         }
       end
 
-      it { expect(LedgerizerTest).to have_tenant_account(expected) }
+      it { expect(LedgerizerTest).to have_ledger_account_definition(expected) }
     end
 
     context "with more than one account" do
@@ -110,8 +110,8 @@ shared_examples 'definition dsl account' do |acc_type|
         }
       end
 
-      it { expect(LedgerizerTest).to have_tenant_account(expected_account1) }
-      it { expect(LedgerizerTest).to have_tenant_account(expected_account2) }
+      it { expect(LedgerizerTest).to have_ledger_account_definition(expected_account1) }
+      it { expect(LedgerizerTest).to have_ledger_account_definition(expected_account2) }
     end
   end
 end

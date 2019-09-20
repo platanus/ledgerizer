@@ -67,7 +67,7 @@ shared_examples 'definition dsl movement' do |type|
         }
       end
 
-      it { expect(LedgerizerTest).to have_tenant_entry_movement(expected) }
+      it { expect(LedgerizerTest).to have_ledger_movement_definition(expected) }
     end
 
     context "with multiple movements" do
@@ -105,8 +105,8 @@ shared_examples 'definition dsl movement' do |type|
         }
       end
 
-      it { expect(LedgerizerTest).to have_tenant_entry_movement(expected_cash) }
-      it { expect(LedgerizerTest).to have_tenant_entry_movement(expected_bank) }
+      it { expect(LedgerizerTest).to have_ledger_movement_definition(expected_cash) }
+      it { expect(LedgerizerTest).to have_ledger_movement_definition(expected_bank) }
     end
 
     context "with movements in multiple entries" do
@@ -158,9 +158,9 @@ shared_examples 'definition dsl movement' do |type|
         }
       end
 
-      it { expect(LedgerizerTest).to have_tenant_entry_movement(expected_cash) }
-      it { expect(LedgerizerTest).to have_tenant_entry_movement(expected_bank) }
-      it { expect(LedgerizerTest).to have_tenant_entry_movement(expected_cash1) }
+      it { expect(LedgerizerTest).to have_ledger_movement_definition(expected_cash) }
+      it { expect(LedgerizerTest).to have_ledger_movement_definition(expected_bank) }
+      it { expect(LedgerizerTest).to have_ledger_movement_definition(expected_cash1) }
     end
   end
 end

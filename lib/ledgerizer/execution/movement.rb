@@ -6,7 +6,8 @@ module Ledgerizer
 
       attr_reader :accountable, :amount
 
-      delegate :credit?, :debit?, :contra, :base_currency, :movement_type, :account_name,
+      delegate :credit?, :debit?, :contra, :base_currency,
+               :movement_type, :account_name, :account_type,
                to: :movement_definition, prefix: false
 
       def initialize(movement_definition:, accountable:, amount:)

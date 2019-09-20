@@ -6,6 +6,8 @@ module Ledgerizer
 
       attr_reader :document, :entry_date
 
+      delegate :code, to: :entry_definition, prefix: false
+
       def initialize(entry_definition:, document:, entry_date:)
         @entry_definition = entry_definition
         validate_entry_document!(document)

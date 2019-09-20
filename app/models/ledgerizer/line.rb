@@ -1,13 +1,13 @@
 module Ledgerizer
   class Line < ApplicationRecord
-    belongs_to :tenant, polymorphic: true
-    belongs_to :document, polymorphic: true
+    belongs_to :tenant, polymorphic: true, optional: true
+    belongs_to :document, polymorphic: true, optional: true
     belongs_to :account
     belongs_to :entry
 
     monetize :amount_cents
 
-    validates :entry_code, :amount_cents, :entry_date, presence: true
+    validates :amount_cents, presence: true
 
     before_save :denormalize_attributes
 

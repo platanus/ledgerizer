@@ -1,6 +1,7 @@
 module Ledgerizer
   class Account < ApplicationRecord
     extend Enumerize
+    include Ledgerizer::Formatters
 
     belongs_to :tenant, polymorphic: true
     belongs_to :accountable, polymorphic: true
@@ -11,6 +12,14 @@ module Ledgerizer
 
     validates :name, :currency, :account_type, presence: true
     validates :currency, currency: true
+
+    before_save :load_format_currency
+
+    private
+
+    def load_format_currency
+      self.currency = format_currency(currency, strategy: :upcase, use_default: false) if currency
+    end
   end
 end
 

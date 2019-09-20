@@ -24,7 +24,7 @@ module Ledgerizer
   end
 end
 
-RSpec::Matchers.define :have_tenant do |model_name|
+RSpec::Matchers.define :have_ledger_tenant_definition do |model_name|
   match do |dsl_holder|
     Ledgerizer::TestHelpers.tenant_definition(dsl_holder, model_name)&.model_name == model_name
   end
@@ -38,7 +38,7 @@ RSpec::Matchers.define :have_tenant do |model_name|
   end
 end
 
-RSpec::Matchers.define :have_tenant_base_currency do |model_name, expected_currency|
+RSpec::Matchers.define :have_ledger_tenant_currency do |model_name, expected_currency|
   match do |dsl_holder|
     Ledgerizer::TestHelpers.tenant_definition(dsl_holder, model_name)&.currency == expected_currency
   end
@@ -52,7 +52,7 @@ RSpec::Matchers.define :have_tenant_base_currency do |model_name, expected_curre
   end
 end
 
-RSpec::Matchers.define :have_tenant_account do
+RSpec::Matchers.define :have_ledger_account_definition do
   |tenanat_model_name:, account_name:, account_type:, contra: false|
   match do |dsl_holder|
     account = Ledgerizer::TestHelpers.tenant_account_definition(
@@ -72,7 +72,7 @@ RSpec::Matchers.define :have_tenant_account do
   end
 end
 
-RSpec::Matchers.define :have_tenant_entry do |tenant_model_name:, entry_code:, document:|
+RSpec::Matchers.define :have_ledger_entry_definition do |tenant_model_name:, entry_code:, document:|
   match do |dsl_holder|
     entry = Ledgerizer::TestHelpers.tenant_entry_definition(
       dsl_holder, tenant_model_name, entry_code
@@ -89,7 +89,7 @@ RSpec::Matchers.define :have_tenant_entry do |tenant_model_name:, entry_code:, d
   end
 end
 
-RSpec::Matchers.define :have_tenant_entry_movement do
+RSpec::Matchers.define :have_ledger_movement_definition do
   |tenant_class:, entry_code:, movement_type:, account:, accountable:|
   match do |dsl_holder|
     movement = Ledgerizer::TestHelpers.tenant_entry_movement_definition(

@@ -7,15 +7,11 @@ module Ledgerizer
     end
 
     describe "associations" do
-      it { is_expected.to belong_to(:tenant) }
-      it { is_expected.to belong_to(:document) }
       it { is_expected.to belong_to(:entry) }
       it { is_expected.to belong_to(:account) }
     end
 
     describe "validations" do
-      it { is_expected.to validate_presence_of(:entry_code) }
-      it { is_expected.to validate_presence_of(:entry_date) }
       it { is_expected.to validate_presence_of(:amount_cents) }
       it { is_expected.to monetize(:amount) }
     end
