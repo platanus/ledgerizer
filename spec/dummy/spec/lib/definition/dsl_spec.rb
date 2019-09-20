@@ -86,11 +86,19 @@ RSpec.describe Ledgerizer::Definition::Dsl do
         include Ledgerizer::Definition::Dsl
 
         tenant('portfolio') do
-          entry(:deposit, document: 'portfolio')
+          entry(:deposit, document: 'user')
         end
       end
 
-      it { expect(LedgerizerTest).to have_tenant_entry(:portfolio, :deposit, :portfolio) }
+      let(:expected) do
+        {
+          tenant_model_name: :portfolio,
+          entry_code: :deposit,
+          document: :user
+        }
+      end
+
+      it { expect(LedgerizerTest).to have_tenant_entry(expected) }
     end
 
     context "with more than one entry" do
@@ -98,21 +106,35 @@ RSpec.describe Ledgerizer::Definition::Dsl do
         include Ledgerizer::Definition::Dsl
 
         tenant('portfolio') do
-          entry(:deposit, document: 'portfolio')
+          entry(:deposit, document: 'user')
           entry(:distribute, document: 'portfolio')
         end
       end
 
-      it { expect(LedgerizerTest).to have_tenant_entry(:portfolio, :deposit, :portfolio) }
-      it { expect(LedgerizerTest).to have_tenant_entry(:portfolio, :distribute, :portfolio) }
+      let(:expected_deposit) do
+        {
+          tenant_model_name: :portfolio,
+          entry_code: :deposit,
+          document: :user
+        }
+      end
+
+      let(:expected_distribute) do
+        {
+          tenant_model_name: :portfolio,
+          entry_code: :distribute,
+          document: :portfolio
+        }
+      end
+
+      it { expect(LedgerizerTest).to have_tenant_entry(expected_deposit) }
+      it { expect(LedgerizerTest).to have_tenant_entry(expected_distribute) }
     end
   end
 
-  it_behaves_like 'definition dsl account', :asset
-  it_behaves_like 'definition dsl account', :liability
-  it_behaves_like 'definition dsl account', :expense
-  it_behaves_like 'definition dsl account', :income
-  it_behaves_like 'definition dsl account', :equity
+  Ledgerizer::Definition::Account::TYPES.each do |account_type|
+    it_behaves_like 'definition dsl account', account_type
+  end
 
   it_behaves_like 'definition dsl movement', :debit
   it_behaves_like 'definition dsl movement', :credit

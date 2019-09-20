@@ -59,13 +59,15 @@ shared_examples 'definition dsl movement' do |type|
 
       let(:expected) do
         {
+          tenant_class: :portfolio,
+          entry_code: :deposit,
           movement_type: type,
           account: :cash,
           accountable: :user
         }
       end
 
-      it { expect(LedgerizerTest).to have_tenant_account_entry(:portfolio, :deposit, expected) }
+      it { expect(LedgerizerTest).to have_tenant_entry_movement(expected) }
     end
 
     context "with multiple movements" do
@@ -83,24 +85,28 @@ shared_examples 'definition dsl movement' do |type|
         end
       end
 
-      let(:exp_cash) do
+      let(:expected_cash) do
         {
+          tenant_class: :portfolio,
+          entry_code: :deposit,
           movement_type: type,
           account: :cash,
           accountable: :user
         }
       end
 
-      let(:exp_bank) do
+      let(:expected_bank) do
         {
+          tenant_class: :portfolio,
+          entry_code: :deposit,
           movement_type: type,
           account: :bank,
           accountable: :user
         }
       end
 
-      it { expect(LedgerizerTest).to have_tenant_account_entry(:portfolio, :deposit, exp_cash) }
-      it { expect(LedgerizerTest).to have_tenant_account_entry(:portfolio, :deposit, exp_bank) }
+      it { expect(LedgerizerTest).to have_tenant_entry_movement(expected_cash) }
+      it { expect(LedgerizerTest).to have_tenant_entry_movement(expected_bank) }
     end
 
     context "with movements in multiple entries" do
@@ -122,33 +128,39 @@ shared_examples 'definition dsl movement' do |type|
         end
       end
 
-      let(:exp_cash) do
+      let(:expected_cash) do
         {
+          tenant_class: :portfolio,
+          entry_code: :deposit,
           movement_type: type,
           account: :cash,
           accountable: :user
         }
       end
 
-      let(:exp_bank) do
+      let(:expected_bank) do
         {
+          tenant_class: :portfolio,
+          entry_code: :deposit,
           movement_type: type,
           account: :bank,
           accountable: :user
         }
       end
 
-      let(:exp_cash1) do
+      let(:expected_cash1) do
         {
+          tenant_class: :portfolio,
+          entry_code: :distribute,
           movement_type: type,
           account: :cash,
           accountable: :user
         }
       end
 
-      it { expect(LedgerizerTest).to have_tenant_account_entry(:portfolio, :deposit, exp_cash) }
-      it { expect(LedgerizerTest).to have_tenant_account_entry(:portfolio, :deposit, exp_bank) }
-      it { expect(LedgerizerTest).to have_tenant_account_entry(:portfolio, :distribute, exp_cash1) }
+      it { expect(LedgerizerTest).to have_tenant_entry_movement(expected_cash) }
+      it { expect(LedgerizerTest).to have_tenant_entry_movement(expected_bank) }
+      it { expect(LedgerizerTest).to have_tenant_entry_movement(expected_cash1) }
     end
   end
 end

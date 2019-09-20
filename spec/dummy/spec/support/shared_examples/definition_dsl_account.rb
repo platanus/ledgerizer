@@ -28,7 +28,16 @@ shared_examples 'definition dsl account' do |acc_type|
         end
       end
 
-      it { expect(LedgerizerTest).to have_tenant_account(:portfolio, :account1, acc_type) }
+      let(:expected) do
+        {
+          tenanat_model_name: :portfolio,
+          account_name: :account1,
+          account_type: acc_type,
+          contra: false
+        }
+      end
+
+      it { expect(LedgerizerTest).to have_tenant_account(expected) }
     end
 
     context "with contra account" do
@@ -40,7 +49,16 @@ shared_examples 'definition dsl account' do |acc_type|
         end
       end
 
-      it { expect(LedgerizerTest).to have_tenant_account(:portfolio, :account1, acc_type, true) }
+      let(:expected) do
+        {
+          tenanat_model_name: :portfolio,
+          account_name: :account1,
+          account_type: acc_type,
+          contra: true
+        }
+      end
+
+      it { expect(LedgerizerTest).to have_tenant_account(expected) }
     end
 
     context "with string account name" do
@@ -52,7 +70,16 @@ shared_examples 'definition dsl account' do |acc_type|
         end
       end
 
-      it { expect(LedgerizerTest).to have_tenant_account(:portfolio, :account1, acc_type) }
+      let(:expected) do
+        {
+          tenanat_model_name: :portfolio,
+          account_name: :account1,
+          account_type: acc_type,
+          contra: false
+        }
+      end
+
+      it { expect(LedgerizerTest).to have_tenant_account(expected) }
     end
 
     context "with more than one account" do
@@ -61,12 +88,30 @@ shared_examples 'definition dsl account' do |acc_type|
 
         tenant('portfolio') do
           send(acc_type, :account1)
-          send(acc_type, :account2)
+          send(acc_type, :account2, contra: true)
         end
       end
 
-      it { expect(LedgerizerTest).to have_tenant_account(:portfolio, :account1, acc_type) }
-      it { expect(LedgerizerTest).to have_tenant_account(:portfolio, :account2, acc_type) }
+      let(:expected_account1) do
+        {
+          tenanat_model_name: :portfolio,
+          account_name: :account1,
+          account_type: acc_type,
+          contra: false
+        }
+      end
+
+      let(:expected_account2) do
+        {
+          tenanat_model_name: :portfolio,
+          account_name: :account2,
+          account_type: acc_type,
+          contra: true
+        }
+      end
+
+      it { expect(LedgerizerTest).to have_tenant_account(expected_account1) }
+      it { expect(LedgerizerTest).to have_tenant_account(expected_account2) }
     end
   end
 end
