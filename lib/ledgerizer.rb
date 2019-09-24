@@ -7,7 +7,6 @@ require_rel "ledgerizer/util/*.rb"
 require_rel "ledgerizer/definition/*.rb"
 require_rel "ledgerizer/execution/*.rb"
 require_rel "ledgerizer/engine.rb"
-require_rel "ledgerizer/entry_executor.rb"
 
 module Ledgerizer
   include Definition::Dsl
