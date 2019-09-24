@@ -24,14 +24,14 @@ module Ledgerizer
         Ledgerizer::Definition::Account.new(
           name: name, type: type, contra: contra, base_currency: currency
         ).tap do |account|
-          @accounts << account
+          accounts << account
         end
       end
 
       def add_entry(code:, document:)
         validate_unique_entry!(code)
         Ledgerizer::Definition::Entry.new(code: code, document: document).tap do |entry|
-          @entries << entry
+          entries << entry
         end
       end
 
@@ -53,18 +53,18 @@ module Ledgerizer
         )
       end
 
-      private
-
-      def find_in_collection(collection, attribute, value)
-        collection.find { |item| item.send(attribute).to_s.to_sym == value }
-      end
-
       def accounts
         @accounts ||= []
       end
 
       def entries
         @entries ||= []
+      end
+
+      private
+
+      def find_in_collection(collection, attribute, value)
+        collection.find { |item| item.send(attribute).to_s.to_sym == value }
       end
 
       def validate_existent_account!(name)

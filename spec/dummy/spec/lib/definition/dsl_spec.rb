@@ -3,24 +3,20 @@ require "spec_helper"
 RSpec.describe Ledgerizer::Definition::Dsl do
   describe '#tenant' do
     context "with valid Active Record tenant" do
-      define_test_class do
-        include Ledgerizer::Definition::Dsl
-
+      let_definition_class do
         tenant(:portfolio)
       end
 
-      it { expect(LedgerizerTest).to have_ledger_tenant_definition(:portfolio) }
-      it { expect(LedgerizerTest).to have_ledger_tenant_currency(:portfolio, :usd) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_tenant_definition(:portfolio) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_tenant_currency(:portfolio, :usd) }
     end
 
     context "with different currency" do
-      define_test_class do
-        include Ledgerizer::Definition::Dsl
-
+      let_definition_class do
         tenant('portfolio', currency: :clp)
       end
 
-      it { expect(LedgerizerTest).to have_ledger_tenant_currency(:portfolio, :clp) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_tenant_currency(:portfolio, :clp) }
     end
 
     it "raises DSL error with nested tenants" do
@@ -82,9 +78,7 @@ RSpec.describe Ledgerizer::Definition::Dsl do
     end
 
     context "with valid entry" do
-      define_test_class do
-        include Ledgerizer::Definition::Dsl
-
+      let_definition_class do
         tenant('portfolio') do
           entry(:deposit, document: 'user')
         end
@@ -98,13 +92,11 @@ RSpec.describe Ledgerizer::Definition::Dsl do
         }
       end
 
-      it { expect(LedgerizerTest).to have_ledger_entry_definition(expected) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_entry_definition(expected) }
     end
 
     context "with more than one entry" do
-      define_test_class do
-        include Ledgerizer::Definition::Dsl
-
+      let_definition_class do
         tenant('portfolio') do
           entry(:deposit, document: 'user')
           entry(:distribute, document: 'portfolio')
@@ -127,8 +119,8 @@ RSpec.describe Ledgerizer::Definition::Dsl do
         }
       end
 
-      it { expect(LedgerizerTest).to have_ledger_entry_definition(expected_deposit) }
-      it { expect(LedgerizerTest).to have_ledger_entry_definition(expected_distribute) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_entry_definition(expected_deposit) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_entry_definition(expected_distribute) }
     end
   end
 

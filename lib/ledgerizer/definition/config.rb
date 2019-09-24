@@ -18,6 +18,10 @@ module Ledgerizer
         tenants.find { |tenant| tenant.model_name == infer_model_name(value) }
       end
 
+      def entries_codes
+        tenants.map(:entires).flatten
+      end
+
       private
 
       def tenants

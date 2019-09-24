@@ -5,7 +5,7 @@ RSpec.describe Ledgerizer::Validators do
     let(:model_name) { :portfolio }
     let(:error_prefix) { 'name' }
 
-    define_test_class do
+    let_test_class do
       include Ledgerizer::Validators
     end
 
@@ -47,7 +47,7 @@ RSpec.describe Ledgerizer::Validators do
   describe '#validate_currency!' do
     let(:currency) { :clp }
 
-    define_test_class do
+    let_test_class do
       include Ledgerizer::Validators
     end
 
@@ -85,7 +85,7 @@ RSpec.describe Ledgerizer::Validators do
   describe '#validate_date!' do
     let(:date) { "1984-06-04" }
 
-    define_test_class do
+    let_test_class do
       include Ledgerizer::Validators
     end
 
@@ -105,7 +105,7 @@ RSpec.describe Ledgerizer::Validators do
   describe "#validate_money!" do
     let(:value) { clp(1000) }
 
-    define_test_class do
+    let_test_class do
       include Ledgerizer::Validators
     end
 
@@ -131,7 +131,7 @@ RSpec.describe Ledgerizer::Validators do
   describe "#validate_positive_money!" do
     let(:value) { clp(1000) }
 
-    define_test_class do
+    let_test_class do
       include Ledgerizer::Validators
     end
 

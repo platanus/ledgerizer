@@ -18,7 +18,7 @@ RSpec.describe Ledgerizer::EntryExecutor do
   let(:entry_code_param) { entry_code }
   let(:entry_date) { "1984-06-04" }
 
-  define_test_class do
+  let_test_class do
     include Ledgerizer::Definition::Dsl
 
     tenant('portfolio', currency: :clp) do

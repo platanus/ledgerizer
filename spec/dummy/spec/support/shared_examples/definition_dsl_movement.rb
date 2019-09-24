@@ -45,9 +45,7 @@ shared_examples 'definition dsl movement' do |type|
     end
 
     context "with valid #{type}" do
-      define_test_class do
-        include Ledgerizer::Definition::Dsl
-
+      let_definition_class do
         tenant('portfolio') do
           asset(:cash)
 
@@ -67,13 +65,11 @@ shared_examples 'definition dsl movement' do |type|
         }
       end
 
-      it { expect(LedgerizerTest).to have_ledger_movement_definition(expected) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_movement_definition(expected) }
     end
 
     context "with multiple movements" do
-      define_test_class do
-        include Ledgerizer::Definition::Dsl
-
+      let_definition_class do
         tenant('portfolio') do
           asset(:cash)
           asset(:bank)
@@ -105,14 +101,12 @@ shared_examples 'definition dsl movement' do |type|
         }
       end
 
-      it { expect(LedgerizerTest).to have_ledger_movement_definition(expected_cash) }
-      it { expect(LedgerizerTest).to have_ledger_movement_definition(expected_bank) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_movement_definition(expected_cash) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_movement_definition(expected_bank) }
     end
 
     context "with movements in multiple entries" do
-      define_test_class do
-        include Ledgerizer::Definition::Dsl
-
+      let_definition_class do
         tenant('portfolio') do
           asset(:cash)
           asset(:bank)
@@ -158,9 +152,9 @@ shared_examples 'definition dsl movement' do |type|
         }
       end
 
-      it { expect(LedgerizerTest).to have_ledger_movement_definition(expected_cash) }
-      it { expect(LedgerizerTest).to have_ledger_movement_definition(expected_bank) }
-      it { expect(LedgerizerTest).to have_ledger_movement_definition(expected_cash1) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_movement_definition(expected_cash) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_movement_definition(expected_bank) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_movement_definition(expected_cash1) }
     end
   end
 end

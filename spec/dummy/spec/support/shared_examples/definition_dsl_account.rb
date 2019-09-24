@@ -20,9 +20,7 @@ shared_examples 'definition dsl account' do |acc_type|
     end
 
     context "with valid account" do
-      define_test_class do
-        include Ledgerizer::Definition::Dsl
-
+      let_definition_class do
         tenant('portfolio') do
           send(acc_type, :account1)
         end
@@ -37,13 +35,11 @@ shared_examples 'definition dsl account' do |acc_type|
         }
       end
 
-      it { expect(LedgerizerTest).to have_ledger_account_definition(expected) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_account_definition(expected) }
     end
 
     context "with contra account" do
-      define_test_class do
-        include Ledgerizer::Definition::Dsl
-
+      let_definition_class do
         tenant('portfolio') do
           send(acc_type, :account1, contra: true)
         end
@@ -58,13 +54,11 @@ shared_examples 'definition dsl account' do |acc_type|
         }
       end
 
-      it { expect(LedgerizerTest).to have_ledger_account_definition(expected) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_account_definition(expected) }
     end
 
     context "with string account name" do
-      define_test_class do
-        include Ledgerizer::Definition::Dsl
-
+      let_definition_class do
         tenant('portfolio') do
           send(acc_type, "account1")
         end
@@ -79,13 +73,11 @@ shared_examples 'definition dsl account' do |acc_type|
         }
       end
 
-      it { expect(LedgerizerTest).to have_ledger_account_definition(expected) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_account_definition(expected) }
     end
 
     context "with more than one account" do
-      define_test_class do
-        include Ledgerizer::Definition::Dsl
-
+      let_definition_class do
         tenant('portfolio') do
           send(acc_type, :account1)
           send(acc_type, :account2, contra: true)
@@ -110,8 +102,8 @@ shared_examples 'definition dsl account' do |acc_type|
         }
       end
 
-      it { expect(LedgerizerTest).to have_ledger_account_definition(expected_account1) }
-      it { expect(LedgerizerTest).to have_ledger_account_definition(expected_account2) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_account_definition(expected_account1) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_account_definition(expected_account2) }
     end
   end
 end

@@ -1,7 +1,7 @@
 require "spec_helper"
 
 RSpec.describe Ledgerizer::Formatters do
-  define_test_class do
+  let_test_class do
     include Ledgerizer::Formatters
   end
 
