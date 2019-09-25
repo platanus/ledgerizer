@@ -1,17 +1,13 @@
 shared_examples 'definition dsl movement' do |type|
   describe "##{type}" do
     it "raises error with no tenant" do
-      expect_error_in_class_definition("'#{type}' needs to run inside 'entry' block") do
-        include Ledgerizer::Definition::Dsl
-
+      expect_error_in_definition_class("'#{type}' needs to run inside 'entry' block") do
         send(type, account: nil, accountable: nil)
       end
     end
 
     it "raises error with no entry" do
-      expect_error_in_class_definition("'#{type}' needs to run inside 'entry' block") do
-        include Ledgerizer::Definition::Dsl
-
+      expect_error_in_definition_class("'#{type}' needs to run inside 'entry' block") do
         tenant('portfolio') do
           send(type, account: nil, accountable: nil)
         end
@@ -19,9 +15,7 @@ shared_examples 'definition dsl movement' do |type|
     end
 
     it "raises error with no defined account" do
-      expect_error_in_class_definition("the cash account does not exist in tenant") do
-        include Ledgerizer::Definition::Dsl
-
+      expect_error_in_definition_class("the cash account does not exist in tenant") do
         tenant('portfolio') do
           entry(:deposit, document: 'portfolio') do
             send(type, account: :cash, accountable: nil)
@@ -31,9 +25,7 @@ shared_examples 'definition dsl movement' do |type|
     end
 
     it "raises error with invalid accountable" do
-      expect_error_in_class_definition("accountable must be an ActiveRecord model name") do
-        include Ledgerizer::Definition::Dsl
-
+      expect_error_in_definition_class("accountable must be an ActiveRecord model name") do
         tenant('portfolio') do
           asset(:cash)
 

@@ -11,16 +11,14 @@ RSpec.describe Ledgerizer::EntryExecutor do
     )
   end
 
-  let(:config) { LedgerizerTest.definition }
+  let(:config) { LedgerizerTestDefinition.definition }
   let(:tenant_instance) { create(:portfolio) }
   let(:document_instance) { create(:user) }
   let(:entry_code) { :entry1 }
   let(:entry_code_param) { entry_code }
   let(:entry_date) { "1984-06-04" }
 
-  let_test_class do
-    include Ledgerizer::Definition::Dsl
-
+  let_definition_class do
     tenant('portfolio', currency: :clp) do
       asset(:account1)
       liability(:account2)

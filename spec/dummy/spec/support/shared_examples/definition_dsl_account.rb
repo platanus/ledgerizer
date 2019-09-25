@@ -1,17 +1,13 @@
 shared_examples 'definition dsl account' do |acc_type|
   describe "##{acc_type}" do
     it "raises error with no tenant" do
-      expect_error_in_class_definition("'#{acc_type}' needs to run inside 'tenant' block") do
-        include Ledgerizer::Definition::Dsl
-
+      expect_error_in_definition_class("'#{acc_type}' needs to run inside 'tenant' block") do
         send(acc_type, :account1)
       end
     end
 
     it "raises error with repeated accounts" do
-      expect_error_in_class_definition("the account1 account already exists in tenant") do
-        include Ledgerizer::Definition::Dsl
-
+      expect_error_in_definition_class("the account1 account already exists in tenant") do
         tenant('portfolio') do
           send(acc_type, :account1)
           send(acc_type, :account1)

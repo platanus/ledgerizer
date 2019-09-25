@@ -18,12 +18,15 @@ RSpec::Matchers.define :have_ledger_entry do |entry_code:, entry_date:, document
 end
 
 RSpec::Matchers.define :have_ledger_line do
-  |account_name:, accountable:, amount:, movement_type: nil|
+  |accountable:, amount:, account_name: nil, account: nil, movement_type: nil|
+  acc = account_name || account
+  fail "missing account_name" unless acc
+  
   match do |entry|
     currency = amount.currency.to_s
     account = Ledgerizer::Account.find_by(
       tenant: entry.tenant,
-      name: account_name,
+      name: acc,
       accountable: accountable,
       currency: currency
     )
@@ -36,7 +39,7 @@ RSpec::Matchers.define :have_ledger_line do
   end
 
   description do
-    "include line with #{account_name} account and #{amount} amount"
+    "include line with #{acc} account and #{amount} amount"
   end
 
   failure_message do

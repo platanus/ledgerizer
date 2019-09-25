@@ -10,6 +10,16 @@ class LedgerizerTestDefinition
   # empty, to be overwritten
 end
 
+class LedgerizerTestExecution
+  include Ledgerizer::Execution::Dsl
+
+  attr_accessor :data
+
+  def initialize(data = {})
+    @data = data
+  end
+end
+
 module TestClassHelpers
   extend ActiveSupport::Concern
 
@@ -21,6 +31,10 @@ module TestClassHelpers
         stub_const("LedgerizerTestDefinition", definition_class)
         allow(Ledgerizer).to receive(:definition).and_return(LedgerizerTestDefinition.definition)
       end
+    end
+
+    def expect_error_in_definition_class(error, &block)
+      expect { Class.new(LedgerizerTestDefinitionBase, &block) }.to raise_error(error)
     end
   end
 

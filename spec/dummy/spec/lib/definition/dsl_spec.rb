@@ -20,9 +20,7 @@ RSpec.describe Ledgerizer::Definition::Dsl do
     end
 
     it "raises DSL error with nested tenants" do
-      expect_error_in_class_definition("'tenant' can't run inside 'tenant' block") do
-        include Ledgerizer::Definition::Dsl
-
+      expect_error_in_definition_class("'tenant' can't run inside 'tenant' block") do
         tenant('portfolio') do
           tenant('portfolio')
         end
@@ -30,17 +28,13 @@ RSpec.describe Ledgerizer::Definition::Dsl do
     end
 
     it "raises DSL error with non Active Record tenant" do
-      expect_error_in_class_definition(/must be an ActiveRecord model name/) do
-        include Ledgerizer::Definition::Dsl
-
+      expect_error_in_definition_class(/must be an ActiveRecord model name/) do
         tenant('noartenant')
       end
     end
 
     it "raises error with repeated tenant" do
-      expect_error_in_class_definition("the tenant already exists") do
-        include Ledgerizer::Definition::Dsl
-
+      expect_error_in_definition_class("the tenant already exists") do
         tenant('portfolio')
         tenant('portfolio')
       end
@@ -49,17 +43,13 @@ RSpec.describe Ledgerizer::Definition::Dsl do
 
   describe "#entry" do
     it "raises error with no tenant" do
-      expect_error_in_class_definition("'entry' needs to run inside 'tenant' block") do
-        include Ledgerizer::Definition::Dsl
-
+      expect_error_in_definition_class("'entry' needs to run inside 'tenant' block") do
         entry(:deposit)
       end
     end
 
     it "raises error with repeated entries" do
-      expect_error_in_class_definition("the deposit entry already exists in tenant") do
-        include Ledgerizer::Definition::Dsl
-
+      expect_error_in_definition_class("the deposit entry already exists in tenant") do
         tenant('portfolio') do
           entry(:deposit, document: 'portfolio')
           entry(:deposit, document: 'portfolio')
@@ -68,9 +58,7 @@ RSpec.describe Ledgerizer::Definition::Dsl do
     end
 
     it "raises error with invalid document" do
-      expect_error_in_class_definition(/must be an ActiveRecord model name/) do
-        include Ledgerizer::Definition::Dsl
-
+      expect_error_in_definition_class(/must be an ActiveRecord model name/) do
         tenant('portfolio') do
           entry(:deposit, document: 'invalid')
         end

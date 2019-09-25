@@ -2,9 +2,10 @@ module Ledgerizer
   module Definition
     module Dsl
       extend ActiveSupport::Concern
-      include Ledgerizer::DslBase
 
       class_methods do
+        include Ledgerizer::DslBase
+
         def tenant(model_name, currency: nil, &block)
           in_context do
             @current_tenant = definition.add_tenant(
