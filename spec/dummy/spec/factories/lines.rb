@@ -1,0 +1,29 @@
+FactoryBot.define do
+  factory :ledgerizer_line, class: 'Ledgerizer::Line' do
+    association :tenant, factory: :portfolio
+    association :entry, factory: :ledgerizer_entry
+    association :account, factory: :ledgerizer_account
+    account_name { :cash }
+    entry_code { :deposit }
+    entry_date { "1984-06-06" }
+
+    transient do
+      force_tenant { nil }
+      force_document { nil }
+      force_accountable { nil }
+
+      force_account_name { nil }
+      force_entry_code { nil }
+      force_entry_date { nil }
+    end
+
+    after :create do |line, evaluator|
+      set_polymorphic_relation(line, :tenant, evaluator.force_tenant)
+      set_polymorphic_relation(line, :document, evaluator.force_document)
+      set_polymorphic_relation(line, :accountable, evaluator.force_accountable)
+      set_denormalized_attribute(line, :account_name, evaluator.force_account_name)
+      set_denormalized_attribute(line, :entry_code, evaluator.force_entry_code)
+      set_denormalized_attribute(line, :entry_date, evaluator.force_entry_date)
+    end
+  end
+end
