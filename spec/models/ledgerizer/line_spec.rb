@@ -23,6 +23,8 @@ module Ledgerizer
       it { expect(line.document).to eq(line.entry.document) }
       it { expect(line.entry_code).to eq(line.entry.code) }
       it { expect(line.entry_date).to eq(line.entry.entry_date) }
+      it { expect(line.accountable).to eq(line.account.accountable) }
+      it { expect(line.account_name).to eq(line.account.name) }
     end
   end
 end
