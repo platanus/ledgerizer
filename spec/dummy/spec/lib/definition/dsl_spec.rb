@@ -1,33 +1,26 @@
 require "spec_helper"
 
-# rubocop:disable RSpec/FilePath, RSpec/DescribedClass
 RSpec.describe Ledgerizer::Definition::Dsl do
   describe '#tenant' do
     context "with valid Active Record tenant" do
-      define_test_class do
-        include Ledgerizer::Definition::Dsl
-
+      let_definition_class do
         tenant(:portfolio)
       end
 
-      it { expect(LedgerizerTest).to have_tenant(:portfolio) }
-      it { expect(LedgerizerTest).to have_tenant_base_currency(:portfolio, :usd) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_tenant_definition(:portfolio) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_tenant_currency(:portfolio, :usd) }
     end
 
     context "with different currency" do
-      define_test_class do
-        include Ledgerizer::Definition::Dsl
-
+      let_definition_class do
         tenant('portfolio', currency: :clp)
       end
 
-      it { expect(LedgerizerTest).to have_tenant_base_currency(:portfolio, :clp) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_tenant_currency(:portfolio, :clp) }
     end
 
     it "raises DSL error with nested tenants" do
-      expect_error_in_class_definition("'tenant' can't run inside 'tenant' block") do
-        include Ledgerizer::Definition::Dsl
-
+      expect_error_in_definition_class("'tenant' can't run inside 'tenant' block") do
         tenant('portfolio') do
           tenant('portfolio')
         end
@@ -35,17 +28,13 @@ RSpec.describe Ledgerizer::Definition::Dsl do
     end
 
     it "raises DSL error with non Active Record tenant" do
-      expect_error_in_class_definition(/must be an ActiveRecord model name/) do
-        include Ledgerizer::Definition::Dsl
-
+      expect_error_in_definition_class(/must be an ActiveRecord model name/) do
         tenant('noartenant')
       end
     end
 
     it "raises error with repeated tenant" do
-      expect_error_in_class_definition("the tenant already exists") do
-        include Ledgerizer::Definition::Dsl
-
+      expect_error_in_definition_class("the tenant already exists") do
         tenant('portfolio')
         tenant('portfolio')
       end
@@ -54,17 +43,13 @@ RSpec.describe Ledgerizer::Definition::Dsl do
 
   describe "#entry" do
     it "raises error with no tenant" do
-      expect_error_in_class_definition("'entry' needs to run inside 'tenant' block") do
-        include Ledgerizer::Definition::Dsl
-
+      expect_error_in_definition_class("'entry' needs to run inside 'tenant' block") do
         entry(:deposit)
       end
     end
 
     it "raises error with repeated entries" do
-      expect_error_in_class_definition("the deposit entry already exists in tenant") do
-        include Ledgerizer::Definition::Dsl
-
+      expect_error_in_definition_class("the deposit entry already exists in tenant") do
         tenant('portfolio') do
           entry(:deposit, document: 'portfolio')
           entry(:deposit, document: 'portfolio')
@@ -73,9 +58,7 @@ RSpec.describe Ledgerizer::Definition::Dsl do
     end
 
     it "raises error with invalid document" do
-      expect_error_in_class_definition(/must be an ActiveRecord model name/) do
-        include Ledgerizer::Definition::Dsl
-
+      expect_error_in_definition_class(/must be an ActiveRecord model name/) do
         tenant('portfolio') do
           entry(:deposit, document: 'invalid')
         end
@@ -83,39 +66,56 @@ RSpec.describe Ledgerizer::Definition::Dsl do
     end
 
     context "with valid entry" do
-      define_test_class do
-        include Ledgerizer::Definition::Dsl
-
+      let_definition_class do
         tenant('portfolio') do
-          entry(:deposit, document: 'portfolio')
+          entry(:deposit, document: 'user')
         end
       end
 
-      it { expect(LedgerizerTest).to have_tenant_entry(:portfolio, :deposit, :portfolio) }
+      let(:expected) do
+        {
+          tenant_model_name: :portfolio,
+          entry_code: :deposit,
+          document: :user
+        }
+      end
+
+      it { expect(LedgerizerTestDefinition).to have_ledger_entry_definition(expected) }
     end
 
     context "with more than one entry" do
-      define_test_class do
-        include Ledgerizer::Definition::Dsl
-
+      let_definition_class do
         tenant('portfolio') do
-          entry(:deposit, document: 'portfolio')
+          entry(:deposit, document: 'user')
           entry(:distribute, document: 'portfolio')
         end
       end
 
-      it { expect(LedgerizerTest).to have_tenant_entry(:portfolio, :deposit, :portfolio) }
-      it { expect(LedgerizerTest).to have_tenant_entry(:portfolio, :distribute, :portfolio) }
+      let(:expected_deposit) do
+        {
+          tenant_model_name: :portfolio,
+          entry_code: :deposit,
+          document: :user
+        }
+      end
+
+      let(:expected_distribute) do
+        {
+          tenant_model_name: :portfolio,
+          entry_code: :distribute,
+          document: :portfolio
+        }
+      end
+
+      it { expect(LedgerizerTestDefinition).to have_ledger_entry_definition(expected_deposit) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_entry_definition(expected_distribute) }
     end
   end
 
-  it_behaves_like 'definition dsl account', :asset
-  it_behaves_like 'definition dsl account', :liability
-  it_behaves_like 'definition dsl account', :expense
-  it_behaves_like 'definition dsl account', :income
-  it_behaves_like 'definition dsl account', :equity
+  Ledgerizer::Definition::Account::TYPES.each do |account_type|
+    it_behaves_like 'definition dsl account', account_type
+  end
 
-  it_behaves_like 'definition dsl entry account', :debit
-  it_behaves_like 'definition dsl entry account', :credit
+  it_behaves_like 'definition dsl movement', :debit
+  it_behaves_like 'definition dsl movement', :credit
 end
-# rubocop:enable RSpec/FilePath, RSpec/DescribedClass

@@ -1,24 +1,50 @@
-RSpec::Matchers.define :have_tenant do |model_class_name|
-  match do |dsl_holder|
-    dsl_holder&.definition&.find_tenant(model_class_name)&.model_class_name == model_class_name
-  end
+module Ledgerizer
+  module TestHelpers
+    def self.tenant_definition(dsl_holder, tenant_class)
+      dsl_holder&.definition&.find_tenant(tenant_class)
+    end
 
-  description do
-    "include #{model_class_name} tenant"
-  end
+    def self.tenant_account_definition(dsl_holder, tenant_class, account_name)
+      tenant_definition(dsl_holder, tenant_class)&.find_account(account_name)
+    end
 
-  failure_message do |dsl_holder|
-    "#{dsl_holder} does not include #{model_class_name} tenant"
+    def self.tenant_entry_definition(dsl_holder, tenant_class, entry_code)
+      tenant_definition(dsl_holder, tenant_class)&.find_entry(entry_code)
+    end
+
+    def self.tenant_entry_movement_definition(
+      dsl_holder, tenant_class, entry_code, movement_type, account, accountable
+    )
+      tenant_entry_definition(dsl_holder, tenant_class, entry_code)&.find_movement(
+        movement_type: movement_type,
+        account_name: account,
+        accountable: accountable
+      )
+    end
   end
 end
 
-RSpec::Matchers.define :have_tenant_base_currency do |model_class_name, expected_currency|
+RSpec::Matchers.define :have_ledger_tenant_definition do |model_name|
   match do |dsl_holder|
-    dsl_holder&.definition&.find_tenant(model_class_name)&.currency == expected_currency
+    Ledgerizer::TestHelpers.tenant_definition(dsl_holder, model_name)&.model_name == model_name
   end
 
   description do
-    "include #{expected_currency} in #{model_class_name} tenant"
+    "include #{model_name} tenant"
+  end
+
+  failure_message do |dsl_holder|
+    "#{dsl_holder} does not include #{model_name} tenant"
+  end
+end
+
+RSpec::Matchers.define :have_ledger_tenant_currency do |model_name, expected_currency|
+  match do |dsl_holder|
+    Ledgerizer::TestHelpers.tenant_definition(dsl_holder, model_name)&.currency == expected_currency
+  end
+
+  description do
+    "include #{expected_currency} in #{model_name} tenant"
   end
 
   failure_message do
@@ -26,41 +52,56 @@ RSpec::Matchers.define :have_tenant_base_currency do |model_class_name, expected
   end
 end
 
-RSpec::Matchers.define :have_tenant_account do |model_class_name, account_name, account_type|
+RSpec::Matchers.define :have_ledger_account_definition do
+  |tenanat_model_name:, account_name:, account_type:, contra: false|
   match do |dsl_holder|
-    account = dsl_holder&.definition&.find_tenant(model_class_name)&.find_account(account_name)
-    account && account.type == account_type && account.name == account_name
+    account = Ledgerizer::TestHelpers.tenant_account_definition(
+      dsl_holder, tenanat_model_name, account_name
+    )
+    account && account.type == account_type &&
+      account.name == account_name &&
+      account.contra == contra
   end
 
   description do
-    "include #{account_type} in #{model_class_name} with name #{account_name}"
+    "include #{account_type} in #{tenanat_model_name} with name #{account_name}"
   end
 
   failure_message do
-    "#{account_type} named #{account_name} is not in tenant"
+    "#{account_type} named #{account_name} with contra #{contra} is not in tenant"
   end
 end
 
-RSpec::Matchers.define :have_tenant_entry do |tenant_class, code, document|
+RSpec::Matchers.define :have_ledger_entry_definition do |tenant_model_name:, entry_code:, document:|
   match do |dsl_holder|
-    entry = dsl_holder&.definition&.find_tenant(tenant_class)&.find_entry(code)
-    entry && entry.document == document && entry.code == code
+    entry = Ledgerizer::TestHelpers.tenant_entry_definition(
+      dsl_holder, tenant_model_name, entry_code
+    )
+    entry && entry.document == document && entry.code == entry_code
   end
 
   description do
-    "include #{code} entry in #{tenant_class} tenant with #{document} document"
+    "include #{entry_code} entry in #{tenant_model_name} tenant with #{document} document"
   end
 
   failure_message do
-    "#{code} entry is not in tenant"
+    "#{entry_code} entry is not in tenant"
   end
 end
 
-RSpec::Matchers.define :have_tenant_account_entry do |tenant_class, entry_code, expected|
+RSpec::Matchers.define :have_ledger_movement_definition do
+  |tenant_class:, entry_code:, movement_type:, account:, accountable:|
   match do |dsl_holder|
-    type = expected[:entry_account_type].to_s.pluralize
-    entry = dsl_holder&.definition&.find_tenant(tenant_class)&.find_entry(entry_code)
-    entry&.find_entry_account(entry&.send(type), expected[:account], expected[:accountable])
+    movement = Ledgerizer::TestHelpers.tenant_entry_movement_definition(
+      dsl_holder,
+      tenant_class,
+      entry_code,
+      movement_type,
+      account,
+      accountable
+    )
+
+    !!movement
   end
 
   description do

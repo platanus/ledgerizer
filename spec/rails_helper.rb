@@ -25,6 +25,7 @@ require "pry"
 require "spec_helper"
 require "rspec/rails"
 require "factory_bot_rails"
+require "money-rails/test_helpers"
 
 ActiveRecord::Migration.maintain_test_schema!
 
@@ -45,5 +46,5 @@ RSpec.configure do |config|
   config.include FactoryBot::Syntax::Methods
   config.include ActionDispatch::TestProcess
   config.include TestClassHelpers
-  config.include ErrorHelpers
+  config.include MoneyHelpers
 end

@@ -489,3 +489,7 @@ RSpec/LetSetup:
 RSpec/ExpectChange:
   Enabled: true
   EnforcedStyle: block
+RSpec/FilePath:
+  Enabled: false
+RSpec/DescribedClass:
+  Enabled: false

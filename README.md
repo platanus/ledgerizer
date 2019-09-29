@@ -39,12 +39,12 @@ Ledgerizer.setup do |conf|
     conf.equity :account_name9
     # more accounts...
 
-    conf.entry :entry_code1, document: :entry_document do
+    conf.entry :entry_code1, document: :document1 do
       conf.debit account: :account_name1, accountable: :accountable1
       conf.credit account: :account_name4, accountable: :accountable2
     end
 
-    conf.entry :entry_code2, document: :user_deposit do
+    conf.entry :entry_code2, document: :document2 do
       conf.debit account: :account_name4, accountable: :accountable2
       conf.credit account: :account_name5, accountable: :accountable1
       conf.credit account: :account_name6, accountable: :accountable3
@@ -91,6 +91,67 @@ Ledgerizer.setup do |conf|
   end
 end
 ```
+
+### Ejecución
+
+Una vez definidas las entries, podremos crear movimientos en la DB.
+Para hacer esto, debemos incluir el DSL de ejecución así:
+
+```ruby
+# Suponemos que existen los modelos de ActiveRecord Portfolio, UserDeposit, User y Bank.
+
+class DepositCreator
+  include Ledgerizer::Execution::Dsl
+
+  def perform
+    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, date: "1984-06-04") do
+      debit(account: :bank, accountable: Bank.first, amount: Money.from_amount(10, 'CLP'))
+      credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(10, 'CLP'))
+    end
+  end
+end
+```
+
+La ejecución de `DepositCreator.new.perform` creará:
+
+1. Dos `Ledgerizer::Account`
+
+  - Una con `name: 'bank'`, `tenant: Portfolio.first`, `accountable: Bank.first`, `account_type: 'asset'` y `currency: 'CLP'`
+
+  - Otra con `name: 'funds_to_invest'`, `tenant: Portfolio.first`, `accountable: User.first`, `account_type: 'liability' y `currency: 'CLP'`
+
+
+2. Una `Ledgerizer::Entry` con: `code: 'user_deposit'`, `tenant: Portfolio.first`, `document: UserDeposit.first` y `entry_date: '1984-06-04'`
+
+
+3. Dos `Ledgerizer::Line`. Una por cada movimiento de la entry.
+
+  - Una con `entry_id: apuntando a la entry del punto 2`, `account_id: apuntando a 1.1`, `amount: 10 CLP`
+
+  - Una con `entry_id: apuntando a la entry del punto 2`, `account_id: apuntando a 1.2`, `amount: 10 CLP`
+
+### Tener en cuenta
+
+- Cada `Ledgerizer::Line` además incluye información desnormalizada para facilitar consultas. Esto es: `tenant`, `document`, `entry_date`, `entry_code`
+- Al ejecutar una entry, se puede dividir el monto en n movmientos siempre y cuando se respete lo que está en la definición para esa entry. Por ej, algo como lo siguiente, sería válido:
+
+  ```ruby
+  class DepositCreator
+    include Ledgerizer::Execution::Dsl
+
+    def perform
+      execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, date: "1984-06-04") do
+        debit(account: :bank, accountable: Bank.first, amount: Money.from_amount(10, 'CLP'))
+        credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(6, 'CLP'))
+        credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(3, 'CLP'))
+        credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(1, 'CLP'))
+      end
+    end
+  end
+  ```
+
+- Los montos de los movimientos deben estar de acuerdo con https://en.wikipedia.org/wiki/Trial_balance
+
 
 ## Testing
 

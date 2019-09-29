@@ -1,8 +1,7 @@
 require "spec_helper"
 
-# rubocop:disable RSpec/FilePath
 RSpec.describe Ledgerizer::Definition::Entry do
-  subject(:entry) { described_class.new(code, document) }
+  subject(:entry) { build(:entry_definition, code: code, document: document) }
 
   let(:code) { :deposit }
   let(:document) { :portfolio }
@@ -22,7 +21,40 @@ RSpec.describe Ledgerizer::Definition::Entry do
     it { expect { entry }.to raise_error(/must be an ActiveRecord model name/) }
   end
 
-  it_behaves_like 'add entry account', :debit
-  it_behaves_like 'add entry account', :credit
+  describe "#add_movement" do
+    let(:entry_code) { :deposit }
+    let(:accountable) { 'user' }
+    let(:movement_type) { :debit }
+
+    let(:account) do
+      Ledgerizer::Definition::Account.new(name: :cash, type: :asset, base_currency: :usd)
+    end
+
+    def perform
+      entry.add_movement(
+        movement_type: movement_type, account: account, accountable: accountable
+      )
+    end
+
+    def account_entries_count
+      entry.movements
+    end
+
+    it { expect { perform }.to change { entry.movements.count }.from(0).to(1) }
+    it { expect(perform.account_name).to eq(:cash) }
+    it { expect(perform.accountable).to eq(:user) }
+    it { expect(perform.movement_type).to eq(movement_type) }
+
+    context "with existent movement type" do
+      before { perform }
+
+      it { expect { perform }.to raise_error(/cash with accountable user already/) }
+    end
+
+    context "with invalid accountable" do
+      let(:accountable) { :invalid }
+
+      it { expect { perform }.to raise_error(/must be an ActiveRecord model name/) }
+    end
+  end
 end
-# rubocop:enable RSpec/FilePath

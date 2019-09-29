@@ -1,4 +1,2 @@
-Ledgerizer.setup do |config|
-  config.tenant(:portfolio) do
-  end
+Ledgerizer.setup do |_config|
 end

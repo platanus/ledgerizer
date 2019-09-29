@@ -1,28 +1,36 @@
 module Ledgerizer
   module Definition
     class Account
-      attr_reader :name, :type
+      include Ledgerizer::Formatters
+      include Ledgerizer::Validators
 
-      TYPES = %i{asset liability income expense equity}
+      attr_reader :name, :type, :contra, :base_currency
 
-      def initialize(name, type)
-        ensure_name!(name)
-        ensure_type!(type)
-        @name = name.to_sym
-        @type = type.to_sym
+      DEBIT_TYPES = %i{asset expense}
+      CREDIT_TYPES = %i{liability income equity}
+      TYPES = CREDIT_TYPES + DEBIT_TYPES
+
+      def initialize(name:, type:, base_currency:, contra: false)
+        validate_account_type!(type)
+        @name = format_to_symbol_identifier(name)
+        @type = format_to_symbol_identifier(type)
+        @base_currency = format_currency(base_currency)
+        @contra = !!contra
+      end
+
+      def credit?
+        CREDIT_TYPES.include?(type)
+      end
+
+      def debit?
+        DEBIT_TYPES.include?(type)
       end
 
       private
 
-      def ensure_name!(name)
-        raise Ledgerizer::ConfigError.new("account name is mandatory") if name.blank?
-      end
-
-      def ensure_type!(type)
-        raise Ledgerizer::ConfigError.new("account type is mandatory") if type.blank?
-
+      def validate_account_type!(type)
         if !TYPES.include?(type.to_sym)
-          raise Ledgerizer::ConfigError.new("type must be one of these: #{TYPES.join(', ')}")
+          raise_config_error("type must be one of these: #{TYPES.join(', ')}")
         end
       end
     end
