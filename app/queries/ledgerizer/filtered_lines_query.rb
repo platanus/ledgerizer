@@ -63,7 +63,7 @@ module Ledgerizer
         query = filter_by_predicate(query, config)
       end
 
-      query
+      query.order("created_at DESC")
     end
 
     private

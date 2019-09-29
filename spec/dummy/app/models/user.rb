@@ -1,4 +1,5 @@
 class User < ApplicationRecord
+  include LedgerizerAccountable
 end
 
 # == Schema Information

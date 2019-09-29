@@ -152,6 +152,32 @@ La ejecución de `DepositCreator.new.perform` creará:
 
 - Los montos de los movimientos deben estar de acuerdo con https://en.wikipedia.org/wiki/Trial_balance
 
+### Consultas (lines), sumatorias y balances
+
+Estas consultas pueden hacer a nivel de: `accountable`.
+
+#### Accountable
+
+Siguiendo con el ejemplo supongamos que tenemos la cuenta: `accountable = User.first`. Entonces podemos hacer:
+
+- `accountable.ledger_[account_name]_account_balance`. Ejemplo: `accountable.ledger_funds_to_invest_account_balance(tenant: tenant)`
+- `accountable.ledger_[account_name]_account_lines`. Ejemplo: `accountable.ledger_funds_to_invest_account_lines(tenant: tenant)`
+
+Ambos métodos aceptan los siguientes filtros:
+
+- `entries`: Array de objetos `Ledgerizer::Entry`. También se puede usar `entry` para filtrar por un único objeto.
+- `entry_codes`: Array de `code`s definidos en el `tenant`. En el ejemplo: `:user_deposit` y `user_deposit_distribution`. También se puede usar `entry_code` para filtrar por un único código.
+- `documents`: Array de objetos `ActiveRecord` que son utilizados como `document` en `Ledgerizer::Entry`s. En el ejemplo: `UserDeposit`. También se puede usar `document` para filtrar por un único documento.
+- `amount[_lt|_lteq|_gt|_gteq]`: Para filtrar por `amount` <, <=, > o >=. Debe ser una instancia de `Money` y si no se usa sufijo (_xxx) se buscará un monto igual.
+- `entry_date[_lt|_lteq|_gt|_gteq]`: Para filtrar por `entry_date` <, <=, > o >=. Debe ser una instancia de `Date` y si no se usa sufijo (_xxx) se buscará una fecha igual.
+
+Para tener estos métodos en un modelo de ActiveRecord, se debe agregar el concern: `LedgerizerAccountable`. Ejemplo:
+
+```
+class User < ApplicationRecord
+  include LedgerizerAccountable
+end
+```
 
 ## Testing
 

@@ -18,10 +18,22 @@ module Ledgerizer
         tenants.find { |tenant| tenant.model_name == infer_model_name(value) }
       end
 
+      def include_account?(account_name)
+        accounts_names.include?(account_name.to_s.to_sym)
+      end
+
+      def get_tenant_currency(tenant)
+        find_tenant(tenant)&.currency
+      end
+
       private
 
       def tenants
         @tenants ||= []
+      end
+
+      def accounts_names
+        tenants.map(&:accounts_names).flatten.uniq
       end
 
       def infer_model_name(value)
