@@ -5,6 +5,7 @@ class CreateLedgerizerLines < ActiveRecord::Migration[5.2]
       t.references :entry, foreign_key: { to_table: :ledgerizer_entries }
       t.date :entry_date
       t.string :entry_code
+      t.string :account_type
       t.references :document, polymorphic: true
       t.references :account, foreign_key: { to_table: :ledgerizer_accounts }
       t.references :accountable, polymorphic: true

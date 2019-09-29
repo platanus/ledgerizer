@@ -57,6 +57,7 @@ describe Ledgerizer::FilteredLinesQuery do
   it_behaves_like "filtered lines by AR collection", :user, :force_document, :documents
   it_behaves_like "filtered lines by AR collection", :user, :force_accountable, :accountables
   it_behaves_like "filtered lines by syms collection", :force_entry_code, :entry_code
+  it_behaves_like "filtered lines by syms collection", :force_account_type, :account_type
   it_behaves_like "filtered lines by syms collection", :force_account_name, :account_name
   it_behaves_like "filtered lines by predicated attribute",
                   :amount, :amount, Money.from_amount(10, 'CLP')

@@ -51,6 +51,7 @@ ActiveRecord::Schema.define(version: 2019_09_26_151926) do
     t.integer "entry_id"
     t.date "entry_date"
     t.string "entry_code"
+    t.string "account_type"
     t.string "document_type"
     t.integer "document_id"
     t.integer "account_id"

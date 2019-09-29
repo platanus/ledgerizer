@@ -21,6 +21,7 @@ module Ledgerizer
       self.entry_date = entry.entry_date
       self.accountable = account.accountable
       self.account_name = account.name
+      self.account_type = account.account_type
     end
   end
 end
@@ -35,6 +36,7 @@ end
 #  entry_id         :integer
 #  entry_date       :date
 #  entry_code       :string
+#  account_type     :string
 #  document_type    :string
 #  document_id      :integer
 #  account_id       :integer

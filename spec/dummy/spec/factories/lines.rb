@@ -3,9 +3,6 @@ FactoryBot.define do
     association :tenant, factory: :portfolio
     association :entry, factory: :ledgerizer_entry
     association :account, factory: :ledgerizer_account
-    account_name { :cash }
-    entry_code { :deposit }
-    entry_date { "1984-06-06" }
 
     transient do
       force_tenant { nil }
@@ -13,6 +10,7 @@ FactoryBot.define do
       force_accountable { nil }
 
       force_account_name { nil }
+      force_account_type { nil }
       force_entry_code { nil }
       force_entry_date { nil }
     end
@@ -22,6 +20,7 @@ FactoryBot.define do
       set_polymorphic_relation(line, :document, evaluator.force_document)
       set_polymorphic_relation(line, :accountable, evaluator.force_accountable)
       set_denormalized_attribute(line, :account_name, evaluator.force_account_name)
+      set_denormalized_attribute(line, :account_type, evaluator.force_account_type)
       set_denormalized_attribute(line, :entry_code, evaluator.force_entry_code)
       set_denormalized_attribute(line, :entry_date, evaluator.force_entry_date)
     end

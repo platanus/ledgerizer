@@ -43,7 +43,9 @@ module LedgerizerAccountable
           account_names: :forbidden,
           accountables: :forbidden,
           account: :forbidden,
-          accounts: :forbidden
+          accounts: :forbidden,
+          account_type: :forbidden,
+          account_types: :forbidden
         }
       ).all
     end

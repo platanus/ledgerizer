@@ -8,18 +8,18 @@ module Ledgerizer
       { name: :document, filter_type: :attribute },
       { name: :account, filter_type: :attribute },
       { name: :accountable, filter_type: :attribute },
-
       { name: :account_name, filter_type: :attribute },
       { name: :entry_code, filter_type: :attribute },
+      { name: :account_type, filter_type: :attribute },
 
       { name: :tenants, filter_type: :collection },
       { name: :entries, filter_type: :collection },
       { name: :documents, filter_type: :collection },
       { name: :accounts, filter_type: :collection },
       { name: :accountables, filter_type: :collection },
-
       { name: :account_names, filter_type: :collection },
       { name: :entry_codes, filter_type: :collection },
+      { name: :account_types, filter_type: :collection },
 
       { name: :entry_date, filter_type: :predicate },
       { name: :entry_date_lt, filter_type: :predicate },
