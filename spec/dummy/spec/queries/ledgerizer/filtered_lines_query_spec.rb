@@ -3,53 +3,12 @@ require "spec_helper"
 describe Ledgerizer::FilteredLinesQuery do
   let(:relation) { nil }
   let(:filters) { nil }
-  let(:permissions) { nil }
 
   def perform
-    described_class.new(relation: relation, filters: filters, permissions: permissions).all.count
+    described_class.new(relation: relation, filters: filters).all.count
   end
 
   it { expect(perform).to eq(0) }
-
-  context "with forbidden filters" do
-    let(:permissions) do
-      {
-        tenant: :forbidden
-      }
-    end
-
-    it { expect(perform).to eq(0) }
-
-    context "with given forbidden filter" do
-      let(:filters) do
-        {
-          tenant: create(:portfolio)
-        }
-      end
-
-      it { expect { perform }.to raise_error('tenant is forbidden') }
-    end
-  end
-
-  context "with required filters" do
-    let(:permissions) do
-      {
-        tenant: :required
-      }
-    end
-
-    it { expect { perform }.to raise_error('tenant is required') }
-
-    context "with given forbidden filter" do
-      let(:filters) do
-        {
-          tenant: create(:portfolio)
-        }
-      end
-
-      it { expect(perform).to eq(0) }
-    end
-  end
 
   it_behaves_like "filtered lines by AR collection", :portfolio, :force_tenant, :tenants
   it_behaves_like "filtered lines by AR collection", :ledgerizer_entry, :entry, :entries

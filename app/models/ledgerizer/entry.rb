@@ -1,10 +1,24 @@
 module Ledgerizer
   class Entry < ApplicationRecord
+    include LedgerizerLinesRelated
+
     belongs_to :tenant, polymorphic: true
     belongs_to :document, polymorphic: true
     has_many :lines, dependent: :destroy
 
     validates :code, :entry_date, presence: true
+
+    delegate :currency, to: :tenant, prefix: false # TODO: denormalize
+
+    def forbidden_line_filters
+      [
+        :tenant, :tenants,
+        :entry, :entries,
+        :entry_code, :entry_codes,
+        :entry_date, :entry_dates,
+        :document, :documents
+      ]
+    end
   end
 end
 

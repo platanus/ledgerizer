@@ -55,7 +55,7 @@ RSpec.describe Ledgerizer::Definition::Config do
     context "with invalid tenant" do
       let(:value) { :invalid }
 
-      it { expect(perform).to be_nil }
+      it { expect { perform }.to raise_error("tenant's config does not exist") }
     end
   end
 

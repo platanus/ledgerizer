@@ -1,4 +1,5 @@
 class Deposit < ApplicationRecord
+  include LedgerizerDocument
 end
 
 # == Schema Information

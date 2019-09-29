@@ -23,7 +23,9 @@ module Ledgerizer
       end
 
       def get_tenant_currency(tenant)
-        find_tenant(tenant)&.currency
+        config = find_tenant(tenant)
+        raise_config_error("tenant's config does not exist") unless config
+        config.currency
       end
 
       private

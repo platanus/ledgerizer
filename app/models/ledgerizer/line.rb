@@ -1,5 +1,7 @@
 module Ledgerizer
   class Line < ApplicationRecord
+    extend Ledgerizer::Formatters
+
     belongs_to :tenant, polymorphic: true, optional: true
     belongs_to :document, polymorphic: true, optional: true
     belongs_to :accountable, polymorphic: true, optional: true
@@ -11,6 +13,16 @@ module Ledgerizer
     validates :amount_cents, presence: true
 
     before_save :denormalize_attributes
+
+    def self.filtered(filters = {})
+      Ledgerizer::FilteredLinesQuery.new(relation: self, filters: filters).all
+    end
+
+    def self.amounts_sum(currency)
+      formatted_currency = format_currency(currency, strategy: :upcase, use_default: false)
+      total = where(amount_currency: formatted_currency).sum(:amount_cents)
+      Money.new(total, formatted_currency)
+    end
 
     private
 

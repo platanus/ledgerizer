@@ -152,32 +152,83 @@ La ejecución de `DepositCreator.new.perform` creará:
 
 - Los montos de los movimientos deben estar de acuerdo con https://en.wikipedia.org/wiki/Trial_balance
 
-### Consultas (lines), sumatorias y balances
+### Consultas (lines) y balances
 
-Estas consultas pueden hacer a nivel de: `accountable`.
+Antes de realizar consultas debemos agregar los concerns necesarios a cada modelo según lo que represente en la definición:
 
-#### Accountable
+```ruby
+class Portfolio < ApplicationRecord
+  include LedgerizerTenant
+end
 
-Siguiendo con el ejemplo supongamos que tenemos la cuenta: `accountable = User.first`. Entonces podemos hacer:
-
-- `accountable.ledger_[account_name]_account_balance`. Ejemplo: `accountable.ledger_funds_to_invest_account_balance(tenant: tenant)`
-- `accountable.ledger_[account_name]_account_lines`. Ejemplo: `accountable.ledger_funds_to_invest_account_lines(tenant: tenant)`
-
-Ambos métodos aceptan los siguientes filtros:
-
-- `entries`: Array de objetos `Ledgerizer::Entry`. También se puede usar `entry` para filtrar por un único objeto.
-- `entry_codes`: Array de `code`s definidos en el `tenant`. En el ejemplo: `:user_deposit` y `user_deposit_distribution`. También se puede usar `entry_code` para filtrar por un único código.
-- `documents`: Array de objetos `ActiveRecord` que son utilizados como `document` en `Ledgerizer::Entry`s. En el ejemplo: `UserDeposit`. También se puede usar `document` para filtrar por un único documento.
-- `amount[_lt|_lteq|_gt|_gteq]`: Para filtrar por `amount` <, <=, > o >=. Debe ser una instancia de `Money` y si no se usa sufijo (_xxx) se buscará un monto igual.
-- `entry_date[_lt|_lteq|_gt|_gteq]`: Para filtrar por `entry_date` <, <=, > o >=. Debe ser una instancia de `Date` y si no se usa sufijo (_xxx) se buscará una fecha igual.
-
-Para tener estos métodos en un modelo de ActiveRecord, se debe agregar el concern: `LedgerizerAccountable`. Ejemplo:
-
-```
 class User < ApplicationRecord
   include LedgerizerAccountable
 end
+
+class Deposit < ApplicationRecord
+  include LedgerizerDocument
+end
+
 ```
+
+Siguiendo el ejemplo, supongamos que luego de ejecutar algunas entries, tenemos:
+
+```ruby
+tenant = Portfolio.first
+entry = Deposit.first.entries.first
+account = User.first.accounts.first
+```
+
+Con esto podemos hacer:
+
+*Para tenant*
+
+- `tenant.accounts`: devuelve todas las `Ledgerizer::Account` asociadas al tenant
+- `tenant.entries`: devuelve todas las `Ledgerizer::Entry` asociadas al tenant
+- `tenant.ledger_lines(filters)`: devuelve todas las `Ledgerizer::Line` asociadas al tenant
+- `tenant.ledger_balance(filters)`: devuelve la suma de todas las `Ledgerizer::Line` asociadas al tenant
+
+*Para document*
+
+- `entry.entries`: devuelve todas las `Ledgerizer::Entry` asociadas a la entry
+- `entry.ledger_lines(filters)`: devuelve todas las `Ledgerizer::Line` asociadas a la entry
+- `entry.ledger_balance(filters)`: devuelve la suma de todas las `Ledgerizer::Line` asociadas a la entry
+
+*Para account*
+
+- `account.accounts`: devuelve todas las `Ledgerizer::Account` asociadas al account
+- `account.ledger_lines(filters)`: devuelve todas las `Ledgerizer::Line` asociadas al account
+- `account.ledger_balance(filters)`: devuelve la suma de todas las `Ledgerizer::Line` asociadas al account
+
+Los métodos `ledger_lines` y `ledger_balance` aceptan los siguientes filtros:
+
+- `entries`: Array de objetos `Ledgerizer::Entry`. También se puede usar `entry` para filtrar por un único objeto.
+- `entry_codes`: Array de `code`s definidos en el `tenant`. En el ejemplo: `:user_deposit` y `user_deposit_distribution`. También se puede usar `entry_code` para filtrar por un único código.
+- `accounts`: Array de objetos `Ledgerizer::Account`. También se puede usar `account` para filtrar por una única cuenta.
+- `accountables`: Array de objetos `ActiveRecord` que son utilizados como `accountable` en `Ledgerizer::Account`s. En el ejemplo: `Bank.first` o `User.first`. También se puede usar `accountable` para filtrar por un único documento.
+- `account_names`: Array de `name`s de cuentas definidos en el `tenant`. En el ejemplo: `:funds_to_invest` y `bank`. También se puede usar `account_name` para filtrar por un único nombre de cuenta.
+- `account_types`: Array de tipos de cuenta. Puede ser: `asset`, `expense`, `liability`, `income` y `equity`. También se puede usar `account_type` para filtrar por un único tipo de cuenta.
+- `documents`: Array de objetos `ActiveRecord` que son utilizados como `document` en `Ledgerizer::Entry`s. En el ejemplo: `UserDeposit.first`. También se puede usar `document` para filtrar por un único documento.
+- `amount[_lt|_lteq|_gt|_gteq]`: Para filtrar por `amount` <, <=, > o >=. Debe ser una instancia de `Money` y si no se usa sufijo (_xxx) se buscará un monto igual.
+- `entry_date[_lt|_lteq|_gt|_gteq]`: Para filtrar por `entry_date` <, <=, > o >=. Debe ser una instancia de `Date` y si no se usa sufijo (_xxx) se buscará una fecha igual.
+
+> Se debe tener en cuenta que algunos filtros no harán sentido en aglunos contextos y por esto serán ignorados. Por ejemplo: si ejecuto `entry.ledger_balance(documents: [Deposit.last])`, el filtro `documents` será ignorado ya que ese filtro saldrá de `entry`.
+
+#### Ejemplo de uso:
+
+- Saber el balance de cada cuenta de tipo asset hasta el 10 de enero 2019. Para lograr esto, podría hacer:
+
+  ```ruby
+  tenant.accounts.where(account_type: :asset).each do |asset_account|
+    p "#{asset_account.name}: #{asset_account.ledger_balance(entry_date_lteq: '2019-01-10')}"
+  end
+  ```
+
+- Saber las líneas que conforman un una entry con código `user_deposit` para el día 10 de enero 2019.
+
+  ```ruby
+  tenant.ledger_lines(entry_code: :user_deposit, entry_date: '2019-01-10')
+  ```
 
 ## Testing
 

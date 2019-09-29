@@ -41,11 +41,9 @@ module Ledgerizer
       gteq: '>='
     }
 
-    def initialize(relation: nil, filters: {}, permissions: {})
+    def initialize(relation: nil, filters: {})
       @relation = relation || Ledgerizer::Line.all
-      @filters = format_hash_with_filter_keys(filters)
-      @permissions = format_hash_with_filter_keys(permissions)
-      check_permissions!
+      @filters = format_filters(filters)
     end
 
     def all
@@ -68,9 +66,9 @@ module Ledgerizer
 
     private
 
-    attr_reader :relation, :filters, :permissions
+    attr_reader :relation, :filters
 
-    def format_hash_with_filter_keys(hash)
+    def format_filters(hash)
       return {} if hash.blank?
 
       hash.keys.each do |filter_name|
@@ -80,17 +78,6 @@ module Ledgerizer
       end
 
       hash.with_indifferent_access
-    end
-
-    def check_permissions!
-      permissions.each do |filter_name, value|
-        case value
-        when :required
-          raise_query_error("#{filter_name} is required") unless filters.has_key?(filter_name)
-        when :forbidden
-          raise_query_error("#{filter_name} is forbidden") if filters.has_key?(filter_name)
-        end
-      end
     end
 
     def filters_config_by_attribute(attribute, value)

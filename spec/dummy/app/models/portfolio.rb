@@ -1,4 +1,5 @@
 class Portfolio < ApplicationRecord
+  include LedgerizerTenant
 end
 
 # == Schema Information

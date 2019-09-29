@@ -20,5 +20,7 @@ module Ledgerizer
 
       it_behaves_like 'currency', :ledgerizer_account
     end
+
+    it_behaves_like "ledgerizer lines related", :ledgerizer_account
   end
 end
