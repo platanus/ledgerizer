@@ -188,15 +188,13 @@ Con esto podemos hacer:
 - `tenant.ledger_lines(filters)`: devuelve todas las `Ledgerizer::Line` asociadas al tenant
 - `tenant.ledger_balance(filters)`: devuelve la suma de todas las `Ledgerizer::Line` asociadas al tenant
 
-*Para document*
+*Para entry*
 
-- `entry.entries`: devuelve todas las `Ledgerizer::Entry` asociadas a la entry
 - `entry.ledger_lines(filters)`: devuelve todas las `Ledgerizer::Line` asociadas a la entry
 - `entry.ledger_balance(filters)`: devuelve la suma de todas las `Ledgerizer::Line` asociadas a la entry
 
 *Para account*
 
-- `account.accounts`: devuelve todas las `Ledgerizer::Account` asociadas al account
 - `account.ledger_lines(filters)`: devuelve todas las `Ledgerizer::Line` asociadas al account
 - `account.ledger_balance(filters)`: devuelve la suma de todas las `Ledgerizer::Line` asociadas al account
 
