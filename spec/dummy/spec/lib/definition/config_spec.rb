@@ -40,4 +40,41 @@ RSpec.describe Ledgerizer::Definition::Config do
       end
     end
   end
+
+  describe "#get_tenant_currency" do
+    let(:value) { :portfolio }
+
+    def perform
+      config.get_tenant_currency(value)
+    end
+
+    before { config.add_tenant(model_name: :portfolio) }
+
+    it { expect(perform).to eq(:usd) }
+
+    context "with invalid tenant" do
+      let(:value) { :invalid }
+
+      it { expect { perform }.to raise_error("tenant's config does not exist") }
+    end
+  end
+
+  describe "#include_account?" do
+    let(:tenant) { config.add_tenant(model_name: :portfolio) }
+    let(:account_name) { :account1 }
+
+    def perform
+      config.include_account?(account_name)
+    end
+
+    before { tenant.add_account(name: :account1, type: :asset) }
+
+    it { expect(perform).to eq(true) }
+
+    context "with invalid account" do
+      let(:account_name) { :invalid }
+
+      it { expect(perform).to eq(false) }
+    end
+  end
 end

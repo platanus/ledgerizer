@@ -2,6 +2,7 @@ module Ledgerizer
   class Account < ApplicationRecord
     extend Enumerize
     include Ledgerizer::Formatters
+    include LedgerizerLinesRelated
 
     belongs_to :tenant, polymorphic: true
     belongs_to :accountable, polymorphic: true
@@ -14,6 +15,16 @@ module Ledgerizer
     validates :currency, currency: true
 
     before_save :load_format_currency
+
+    def forbidden_line_filters
+      [
+        :tenant, :tenants,
+        :account_name, :account_names,
+        :accountable, :accountables,
+        :account_type, :account_types,
+        :account, :accounts
+      ]
+    end
 
     private
 

@@ -53,6 +53,10 @@ module Ledgerizer
         )
       end
 
+      def accounts_names
+        accounts.map(&:name)
+      end
+
       def accounts
         @accounts ||= []
       end
