@@ -65,7 +65,7 @@ module Ledgerizer
         tenant: tenant,
         accountable: movement.accountable,
         name: movement.account_name,
-        currency: movement.base_currency,
+        currency: format_to_upcase(movement.base_currency),
         account_type: movement.account_type
       )
     end
