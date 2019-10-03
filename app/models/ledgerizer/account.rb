@@ -12,7 +12,7 @@ module Ledgerizer
                              predicates: { prefix: true }
 
     validates :name, :currency, :account_type, presence: true
-    validates :currency, currency: true
+    validates :currency, ledgerizer_currency: true
 
     before_save :load_format_currency
 
