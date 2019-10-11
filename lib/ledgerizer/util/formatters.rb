@@ -1,7 +1,7 @@
 module Ledgerizer
   module Formatters
     def format_to_symbol_identifier(value)
-      value.to_s.tableize.singularize.to_sym
+      value.to_s.downcase.to_sym
     end
 
     def format_to_upcase(value)
