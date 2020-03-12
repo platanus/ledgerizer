@@ -27,6 +27,14 @@ module Ledgerizer
         end
       end
 
+      def signed_amount_cents
+        signed_amount&.cents
+      end
+
+      def signed_amount_currency
+        signed_amount&.currency
+      end
+
       private
 
       attr_reader :movement_definition
