@@ -56,7 +56,8 @@ module Ledgerizer
     def create_line!(entry, account, movement)
       entry.lines.create!(
         account: account,
-        amount: movement.signed_amount
+        amount_cents: movement.signed_amount_cents,
+        amount_currency: movement.signed_amount_currency
       )
     end
 

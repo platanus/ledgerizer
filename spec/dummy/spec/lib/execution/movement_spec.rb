@@ -58,6 +58,39 @@ describe Ledgerizer::Execution::Movement do
     it { expect { movement }.to raise_error("value needs to be greater than 0") }
   end
 
+  describe "signed_amount_cents" do
+    def perform
+      movement.signed_amount_cents
+    end
+
+    context "with positive value" do
+      let(:account_type) { :asset }
+
+      it { expect(perform).to eq(10000000) }
+    end
+
+    context "with negative value" do
+      let(:account_type) { :liability }
+
+      it { expect(perform).to eq(-10000000) }
+    end
+  end
+
+  describe "signed_amount_currency" do
+    def perform
+      movement.signed_amount_currency
+    end
+
+    it { expect(perform).to eq("CLP") }
+
+    context "with different amount's currency" do
+      let(:base_currency) { "USD" }
+      let(:amount) { usd(1000) }
+
+      it { expect(perform).to eq("USD") }
+    end
+  end
+
   describe "signed_amount" do
     def perform
       movement.signed_amount
