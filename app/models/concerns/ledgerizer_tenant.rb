@@ -30,6 +30,13 @@ module LedgerizerTenant
       ]
     end
 
+    def find_or_init_entry_from_executable(executable_entry)
+      entries.find_or_initialize_by(
+        code: executable_entry.code,
+        document: executable_entry.document
+      )
+    end
+
     def create_entry!(executable_entry)
       entries.create!(
         code: executable_entry.code,

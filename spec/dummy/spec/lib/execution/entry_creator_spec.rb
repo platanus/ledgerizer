@@ -1,31 +1,10 @@
 require "spec_helper"
 
-describe Ledgerizer::EntryCreator do
+describe Ledgerizer::EntryCreator, type: :entry_executor do
   subject(:creator) do
     described_class.new(
       entry: entry,
       executable_entry: executable_entry
-    )
-  end
-
-  let(:tenant_class) { :portfolio }
-  let(:tenant_instance) { create(tenant_class) }
-  let(:document_instance) { create(:user) }
-  let(:entry_code) { :entry1 }
-  let(:entry_date) { "1984-06-04" }
-
-  let(:config) { LedgerizerTestDefinition.definition }
-
-  let(:entry_definition) do
-    config.find_tenant(tenant_class).find_entry(entry_code)
-  end
-
-  let(:executable_entry) do
-    build(
-      :executable_entry,
-      entry_definition: entry_definition,
-      document: document_instance,
-      entry_date: entry_date
     )
   end
 
@@ -39,28 +18,15 @@ describe Ledgerizer::EntryCreator do
     )
   end
 
-  let_definition_class do
-    tenant('portfolio', currency: :clp) do
-      asset(:account1)
-      liability(:account2)
-      asset(:account3)
-
-      entry(:entry1, document: :user) do
-        debit(account: :account1, accountable: :user)
-        credit(account: :account2, accountable: :user)
-      end
-
-      entry(:entry2, document: :user) do
-        debit(account: :account1, accountable: :user)
-        credit(account: :account2, accountable: :user)
-        credit(account: :account3, accountable: :user)
-      end
-    end
-  end
-
   describe "#execute" do
     def perform
       creator.execute
+    end
+
+    context "with persisted entry" do
+      before { entry.save! }
+
+      it { expect { perform }.to raise_error(/EntryCreator with persisted entry/) }
     end
 
     context "with valid movements" do
@@ -72,33 +38,43 @@ describe Ledgerizer::EntryCreator do
         }
       end
 
-      let(:m1) do
+      let(:expected_m1) do
         {
-          movement_type: :debit,
           account_name: :account1,
-          accountable: create(:user),
+          accountable: accountable_instance,
           amount: clp(10)
         }
       end
 
-      let(:m2) do
+      let(:expected_m2) do
         {
-          movement_type: :credit,
           account_name: :account2,
-          accountable: create(:user),
+          accountable: accountable_instance,
           amount: clp(10)
         }
       end
 
       before do
-        executable_entry.add_movement(m1)
-        executable_entry.add_movement(m2)
+        executable_entry.add_movement(
+          movement_type: :debit,
+          account_name: :account1,
+          accountable: accountable_instance,
+          amount: clp(10)
+        )
+
+        executable_entry.add_movement(
+          movement_type: :credit,
+          account_name: :account2,
+          accountable: accountable_instance,
+          amount: clp(10)
+        )
+
         perform
       end
 
       it { expect(tenant_instance).to have_ledger_entry(expected_entry) }
-      it { expect(tenant_instance.entries.last).to have_ledger_line(m1) }
-      it { expect(tenant_instance.entries.last).to have_ledger_line(m2) }
+      it { expect(tenant_instance.entries.last).to have_ledger_line(expected_m1) }
+      it { expect(tenant_instance.entries.last).to have_ledger_line(expected_m2) }
     end
 
     context "with multiple movements" do
@@ -112,50 +88,59 @@ describe Ledgerizer::EntryCreator do
         }
       end
 
-      let(:m1) do
+      let(:expected_m1) do
         {
-          movement_type: :debit,
           account_name: :account1,
-          accountable: create(:user),
+          accountable: accountable_instance,
           amount: clp(10)
         }
       end
 
-      let(:m2) do
+      let(:expected_m2) do
         {
-          movement_type: :credit,
           account_name: :account2,
-          accountable: create(:user),
+          accountable: accountable_instance,
           amount: clp(7)
         }
       end
 
-      let(:m3) do
+      let(:expected_m3) do
         {
-          movement_type: :credit,
           account_name: :account3,
-          accountable: create(:user),
-          amount: clp(3)
+          accountable: accountable_instance,
+          amount: -clp(3)
         }
       end
 
-      let(:expected_line3) do
-        line = m3.dup
-        line[:amount] = -line[:amount]
-        line
-      end
-
       before do
-        executable_entry.add_movement(m1)
-        executable_entry.add_movement(m2)
-        executable_entry.add_movement(m3)
+        executable_entry.add_movement(
+          movement_type: :debit,
+          account_name: :account1,
+          accountable: accountable_instance,
+          amount: clp(10)
+        )
+
+        executable_entry.add_movement(
+          movement_type: :credit,
+          account_name: :account2,
+          accountable: accountable_instance,
+          amount: clp(7)
+        )
+
+        executable_entry.add_movement(
+          movement_type: :credit,
+          account_name: :account3,
+          accountable: accountable_instance,
+          amount: clp(3)
+        )
+
         perform
       end
 
       it { expect(tenant_instance).to have_ledger_entry(expected_entry) }
-      it { expect(tenant_instance.entries.last).to have_ledger_line(m1) }
-      it { expect(tenant_instance.entries.last).to have_ledger_line(m2) }
-      it { expect(tenant_instance.entries.last).to have_ledger_line(expected_line3) }
+      it { expect(tenant_instance.entries.last).to have_ledger_line(expected_m1) }
+      it { expect(tenant_instance.entries.last).to have_ledger_line(expected_m2) }
+      it { expect(tenant_instance.entries.last).to have_ledger_line(expected_m3) }
     end
   end
 end

@@ -26,13 +26,21 @@ module Ledgerizer
 
     def execute
       validate_execution!
-      entry = tenant.create_entry!(executable_entry)
-      Ledgerizer::EntryCreator.new(entry: entry, executable_entry: executable_entry).execute
+      entry = tenant.find_or_init_entry_from_executable(executable_entry)
+      find_executor(entry).new(entry: entry, executable_entry: executable_entry).execute
     end
 
     private
 
     attr_reader :executable_entry, :tenant
+
+    def find_executor(entry)
+      if entry.persisted?
+        Ledgerizer::EntryEditor
+      else
+        Ledgerizer::EntryCreator
+      end
+    end
 
     def get_tenant_definition!(config, tenant)
       validate_active_record_instance!(tenant, "tenant")

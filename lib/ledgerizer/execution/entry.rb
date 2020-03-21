@@ -18,14 +18,14 @@ module Ledgerizer
 
       def add_movement(movement_type:, account_name:, accountable:, amount:)
         movement_definition = get_movement_definition!(movement_type, account_name, accountable)
-        entry = Ledgerizer::Execution::Movement.new(
+        movement = Ledgerizer::Execution::Movement.new(
           movement_definition: movement_definition,
           accountable: accountable,
           amount: amount
         )
 
-        movements << entry
-        entry
+        movements << movement
+        movement
       end
 
       def zero_trial_balance?

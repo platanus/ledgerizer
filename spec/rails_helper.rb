@@ -47,4 +47,5 @@ RSpec.configure do |config|
   config.include ActionDispatch::TestProcess
   config.include TestClassHelpers
   config.include MoneyHelpers
+  config.include ExecutorHelpers, type: :entry_executor
 end

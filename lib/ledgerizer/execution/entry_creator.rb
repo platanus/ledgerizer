@@ -1,5 +1,7 @@
 module Ledgerizer
   class EntryCreator
+    include Ledgerizer::Errors
+
     delegate :movements, to: :executable_entry, prefix: false
 
     def initialize(entry:, executable_entry:)
@@ -9,7 +11,7 @@ module Ledgerizer
 
     def execute
       ActiveRecord::Base.transaction do
-        entry.save!
+        persist_entry!
         movements.each { |movement| entry.create_line!(movement) }
       end
 
@@ -17,6 +19,15 @@ module Ledgerizer
     end
 
     private
+
+    def persist_entry!
+      if entry.persisted?
+        raise_error("can't use Ledgerizer::EntryCreator with persisted entry ##{entry.id}")
+      end
+
+      entry.entry_date = executable_entry.entry_date
+      entry.save!
+    end
 
     attr_reader :entry, :executable_entry
   end

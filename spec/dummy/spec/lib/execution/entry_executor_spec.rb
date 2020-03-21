@@ -1,32 +1,14 @@
 require "spec_helper"
 
-describe Ledgerizer::EntryExecutor do
+describe Ledgerizer::EntryExecutor, type: :entry_executor do
   subject(:executor) do
     described_class.new(
-      config: config,
+      config: ledgerizer_config,
       tenant: tenant_instance,
       document: document_instance,
       entry_code: entry_code,
       entry_date: entry_date
     )
-  end
-
-  let(:config) { LedgerizerTestDefinition.definition }
-  let(:tenant_instance) { create(:portfolio) }
-  let(:document_instance) { create(:user) }
-  let(:entry_code) { :entry1 }
-  let(:entry_date) { "1984-06-04" }
-
-  let_definition_class do
-    tenant('portfolio', currency: :clp) do
-      asset(:account1)
-      liability(:account2)
-
-      entry(:entry1, document: :user) do
-        debit(account: :account1, accountable: :user)
-        credit(account: :account2, accountable: :user)
-      end
-    end
   end
 
   describe "#initialize" do
@@ -50,17 +32,12 @@ describe Ledgerizer::EntryExecutor do
   end
 
   describe "#add_movement" do
-    let(:movement_type) { :debit }
-    let(:account_name) { :account1 }
-    let(:accountable_instance) { create(:user) }
-    let(:amount) { clp(1000) }
-
     def perform
       executor.add_movement(
-        movement_type: movement_type,
-        account_name: account_name,
+        movement_type: :debit,
+        account_name: :account1,
         accountable: accountable_instance,
-        amount: amount
+        amount: clp(1000)
       )
     end
 
@@ -114,25 +91,52 @@ describe Ledgerizer::EntryExecutor do
         }
       end
 
-      let(:creator_result) { 666 }
-
-      let(:creator_instance) do
-        instance_double("Ledgerizer::EntryCreator", execute: creator_result)
-      end
-
       before do
         executor.add_movement(m1)
         executor.add_movement(m2)
-        allow(Ledgerizer::EntryCreator).to receive(:new).and_return(creator_instance)
       end
 
-      it "calls entry creator with valid params" do
-        expect(perform).to eq(creator_result)
+      context "with no persisted entry" do
+        let(:creator_result) { 666 }
 
-        expect(Ledgerizer::EntryCreator).to have_received(:new).with(
-          entry: kind_of(Ledgerizer::Entry),
-          executable_entry: kind_of(Ledgerizer::Execution::Entry)
-        )
+        let(:creator_instance) do
+          instance_double("Ledgerizer::EntryCreator", execute: creator_result)
+        end
+
+        before { allow(Ledgerizer::EntryCreator).to receive(:new).and_return(creator_instance) }
+
+        it "calls entry creator with valid params" do
+          expect(perform).to eq(creator_result)
+
+          expect(Ledgerizer::EntryCreator).to have_received(:new).with(
+            entry: kind_of(Ledgerizer::Entry),
+            executable_entry: kind_of(Ledgerizer::Execution::Entry)
+          ).once
+        end
+      end
+
+      context "with persisted entry" do
+        let(:editor_result) { 999 }
+
+        let(:editor_instance) do
+          instance_double("Ledgerizer::EntryEditr", execute: editor_result)
+        end
+
+        before do
+          allow(tenant_instance).to receive(:find_or_init_entry_from_executable).and_return(
+            create(:ledgerizer_entry)
+          )
+          allow(Ledgerizer::EntryEditor).to receive(:new).and_return(editor_instance)
+        end
+
+        it "calls entry creator with valid params" do
+          expect(perform).to eq(editor_result)
+
+          expect(Ledgerizer::EntryEditor).to have_received(:new).with(
+            entry: kind_of(Ledgerizer::Entry),
+            executable_entry: kind_of(Ledgerizer::Execution::Entry)
+          ).once
+        end
       end
     end
   end
