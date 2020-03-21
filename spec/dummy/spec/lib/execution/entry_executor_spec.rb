@@ -1,12 +1,12 @@
 require "spec_helper"
 
-RSpec.describe Ledgerizer::EntryExecutor do
+describe Ledgerizer::EntryExecutor do
   subject(:executor) do
     described_class.new(
       config: config,
       tenant: tenant_instance,
       document: document_instance,
-      entry_code: entry_code_param,
+      entry_code: entry_code,
       entry_date: entry_date
     )
   end
@@ -15,24 +15,16 @@ RSpec.describe Ledgerizer::EntryExecutor do
   let(:tenant_instance) { create(:portfolio) }
   let(:document_instance) { create(:user) }
   let(:entry_code) { :entry1 }
-  let(:entry_code_param) { entry_code }
   let(:entry_date) { "1984-06-04" }
 
   let_definition_class do
     tenant('portfolio', currency: :clp) do
       asset(:account1)
       liability(:account2)
-      asset(:account3)
 
       entry(:entry1, document: :user) do
         debit(account: :account1, accountable: :user)
         credit(account: :account2, accountable: :user)
-      end
-
-      entry(:entry2, document: :user) do
-        debit(account: :account1, accountable: :user)
-        credit(account: :account2, accountable: :user)
-        credit(account: :account3, accountable: :user)
       end
     end
   end
@@ -51,7 +43,7 @@ RSpec.describe Ledgerizer::EntryExecutor do
     end
 
     context "when entry code is not in tenant" do
-      let(:entry_code_param) { :entry666 }
+      let(:entry_code) { :entry666 }
 
       it { expect { executor }.to raise_error("invalid entry code entry666 for given tenant") }
     end
@@ -104,14 +96,6 @@ RSpec.describe Ledgerizer::EntryExecutor do
     end
 
     context "with valid movements" do
-      let(:expected_entry) do
-        {
-          entry_code: entry_code,
-          entry_date: entry_date,
-          document: document_instance
-        }
-      end
-
       let(:m1) do
         {
           movement_type: :debit,
@@ -130,72 +114,26 @@ RSpec.describe Ledgerizer::EntryExecutor do
         }
       end
 
-      before do
-        executor.add_movement(m1)
-        executor.add_movement(m2)
-        perform
-      end
+      let(:creator_result) { 666 }
 
-      it { expect(tenant_instance).to have_ledger_entry(expected_entry) }
-      it { expect(Ledgerizer::Entry.last).to have_ledger_line(m1) }
-      it { expect(Ledgerizer::Entry.last).to have_ledger_line(m2) }
-    end
-
-    context "with multiple movements" do
-      let(:entry_code) { :entry2 }
-
-      let(:expected_entry) do
-        {
-          entry_code: entry_code,
-          entry_date: entry_date,
-          document: document_instance
-        }
-      end
-
-      let(:m1) do
-        {
-          movement_type: :debit,
-          account_name: :account1,
-          accountable: create(:user),
-          amount: clp(10)
-        }
-      end
-
-      let(:m2) do
-        {
-          movement_type: :credit,
-          account_name: :account2,
-          accountable: create(:user),
-          amount: clp(7)
-        }
-      end
-
-      let(:m3) do
-        {
-          movement_type: :credit,
-          account_name: :account3,
-          accountable: create(:user),
-          amount: clp(3)
-        }
-      end
-
-      let(:expected_line3) do
-        line = m3.dup
-        line[:amount] = -line[:amount]
-        line
+      let(:creator_instance) do
+        instance_double("Ledgerizer::EntryCreator", execute: creator_result)
       end
 
       before do
         executor.add_movement(m1)
         executor.add_movement(m2)
-        executor.add_movement(m3)
-        perform
+        allow(Ledgerizer::EntryCreator).to receive(:new).and_return(creator_instance)
       end
 
-      it { expect(tenant_instance).to have_ledger_entry(expected_entry) }
-      it { expect(Ledgerizer::Entry.last).to have_ledger_line(m1) }
-      it { expect(Ledgerizer::Entry.last).to have_ledger_line(m2) }
-      it { expect(Ledgerizer::Entry.last).to have_ledger_line(expected_line3) }
+      it "calls entry creator with valid params" do
+        expect(perform).to eq(creator_result)
+
+        expect(Ledgerizer::EntryCreator).to have_received(:new).with(
+          entry: kind_of(Ledgerizer::Entry),
+          executable_entry: kind_of(Ledgerizer::Execution::Entry)
+        )
+      end
     end
   end
 end
