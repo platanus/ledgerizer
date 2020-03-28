@@ -43,6 +43,16 @@ RSpec.describe Ledgerizer::Formatters do
     it { expect(perform).to eq("LEAN") }
   end
 
+  describe '#format_sym_to_model' do
+    let(:value) { :user }
+
+    def perform
+      test_class.new.format_sym_to_model(value)
+    end
+
+    it { expect(perform).to eq(User) }
+  end
+
   describe '#format_currency' do
     let(:currency) { "CLP" }
     let(:strategy) { :symbol }

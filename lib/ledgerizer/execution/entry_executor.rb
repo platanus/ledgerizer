@@ -25,21 +25,78 @@ module Ledgerizer
     end
 
     def execute
-      validate_execution!
-      entry = tenant.find_or_init_entry_from_executable(executable_entry)
-      find_executor(entry).new(entry: entry, executable_entry: executable_entry).execute
+      validate_existent_movements!
+      validate_zero_trial_balance!(executable_entry.movements)
+      entry = find_or_initialize_entry
+
+      ActiveRecord::Base.transaction do
+        if entry.persisted?
+          update_old_entries(entry)
+        else
+          create_new_entry(entry, executable_entry.movements)
+        end
+      end
+
+      true
     end
 
     private
 
     attr_reader :executable_entry, :tenant
 
-    def find_executor(entry)
-      if entry.persisted?
-        Ledgerizer::EntryEditor
-      else
-        Ledgerizer::EntryCreator
-      end
+    def find_or_initialize_entry
+      entry_data = {
+        code: executable_entry.code,
+        document: executable_entry.document
+      }
+
+      entries = tenant.entries
+      entry = entries.where(entry_data).order(:created_at).last
+      return entry if entry
+
+      entries.build(entry_data)
+    end
+
+    def update_old_entries(entry)
+      adjusted_movements = get_adjusted_movements(entry)
+      return if adjusted_movements.none?
+
+      validate_zero_trial_balance!(adjusted_movements)
+      validate_adjustment_date_greater_than_old_entry_date!(entry)
+      adjustment_entry = entry.dup
+      create_new_entry(adjustment_entry, adjusted_movements)
+    end
+
+    def get_adjusted_movements(entry)
+      executable_entry.old_movements(entry).inject([]) do |result, old_movement|
+        adjusted_movement = adjust_old_movement(old_movement)
+        result << adjusted_movement if adjusted_movement
+        result
+      end + executable_entry.movements
+    end
+
+    def create_new_entry(entry, movements)
+      entry.entry_date = executable_entry.entry_date
+      entry.save!
+      movements.each { |movement| entry.create_line!(movement) }
+    end
+
+    def adjust_old_movement(old_movement)
+      new_movement = get_new_from_old_movement(old_movement)
+      old_amount = old_movement.amount
+      new_amount = new_movement&.amount || 0
+      diff = new_amount - old_amount
+      return if diff.zero?
+
+      old_movement.amount = diff
+      old_movement
+    end
+
+    def get_new_from_old_movement(old_movement)
+      found = executable_entry.movements.find { |new_movement| old_movement == new_movement }
+      return unless found
+
+      executable_entry.movements.delete(found)
     end
 
     def get_tenant_definition!(config, tenant)
@@ -58,17 +115,30 @@ module Ledgerizer
       raise_error("invalid entry code #{entry_code} for given tenant")
     end
 
-    def validate_execution!
-      validate_existent_movements!
-      validate_zero_trial_balance!
-    end
-
     def validate_existent_movements!
-      raise_error("can't execute entry without movements") if movements.none?
+      raise_error("can't execute entry without movements") if executable_entry.movements.none?
     end
 
-    def validate_zero_trial_balance!
-      raise_error("trial balance must be zero") unless executable_entry.zero_trial_balance?
+    def validate_adjustment_date_greater_than_old_entry_date!(entry)
+      if entry.entry_date > executable_entry.entry_date
+        raise_error(
+          "adjustment date (#{executable_entry.entry_date}) must be greater \
+than old entry date (#{entry.entry_date})"
+        )
+      end
+    end
+
+    def validate_zero_trial_balance!(movements)
+      raise_error("trial balance must be zero") unless zero_trial_balance?(movements)
+    end
+
+    def zero_trial_balance?(movements)
+      movements.inject(0) do |sum, movement|
+        amount = movement.signed_amount
+        amount = -amount if movement.credit?
+        sum += amount
+        sum
+      end.zero?
     end
   end
 end

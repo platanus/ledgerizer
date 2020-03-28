@@ -10,14 +10,44 @@ RSpec.describe Ledgerizer::Execution::Entry do
     )
   end
 
-  let(:entry_definition) do
-    build(:entry_definition, code: entry_code, document: document)
-  end
-
   let(:document) { :user }
   let(:document_instance) { create(:user) }
   let(:entry_code) { :deposit }
   let(:entry_date) { "1984-06-04" }
+
+  let(:entry_definition) do
+    build(:entry_definition, code: entry_code, document: document)
+  end
+
+  let(:account_name) { :cash }
+  let(:account_type) { :asset }
+  let(:base_currency) { :clp }
+  let(:contra) { false }
+
+  let(:account) do
+    build(
+      :account_definition,
+      name: account_name,
+      type: account_type,
+      base_currency: base_currency,
+      contra: contra
+    )
+  end
+
+  let(:tenant_instance) { create(:portfolio) }
+
+  let(:entry) do
+    create(
+      :ledgerizer_entry,
+      tenant: tenant_instance,
+      document: document_instance,
+      code: entry_code,
+      entry_date: entry_date
+    )
+  end
+
+  let(:accountable_instance) { create(:user) }
+  let(:accountable) { :user }
 
   it { expect(execution_entry.entry_date).to eq(entry_date.to_date) }
   it { expect(execution_entry.document).to eq(document_instance) }
@@ -42,13 +72,7 @@ RSpec.describe Ledgerizer::Execution::Entry do
 
   describe "#add_movement" do
     let(:movement_type) { :debit }
-    let(:account_name) { :cash }
-    let(:account_type) { :asset }
-    let(:accountable_instance) { create(:user) }
-    let(:accountable) { :user }
     let(:amount) { clp(1000) }
-    let(:base_currency) { :clp }
-    let(:contra) { false }
 
     let(:account) do
       build(
@@ -100,164 +124,121 @@ RSpec.describe Ledgerizer::Execution::Entry do
         it { expect { perform }.to raise_error(/accountable Portfolio for given deposit/) }
       end
     end
-  end
 
-  describe "#zero_trial_balance?" do
-    let(:movements) { [] }
-
-    def perform
-      execution_entry.zero_trial_balance?
-    end
-
-    before do
-      movements.each do |movement|
-        execution_entry.movements << movement
+    describe "#old_movements" do
+      def perform
+        execution_entry.old_movements(entry)
       end
-    end
 
-    it { expect(perform).to eq(true) }
-
-    context "with debit and credit accounts" do
-      let(:m1) do
-        build(
-          :executable_movement,
-          amount: clp(1),
-          movement_def: {
-            movement_type: :debit,
-            account_def: {
-              type: :asset
-            }
-          }
+      before do
+        entry_definition.add_movement(
+          movement_type: movement_type,
+          account: account,
+          accountable: accountable
         )
       end
 
-      let(:m2) do
-        build(
-          :executable_movement,
-          amount: clp(1),
-          movement_def: {
-            movement_type: :credit,
-            account_def: {
-              type: :liability
-            }
-          }
-        )
+      it { expect(perform.count).to eq(0) }
+
+      context "with a single line matching entry and movement definition" do
+        before do
+          create(
+            :ledgerizer_line,
+            entry: entry,
+            force_accountable: accountable_instance,
+            account_name: account_name,
+            amount: clp(333)
+          )
+        end
+
+        it { expect(perform.count).to eq(1) }
+        it { expect(perform.first.amount).to eq(clp(333)) }
+
+        context "with another line matching the same entry en movement definition" do
+          before do
+            create(
+              :ledgerizer_line,
+              entry: entry,
+              force_accountable: accountable_instance,
+              account_name: account_name,
+              amount: clp(333)
+            )
+          end
+
+          it { expect(perform.count).to eq(1) }
+          it { expect(perform.first.amount).to eq(clp(666)) }
+        end
+
+        context "with line with negative amount" do
+          before do
+            create(
+              :ledgerizer_line,
+              entry: entry,
+              force_accountable: accountable_instance,
+              account_name: account_name,
+              amount: -clp(666)
+            )
+          end
+
+          it { expect(perform.count).to eq(1) }
+          it { expect(perform.first.amount).to eq(-clp(333)) }
+        end
+
+        context "with another line with different accountable" do
+          before do
+            create(
+              :ledgerizer_line,
+              entry: entry,
+              account_name: account_name,
+              amount: clp(222)
+            )
+          end
+
+          it { expect(perform.count).to eq(2) }
+          it { expect(perform.first.amount).to eq(clp(333)) }
+          it { expect(perform.last.amount).to eq(clp(222)) }
+        end
+
+        context "with line with line entry not matching entry param" do
+          before do
+            create(
+              :ledgerizer_line,
+              entry: create(:ledgerizer_entry),
+              force_accountable: accountable_instance,
+              account_name: account_name,
+              amount: clp(222)
+            )
+          end
+
+          it { expect(perform.count).to eq(1) }
+          it { expect(perform.first.amount).to eq(clp(333)) }
+        end
+
+        context "with line with another entry having same sensible attributes as entry param" do
+          let(:another_entry) do
+            create(
+              :ledgerizer_entry,
+              tenant: tenant_instance,
+              document: document_instance,
+              code: entry_code,
+              entry_date: entry_date.to_date + 1.day
+            )
+          end
+
+          before do
+            create(
+              :ledgerizer_line,
+              entry: another_entry,
+              force_accountable: accountable_instance,
+              account_name: account_name,
+              amount: clp(222)
+            )
+          end
+
+          it { expect(perform.count).to eq(1) }
+          it { expect(perform.first.amount).to eq(clp(555)) }
+        end
       end
-
-      let(:movements) { [m1, m2] }
-
-      it { expect(perform).to eq(true) }
-    end
-
-    context "with contra account" do
-      let(:m1) do
-        build(
-          :executable_movement,
-          amount: clp(1),
-          movement_def: {
-            movement_type: :debit,
-            account_def: {
-              type: :asset
-            }
-          }
-        )
-      end
-
-      let(:m2) do
-        build(
-          :executable_movement,
-          amount: clp(1),
-          movement_def: {
-            movement_type: :debit,
-            account_def: {
-              type: :asset,
-              contra: true
-            }
-          }
-        )
-      end
-
-      let(:movements) { [m1, m2] }
-
-      it { expect(perform).to eq(true) }
-    end
-
-    context "with multiple accounts" do
-      let(:m1) do
-        build(
-          :executable_movement,
-          amount: clp(10),
-          movement_def: {
-            movement_type: :debit,
-            account_def: {
-              type: :asset
-            }
-          }
-        )
-      end
-
-      let(:m2) do
-        build(
-          :executable_movement,
-          amount: clp(7),
-          movement_def: {
-            movement_type: :debit,
-            account_def: {
-              type: :asset,
-              contra: true
-            }
-          }
-        )
-      end
-
-      let(:m3) do
-        build(
-          :executable_movement,
-          amount: clp(3),
-          movement_def: {
-            movement_type: :credit,
-            account_def: {
-              type: :liability
-            }
-          }
-        )
-      end
-
-      let(:movements) { [m1, m2, m3] }
-
-      it { expect(perform).to eq(true) }
-    end
-
-    context "when sum is not zero" do
-      let(:m1) do
-        build(
-          :executable_movement,
-          amount: clp(1),
-          movement_def: {
-            movement_type: :debit,
-            account_def: {
-              type: :asset
-            }
-          }
-        )
-      end
-
-      let(:m2) do
-        build(
-          :executable_movement,
-          amount: clp(7),
-          movement_def: {
-            movement_type: :credit,
-            account_def: {
-              type: :liability
-            }
-          }
-        )
-      end
-
-      let(:movements) { [m1, m2] }
-
-      it { expect(perform).to eq(false) }
     end
   end
 end

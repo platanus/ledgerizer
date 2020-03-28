@@ -21,7 +21,7 @@ RSpec::Matchers.define :have_ledger_line do |accountable:, amount:, account_name
   acc = account_name || account
   fail "missing account_name" unless acc
 
-  match do |entity|
+  match do |entry|
     currency = amount.currency.to_s
     account = Ledgerizer::Account.find_by(
       tenant: entry.tenant,

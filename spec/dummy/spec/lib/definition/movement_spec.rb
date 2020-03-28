@@ -17,6 +17,7 @@ RSpec.describe Ledgerizer::Definition::Movement do
 
   it { expect(movement.account_name).to eq(:cash) }
   it { expect(movement.accountable).to eq(:user) }
+  it { expect(movement.accountable_class).to eq(User) }
   it { expect(movement.movement_type).to eq(:debit) }
   it { expect(movement.base_currency).to eq(:usd) }
   it { expect(movement.contra).to eq(true) }

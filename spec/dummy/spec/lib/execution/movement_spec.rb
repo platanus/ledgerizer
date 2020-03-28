@@ -4,19 +4,24 @@ describe Ledgerizer::Execution::Movement do
   subject(:movement) do
     build(
       :executable_movement,
-      movement_def: {
-        accountable: accountable,
-        movement_type: movement_type,
-        account_def: {
-          name: account_name,
-          type: account_type,
-          contra: contra,
-          base_currency: base_currency
-        }
-      },
+      movement_def: movement_def,
+      allow_negative_amount: allow_negative_amount,
       accountable: accountable_instance,
       amount: amount
     )
+  end
+
+  let(:movement_def) do
+    {
+      accountable: accountable,
+      movement_type: movement_type,
+      account_def: {
+        name: account_name,
+        type: account_type,
+        contra: contra,
+        base_currency: base_currency
+      }
+    }
   end
 
   let(:accountable_instance) { create(:user) }
@@ -26,6 +31,7 @@ describe Ledgerizer::Execution::Movement do
   let(:account_name) { :bank }
   let(:account_type) { :asset }
   let(:contra) { false }
+  let(:allow_negative_amount) { false }
   let(:base_currency) { "CLP" }
 
   it { expect(movement.credit?).to eq(false) }
@@ -50,6 +56,12 @@ describe Ledgerizer::Execution::Movement do
     let(:amount) { -clp(1) }
 
     it { expect { movement }.to raise_error("value needs to be greater than 0") }
+
+    context "with allow_negative_amount true" do
+      let(:allow_negative_amount) { true }
+
+      it { expect(movement.amount).to eq(amount) }
+    end
   end
 
   context "with zero money amount" do
@@ -138,6 +150,32 @@ describe Ledgerizer::Execution::Movement do
 
         it { expect(perform).to eq(-amount) }
       end
+    end
+  end
+
+  describe "#==" do
+    let(:other_accountable) { accountable_instance }
+    let(:other_movement_definition) { movement.movement_definition }
+    let(:other) do
+      build(
+        :executable_movement,
+        movement_definition: other_movement_definition,
+        accountable: other_accountable
+      )
+    end
+
+    it { expect(movement).to eq(other) }
+
+    context "with different defintion" do
+      let(:other_movement_definition) { build(:movement_definition, movement_def) }
+
+      it { expect(movement).not_to eq(other) }
+    end
+
+    context "with different accountable" do
+      let(:other_accountable) { create(:user) }
+
+      it { expect(movement).not_to eq(other) }
     end
   end
 end
