@@ -12,11 +12,19 @@ module Ledgerizer
       def initialize(account:, accountable:, movement_type:)
         @account = account
         @movement_type = format_to_symbol_identifier(movement_type)
-        @accountable = format_to_symbol_identifier(accountable)
+        @accountable = format_to_symbol_identifier(accountable) if accountable
       end
 
       def accountable_class
+        return unless accountable
+
         format_sym_to_model(accountable)
+      end
+
+      def accountable_string_class
+        return unless accountable
+
+        accountable_class.to_s
       end
     end
   end

@@ -51,7 +51,7 @@ module Ledgerizer
           groups = amounts_grouped_by_accountable_and_currency(entry, movement_definition)
           groups.each do |accountabe_data, amount_cents|
             accountable_id, currency = accountabe_data
-            accountable = movement_definition.accountable_class.find(accountable_id)
+            accountable = movement_definition.accountable_class&.find(accountable_id)
 
             block.call(
               accountable: accountable,
@@ -75,7 +75,7 @@ module Ledgerizer
           tenant: entry.tenant,
           entry_code: code,
           document: entry.document,
-          accountable_type: movement_definition.accountable_class.to_s,
+          accountable_type: movement_definition.accountable_string_class,
           account_name: movement_definition.account_name
         )
       end
@@ -89,7 +89,7 @@ module Ledgerizer
       end
 
       def get_movement_definition!(movement_type, account_name, accountable)
-        validate_active_record_instance!(accountable, "accountable")
+        validate_active_record_instance!(accountable, "accountable") if accountable
         movement_definition = entry_definition.find_movement(
           movement_type: movement_type,
           account_name: account_name,

@@ -17,6 +17,11 @@ RSpec.describe Ledgerizer::Execution::Dsl do
         credit(account: :account2, accountable: :user)
         credit(account: :account3, accountable: :user)
       end
+
+      entry(:entry3, document: :user) do
+        debit(account: :account1, accountable: :user)
+        credit(account: :account2)
+      end
     end
   end
 
@@ -121,6 +126,45 @@ RSpec.describe Ledgerizer::Execution::Dsl do
 
       before do
         LedgerizerTestExecution.new(debit: debit_data, credit: credit_data).execute_entry1_entry(
+          tenant: tenant, document: document, date: date
+        ) do
+          debit(data[:debit])
+          credit(data[:credit])
+        end
+      end
+
+      it { expect(tenant).to have_ledger_entry(expected_entry) }
+      it { expect(Ledgerizer::Entry.last).to have_ledger_line(debit_data) }
+      it { expect(Ledgerizer::Entry.last).to have_ledger_line(credit_data) }
+    end
+
+    context "with movement without accountable" do
+      let(:expected_entry) do
+        {
+          entry_code: :entry3,
+          entry_date: date,
+          document: document
+        }
+      end
+
+      let(:debit_data) do
+        {
+          account: :account1,
+          accountable: create(:user),
+          amount: clp(1)
+        }
+      end
+
+      let(:credit_data) do
+        {
+          account: :account2,
+          accountable: nil,
+          amount: clp(1)
+        }
+      end
+
+      before do
+        LedgerizerTestExecution.new(debit: debit_data, credit: credit_data).execute_entry3_entry(
           tenant: tenant, document: document, date: date
         ) do
           debit(data[:debit])
