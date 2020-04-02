@@ -26,16 +26,6 @@ module Ledgerizer
       ]
     end
 
-    def self.find_or_create_by_executable_movement!(tenant, movement)
-      find_or_create_by!(
-        tenant: tenant,
-        accountable: movement.accountable,
-        name: movement.account_name,
-        currency: format_to_upcase(movement.base_currency),
-        account_type: movement.account_type
-      )
-    end
-
     private
 
     def load_format_currency

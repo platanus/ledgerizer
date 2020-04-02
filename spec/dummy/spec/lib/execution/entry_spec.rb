@@ -199,7 +199,7 @@ RSpec.describe Ledgerizer::Execution::Entry do
           it { expect(perform.last.amount).to eq(clp(222)) }
         end
 
-        context "with line with line entry not matching entry param" do
+        context "with line entry not matching entry param" do
           before do
             create(
               :ledgerizer_line,
