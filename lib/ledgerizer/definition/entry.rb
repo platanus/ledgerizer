@@ -22,9 +22,7 @@ module Ledgerizer
       end
 
       def add_movement(movement_type:, account:, accountable:)
-        ar_accountable = format_to_symbol_identifier(accountable)
-        validate_active_record_model_name!(ar_accountable, "accountable")
-        validate_unique_account!(movement_type, account.name, ar_accountable)
+        ar_accountable = find_ar_accountable(movement_type, account.name, accountable)
 
         Ledgerizer::Definition::Movement.new(
           account: account,
@@ -40,6 +38,18 @@ module Ledgerizer
       end
 
       private
+
+      def find_ar_accountable(movement_type, account_name, accountable)
+        ar_accountable = nil
+
+        if !accountable.blank?
+          ar_accountable = format_to_symbol_identifier(accountable)
+          validate_active_record_model_name!(ar_accountable, "accountable")
+        end
+
+        validate_unique_account!(movement_type, account_name, ar_accountable)
+        ar_accountable
+      end
 
       def infer_model_name(value)
         return format_model_to_sym(value) if value.is_a?(ActiveRecord::Base)

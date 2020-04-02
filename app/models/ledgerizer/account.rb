@@ -5,7 +5,7 @@ module Ledgerizer
     include LedgerizerLinesRelated
 
     belongs_to :tenant, polymorphic: true
-    belongs_to :accountable, polymorphic: true
+    belongs_to :accountable, polymorphic: true, optional: true
     has_many :lines, dependent: :destroy
 
     enumerize :account_type, in: Ledgerizer::Definition::Account::TYPES,
