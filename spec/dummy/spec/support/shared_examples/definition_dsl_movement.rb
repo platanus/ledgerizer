@@ -60,6 +60,30 @@ shared_examples 'definition dsl movement' do |type|
       it { expect(LedgerizerTestDefinition).to have_ledger_movement_definition(expected) }
     end
 
+    context "with no accountable" do
+      let_definition_class do
+        tenant('portfolio') do
+          asset(:cash)
+
+          entry(:deposit, document: :portfolio) do
+            send(type, account: :cash)
+          end
+        end
+      end
+
+      let(:expected) do
+        {
+          tenant_class: :portfolio,
+          entry_code: :deposit,
+          movement_type: type,
+          account: :cash,
+          accountable: nil
+        }
+      end
+
+      it { expect(LedgerizerTestDefinition).to have_ledger_movement_definition(expected) }
+    end
+
     context "with multiple movements" do
       let_definition_class do
         tenant('portfolio') do

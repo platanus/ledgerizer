@@ -40,7 +40,6 @@ module LedgerizerTenant
 
     def find_or_create_account_from_executable_movement!(movement)
       accounts.find_or_create_by!(
-        tenant: self,
         accountable: movement.accountable,
         name: movement.account_name,
         currency: format_to_upcase(movement.base_currency),

@@ -38,7 +38,7 @@ module Ledgerizer
           @executor = nil
         end
 
-        def debit(account:, accountable:, amount:)
+        def debit(account:, amount:, accountable: nil)
           in_context do
             @executor.add_movement(
               movement_type: :debit,
@@ -49,7 +49,7 @@ module Ledgerizer
           end
         end
 
-        def credit(account:, accountable:, amount:)
+        def credit(account:, amount:, accountable: nil)
           in_context do
             @executor.add_movement(
               movement_type: :credit,
