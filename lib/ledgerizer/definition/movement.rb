@@ -14,6 +14,10 @@ module Ledgerizer
         @movement_type = format_to_symbol_identifier(movement_type)
         @accountable = format_to_symbol_identifier(accountable)
       end
+
+      def accountable_class
+        format_sym_to_model(accountable)
+      end
     end
   end
 end

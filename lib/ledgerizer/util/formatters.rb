@@ -24,5 +24,9 @@ module Ledgerizer
     def format_model_to_sym(value)
       value.model_name.singular.to_sym
     end
+
+    def format_sym_to_model(value)
+      value.to_s.camelize.constantize
+    end
   end
 end
