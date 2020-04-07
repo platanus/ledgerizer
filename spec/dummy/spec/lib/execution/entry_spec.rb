@@ -18,6 +18,7 @@ describe Ledgerizer::Execution::Entry do
   let(:document_instance) { create(:deposit) }
   let(:entry_code) { :deposit }
   let(:entry_date) { "1984-06-04" }
+  let(:entry_instance_date) { entry_date }
 
   let(:entry) do
     create(
@@ -25,7 +26,7 @@ describe Ledgerizer::Execution::Entry do
       tenant: tenant_instance,
       document: document_instance,
       code: entry_code,
-      entry_date: entry_date
+      entry_date: entry_instance_date
     )
   end
 
@@ -78,6 +79,36 @@ describe Ledgerizer::Execution::Entry do
     let(:entry_date) { "1984-06-32" }
 
     it { expect { execution_entry }.to raise_error("invalid date given") }
+  end
+
+  describe "#entry_instance" do
+    def instance
+      execution_entry.entry_instance
+    end
+
+    it { expect(instance).to be_a(Ledgerizer::Entry) }
+    it { expect(instance.tenant).to eq(tenant_instance) }
+    it { expect(instance.persisted?).to eq(false) }
+    it { expect(instance.code).to eq(entry_code.to_s) }
+    it { expect(instance.document).to eq(document_instance) }
+    it { expect(instance.entry_date).to eq(entry_date.to_date) }
+
+    context "with persisted entry" do
+      before { entry }
+
+      it { expect(instance).to be_a(Ledgerizer::Entry) }
+      it { expect(instance.tenant).to eq(tenant_instance) }
+      it { expect(instance.persisted?).to eq(false) }
+      it { expect(instance.code).to eq(entry_code.to_s) }
+      it { expect(instance.document).to eq(document_instance) }
+      it { expect(instance.entry_date).to eq(entry_date.to_date) }
+
+      context "with invalid entry_date" do
+        let(:entry_instance_date) { entry_date.to_date + 1.day }
+
+        it { expect { instance }.to raise_error(/\(1984-06-04\) must be greater/) }
+      end
+    end
   end
 
   describe "#add_new_movement" do
@@ -140,12 +171,12 @@ describe Ledgerizer::Execution::Entry do
     end
   end
 
-  describe "#old_movements" do
+  describe "#adjusted_movements" do
     let(:account_name) { :account1 }
     let(:accountable_instance) { create(:user) }
 
     def perform
-      execution_entry.old_movements
+      execution_entry.adjusted_movements
     end
 
     it { expect(perform.count).to eq(0) }
@@ -162,7 +193,7 @@ describe Ledgerizer::Execution::Entry do
       end
 
       it { expect(perform.count).to eq(1) }
-      it { expect(perform.first.amount).to eq(clp(333)) }
+      it { expect(perform.first.amount).to eq(-clp(333)) }
 
       context "with another line matching the same entry en movement definition" do
         before do
@@ -176,7 +207,7 @@ describe Ledgerizer::Execution::Entry do
         end
 
         it { expect(perform.count).to eq(1) }
-        it { expect(perform.first.amount).to eq(clp(666)) }
+        it { expect(perform.first.amount).to eq(-clp(666)) }
       end
 
       context "with line with negative amount" do
@@ -191,7 +222,7 @@ describe Ledgerizer::Execution::Entry do
         end
 
         it { expect(perform.count).to eq(1) }
-        it { expect(perform.first.amount).to eq(-clp(333)) }
+        it { expect(perform.first.amount).to eq(clp(333)) }
       end
 
       context "with another line with different accountable" do
@@ -205,8 +236,8 @@ describe Ledgerizer::Execution::Entry do
         end
 
         it { expect(perform.count).to eq(2) }
-        it { expect(perform.first.amount).to eq(clp(333)) }
-        it { expect(perform.last.amount).to eq(clp(222)) }
+        it { expect(perform.first.amount).to eq(-clp(333)) }
+        it { expect(perform.last.amount).to eq(-clp(222)) }
       end
 
       context "with line entry not matching entry param" do
@@ -221,7 +252,7 @@ describe Ledgerizer::Execution::Entry do
         end
 
         it { expect(perform.count).to eq(1) }
-        it { expect(perform.first.amount).to eq(clp(333)) }
+        it { expect(perform.first.amount).to eq(-clp(333)) }
       end
 
       context "with line with another entry having same sensible attributes as entry param" do
@@ -246,7 +277,7 @@ describe Ledgerizer::Execution::Entry do
         end
 
         it { expect(perform.count).to eq(1) }
-        it { expect(perform.first.amount).to eq(clp(555)) }
+        it { expect(perform.first.amount).to eq(-clp(555)) }
       end
     end
   end

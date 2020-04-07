@@ -58,9 +58,9 @@ describe Ledgerizer::EntryExecutor do
     end
   end
 
-  describe "#add_movement" do
+  describe "#add_new_movement" do
     def perform
-      executor.add_movement(
+      executor.add_new_movement(
         movement_type: :debit,
         account_name: :account1,
         accountable: accountable_instance,
@@ -85,14 +85,14 @@ describe Ledgerizer::EntryExecutor do
 
     context "when balance sum is not zero" do
       before do
-        executor.add_movement(
+        executor.add_new_movement(
           movement_type: :debit,
           account_name: :account1,
           accountable: create(:user),
           amount: clp(10)
         )
 
-        executor.add_movement(
+        executor.add_new_movement(
           movement_type: :credit,
           account_name: :account2,
           accountable: create(:user),
@@ -129,14 +129,14 @@ describe Ledgerizer::EntryExecutor do
       end
 
       before do
-        executor.add_movement(
+        executor.add_new_movement(
           movement_type: :debit,
           account_name: :account1,
           accountable: accountable_instance,
           amount: clp(10)
         )
 
-        executor.add_movement(
+        executor.add_new_movement(
           movement_type: :credit,
           account_name: :account2,
           accountable: accountable_instance,
@@ -187,21 +187,21 @@ describe Ledgerizer::EntryExecutor do
       end
 
       before do
-        executor.add_movement(
+        executor.add_new_movement(
           movement_type: :debit,
           account_name: :account1,
           accountable: accountable_instance,
           amount: clp(10)
         )
 
-        executor.add_movement(
+        executor.add_new_movement(
           movement_type: :credit,
           account_name: :account2,
           accountable: accountable_instance,
           amount: clp(7)
         )
 
-        executor.add_movement(
+        executor.add_new_movement(
           movement_type: :credit,
           account_name: :account3,
           accountable: accountable_instance,
@@ -263,14 +263,14 @@ describe Ledgerizer::EntryExecutor do
       end
 
       before do
-        executor.add_movement(
+        executor.add_new_movement(
           movement_type: :debit,
           account_name: :account1,
           accountable: accountable_instance,
           amount: clp(10)
         )
 
-        executor.add_movement(
+        executor.add_new_movement(
           movement_type: :credit,
           account_name: :account2,
           accountable: accountable_instance,
@@ -282,14 +282,14 @@ describe Ledgerizer::EntryExecutor do
 
       context "with same movements" do
         before do
-          another_executor.add_movement(
+          another_executor.add_new_movement(
             movement_type: :debit,
             account_name: :account1,
             accountable: accountable_instance,
             amount: clp(10)
           )
 
-          another_executor.add_movement(
+          another_executor.add_new_movement(
             movement_type: :credit,
             account_name: :account2,
             accountable: accountable_instance,
@@ -310,14 +310,14 @@ describe Ledgerizer::EntryExecutor do
         let(:adjustment_entry_date) { "1984-06-03" }
 
         before do
-          another_executor.add_movement(
+          another_executor.add_new_movement(
             movement_type: :debit,
             account_name: :account1,
             accountable: accountable_instance,
             amount: clp(11)
           )
 
-          another_executor.add_movement(
+          another_executor.add_new_movement(
             movement_type: :credit,
             account_name: :account2,
             accountable: accountable_instance,
@@ -346,14 +346,14 @@ describe Ledgerizer::EntryExecutor do
         end
 
         before do
-          another_executor.add_movement(
+          another_executor.add_new_movement(
             movement_type: :debit,
             account_name: :account1,
             accountable: accountable_instance,
             amount: clp(15)
           )
 
-          another_executor.add_movement(
+          another_executor.add_new_movement(
             movement_type: :credit,
             account_name: :account2,
             accountable: accountable_instance,
@@ -391,14 +391,14 @@ describe Ledgerizer::EntryExecutor do
         end
 
         before do
-          another_executor.add_movement(
+          another_executor.add_new_movement(
             movement_type: :debit,
             account_name: :account1,
             accountable: accountable_instance,
             amount: clp(5)
           )
 
-          another_executor.add_movement(
+          another_executor.add_new_movement(
             movement_type: :credit,
             account_name: :account2,
             accountable: accountable_instance,
@@ -438,14 +438,14 @@ describe Ledgerizer::EntryExecutor do
         end
 
         before do
-          another_executor.add_movement(
+          another_executor.add_new_movement(
             movement_type: :debit,
             account_name: :account1,
             accountable: another_accountable,
             amount: clp(10)
           )
 
-          another_executor.add_movement(
+          another_executor.add_new_movement(
             movement_type: :credit,
             account_name: :account2,
             accountable: accountable_instance,

@@ -30,6 +30,34 @@ module Ledgerizer
         movement
       end
 
+      def entry_instance
+        @entry_instance ||= begin
+          entry_data = { code: code, document: document }
+          entries = tenant.entries
+          entry = find_entry_instance(entries, entry_data) || entries.build(entry_data)
+          entry.entry_date = entry_date
+          entry
+        end
+      end
+
+      def new_movements
+        @new_movements ||= []
+      end
+
+      def adjusted_movements
+        @adjusted_movements ||= begin
+          old_movements.inject([]) do |result, old_movement|
+            adjusted_movement = adjust_old_movement(old_movement)
+            result << adjusted_movement if adjusted_movement
+            result
+          end + new_movements
+        end
+      end
+
+      private
+
+      attr_reader :entry_definition, :tenant
+
       def old_movements
         found_movements = []
 
@@ -40,26 +68,22 @@ module Ledgerizer
         found_movements
       end
 
-      def new_movements
-        @new_movements ||= []
+      def find_entry_instance(entries, entry_data)
+        entry = entries.where(entry_data).order(:created_at).last
+        return unless entry
+
+        validate_adjustment_date_greater_than_old_entry_date!(entry)
+        entry.dup
       end
 
-      def entry_instance
-        @entry_instance ||= begin
-          entry_data = {
-            code: code,
-            document: document
-          }
-
-          entries = tenant.entries
-          entry = entries.where(entry_data).order(:created_at).last
-          entry || entries.build(entry_data)
+      def validate_adjustment_date_greater_than_old_entry_date!(entry)
+        if entry.entry_date > entry_date
+          raise_error(
+            "adjustment date (#{entry_date}) must be greater \
+than old entry date (#{entry.entry_date})"
+          )
         end
       end
-
-      private
-
-      attr_reader :entry_definition, :tenant
 
       def for_each_grouped_by_accountable_and_currency_movement(&block)
         entry_definition.movements.each do |movement_definition|
@@ -133,6 +157,24 @@ module Ledgerizer
         return entry_definition if entry_definition
 
         raise_error("invalid entry code #{entry_code} for given tenant")
+      end
+
+      def adjust_old_movement(old_movement)
+        new_movement = get_new_from_old_movement(old_movement)
+        old_amount = old_movement.amount
+        new_amount = new_movement&.amount || 0
+        diff = new_amount - old_amount
+        return if diff.zero?
+
+        old_movement.amount = diff
+        old_movement
+      end
+
+      def get_new_from_old_movement(old_movement)
+        found = new_movements.find { |new_movement| old_movement == new_movement }
+        return unless found
+
+        new_movements.delete(found)
       end
     end
   end
