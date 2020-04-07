@@ -145,7 +145,7 @@ describe Ledgerizer::Execution::Entry do
     let(:accountable_instance) { create(:user) }
 
     def perform
-      execution_entry.old_movements(entry)
+      execution_entry.old_movements
     end
 
     it { expect(perform.count).to eq(0) }

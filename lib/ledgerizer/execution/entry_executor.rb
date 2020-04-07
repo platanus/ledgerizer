@@ -3,10 +3,9 @@ module Ledgerizer
     include Ledgerizer::Validators
     include Ledgerizer::Formatters
 
-    delegate :new_movements, to: :executable_entry, prefix: false
+    delegate :new_movements, :entry_instance, to: :executable_entry, prefix: false
 
     def initialize(config:, tenant:, document:, entry_code:, entry_date:)
-      @tenant = tenant
       @executable_entry = Ledgerizer::Execution::Entry.new(
         config: config,
         tenant: tenant,
@@ -28,13 +27,12 @@ module Ledgerizer
     def execute
       validate_existent_movements!
       validate_zero_trial_balance!(executable_entry.new_movements)
-      entry = find_or_initialize_entry
 
       ActiveRecord::Base.transaction do
-        if entry.persisted?
-          update_old_entries(entry)
+        if entry_instance.persisted?
+          update_old_entries
         else
-          create_new_entry(entry, executable_entry.new_movements)
+          create_new_entry(entry_instance, executable_entry.new_movements)
         end
       end
 
@@ -43,33 +41,20 @@ module Ledgerizer
 
     private
 
-    attr_reader :executable_entry, :tenant
+    attr_reader :executable_entry
 
-    def find_or_initialize_entry
-      entry_data = {
-        code: executable_entry.code,
-        document: executable_entry.document
-      }
-
-      entries = tenant.entries
-      entry = entries.where(entry_data).order(:created_at).last
-      return entry if entry
-
-      entries.build(entry_data)
-    end
-
-    def update_old_entries(entry)
-      adjusted_movements = get_adjusted_movements(entry)
+    def update_old_entries
+      adjusted_movements = get_adjusted_movements
       return if adjusted_movements.none?
 
       validate_zero_trial_balance!(adjusted_movements)
-      validate_adjustment_date_greater_than_old_entry_date!(entry)
-      adjustment_entry = entry.dup
+      validate_adjustment_date_greater_than_old_entry_date!
+      adjustment_entry = entry_instance.dup
       create_new_entry(adjustment_entry, adjusted_movements)
     end
 
-    def get_adjusted_movements(entry)
-      executable_entry.old_movements(entry).inject([]) do |result, old_movement|
+    def get_adjusted_movements
+      executable_entry.old_movements.inject([]) do |result, old_movement|
         adjusted_movement = adjust_old_movement(old_movement)
         result << adjusted_movement if adjusted_movement
         result
@@ -104,11 +89,11 @@ module Ledgerizer
       raise_error("can't execute entry without movements") if executable_entry.new_movements.none?
     end
 
-    def validate_adjustment_date_greater_than_old_entry_date!(entry)
-      if entry.entry_date > executable_entry.entry_date
+    def validate_adjustment_date_greater_than_old_entry_date!
+      if entry_instance.entry_date > executable_entry.entry_date
         raise_error(
           "adjustment date (#{executable_entry.entry_date}) must be greater \
-than old entry date (#{entry.entry_date})"
+than old entry date (#{entry_instance.entry_date})"
         )
       end
     end

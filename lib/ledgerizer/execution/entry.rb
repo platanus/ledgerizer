@@ -10,6 +10,7 @@ module Ledgerizer
 
       def initialize(config:, tenant:, document:, entry_code:, entry_date:)
         tenant_definition = get_tenant_definition!(config, tenant)
+        @tenant = tenant
         @entry_definition = get_entry_definition!(tenant_definition, entry_code)
         validate_entry_document!(document)
         @document = document
@@ -29,10 +30,10 @@ module Ledgerizer
         movement
       end
 
-      def old_movements(entry)
+      def old_movements
         found_movements = []
 
-        for_each_grouped_by_accountable_and_currency_movement(entry) do |movement|
+        for_each_grouped_by_accountable_and_currency_movement do |movement|
           found_movements << Ledgerizer::Execution::Movement.new(movement)
         end
 
@@ -43,13 +44,26 @@ module Ledgerizer
         @new_movements ||= []
       end
 
+      def entry_instance
+        @entry_instance ||= begin
+          entry_data = {
+            code: code,
+            document: document
+          }
+
+          entries = tenant.entries
+          entry = entries.where(entry_data).order(:created_at).last
+          entry || entries.build(entry_data)
+        end
+      end
+
       private
 
-      attr_reader :entry_definition
+      attr_reader :entry_definition, :tenant
 
-      def for_each_grouped_by_accountable_and_currency_movement(entry, &block)
+      def for_each_grouped_by_accountable_and_currency_movement(&block)
         entry_definition.movements.each do |movement_definition|
-          groups = amounts_grouped_by_accountable_and_currency(entry, movement_definition)
+          groups = amounts_grouped_by_accountable_and_currency(movement_definition)
           groups.each do |accountabe_data, amount_cents|
             accountable_id, currency = accountabe_data
             accountable = movement_definition.accountable_class&.find(accountable_id)
@@ -64,18 +78,18 @@ module Ledgerizer
         end
       end
 
-      def amounts_grouped_by_accountable_and_currency(entry, movement_definition)
+      def amounts_grouped_by_accountable_and_currency(movement_definition)
         attrs = %i{accountable_id amount_currency}
         lines_by_movement_definition(
-          entry, movement_definition
+          movement_definition
         ).select(*attrs).group(*attrs).sum(:amount_cents)
       end
 
-      def lines_by_movement_definition(entry, movement_definition)
+      def lines_by_movement_definition(movement_definition)
         Ledgerizer::Line.where(
-          tenant: entry.tenant,
+          tenant: tenant,
           entry_code: code,
-          document: entry.document,
+          document: document,
           accountable_type: movement_definition.accountable_string_class,
           account_name: movement_definition.account_name
         )
