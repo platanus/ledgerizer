@@ -3,7 +3,7 @@ module Ledgerizer
     include Ledgerizer::Validators
     include Ledgerizer::Formatters
 
-    delegate :movements, to: :executable_entry, prefix: false
+    delegate :new_movements, to: :executable_entry, prefix: false
 
     def initialize(config:, tenant:, document:, entry_code:, entry_date:)
       tenant_definition = get_tenant_definition!(config, tenant)
@@ -16,7 +16,7 @@ module Ledgerizer
     end
 
     def add_movement(movement_type:, account_name:, accountable:, amount:)
-      executable_entry.add_movement(
+      executable_entry.add_new_movement(
         movement_type: movement_type,
         account_name: account_name,
         accountable: accountable,
@@ -26,14 +26,14 @@ module Ledgerizer
 
     def execute
       validate_existent_movements!
-      validate_zero_trial_balance!(executable_entry.movements)
+      validate_zero_trial_balance!(executable_entry.new_movements)
       entry = find_or_initialize_entry
 
       ActiveRecord::Base.transaction do
         if entry.persisted?
           update_old_entries(entry)
         else
-          create_new_entry(entry, executable_entry.movements)
+          create_new_entry(entry, executable_entry.new_movements)
         end
       end
 
@@ -72,7 +72,7 @@ module Ledgerizer
         adjusted_movement = adjust_old_movement(old_movement)
         result << adjusted_movement if adjusted_movement
         result
-      end + executable_entry.movements
+      end + executable_entry.new_movements
     end
 
     def create_new_entry(entry, movements)
@@ -93,10 +93,10 @@ module Ledgerizer
     end
 
     def get_new_from_old_movement(old_movement)
-      found = executable_entry.movements.find { |new_movement| old_movement == new_movement }
+      found = executable_entry.new_movements.find { |new_movement| old_movement == new_movement }
       return unless found
 
-      executable_entry.movements.delete(found)
+      executable_entry.new_movements.delete(found)
     end
 
     def get_tenant_definition!(config, tenant)
@@ -116,7 +116,7 @@ module Ledgerizer
     end
 
     def validate_existent_movements!
-      raise_error("can't execute entry without movements") if executable_entry.movements.none?
+      raise_error("can't execute entry without movements") if executable_entry.new_movements.none?
     end
 
     def validate_adjustment_date_greater_than_old_entry_date!(entry)

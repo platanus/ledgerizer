@@ -16,7 +16,7 @@ module Ledgerizer
         @entry_date = entry_date.to_date
       end
 
-      def add_movement(movement_type:, account_name:, accountable:, amount:)
+      def add_new_movement(movement_type:, account_name:, accountable:, amount:)
         movement_definition = get_movement_definition!(movement_type, account_name, accountable)
         movement = Ledgerizer::Execution::Movement.new(
           movement_definition: movement_definition,
@@ -24,7 +24,7 @@ module Ledgerizer
           amount: amount
         )
 
-        movements << movement
+        new_movements << movement
         movement
       end
 
@@ -38,8 +38,8 @@ module Ledgerizer
         found_movements
       end
 
-      def movements
-        @movements ||= []
+      def new_movements
+        @new_movements ||= []
       end
 
       private

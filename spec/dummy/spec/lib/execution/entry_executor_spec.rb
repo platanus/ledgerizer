@@ -69,7 +69,7 @@ describe Ledgerizer::EntryExecutor do
     end
 
     it { expect(perform).to be_a(Ledgerizer::Execution::Movement) }
-    it { expect { perform }.to change { executor.movements.count }.from(0).to(1) }
+    it { expect { perform }.to change { executor.new_movements.count }.from(0).to(1) }
   end
 
   describe "#execute" do

@@ -85,7 +85,7 @@ RSpec.describe Ledgerizer::Execution::Entry do
     end
 
     def perform
-      execution_entry.add_movement(
+      execution_entry.add_new_movement(
         movement_type: movement_type,
         account_name: account_name,
         accountable: accountable_instance,
@@ -110,7 +110,7 @@ RSpec.describe Ledgerizer::Execution::Entry do
         )
       end
 
-      it { expect { perform }.to change { execution_entry.movements.count }.from(0).to(1) }
+      it { expect { perform }.to change { execution_entry.new_movements.count }.from(0).to(1) }
 
       context "with non AR document" do
         let(:accountable_instance) { LedgerizerTest.new }
