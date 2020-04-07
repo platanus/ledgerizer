@@ -8,8 +8,9 @@ module Ledgerizer
 
       delegate :code, to: :entry_definition, prefix: false
 
-      def initialize(entry_definition:, document:, entry_date:)
-        @entry_definition = entry_definition
+      def initialize(config:, tenant:, document:, entry_code:, entry_date:)
+        tenant_definition = get_tenant_definition!(config, tenant)
+        @entry_definition = get_entry_definition!(tenant_definition, entry_code)
         validate_entry_document!(document)
         @document = document
         validate_date!(entry_date)
@@ -102,6 +103,22 @@ module Ledgerizer
             "#{accountable.class} for given #{entry_definition.code} " +
             "entry in #{movement_type.to_s.pluralize}"
         )
+      end
+
+      def get_tenant_definition!(config, tenant)
+        validate_active_record_instance!(tenant, "tenant")
+        tenant_definition = config.find_tenant(tenant)
+        return tenant_definition if tenant_definition
+
+        raise_error("can't find tenant for given #{tenant.model_name} model")
+      end
+
+      def get_entry_definition!(tenant_definition, entry_code)
+        code = format_to_symbol_identifier(entry_code)
+        entry_definition = tenant_definition.find_entry(code)
+        return entry_definition if entry_definition
+
+        raise_error("invalid entry code #{entry_code} for given tenant")
       end
     end
   end
