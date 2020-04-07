@@ -11,7 +11,9 @@ module Ledgerizer
     enumerize :account_type, in: Ledgerizer::Definition::Account::TYPES,
                              predicates: { prefix: true }
 
-    validates :name, :currency, :account_type, presence: true
+    monetize :balance_cents
+
+    validates :name, :currency, :account_type, :balance_cents, presence: true
     validates :currency, ledgerizer_currency: true
 
     before_save :load_format_currency

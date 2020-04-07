@@ -13,7 +13,9 @@ module Ledgerizer
 
     describe "validations" do
       it { is_expected.to validate_presence_of(:amount_cents) }
+      it { is_expected.to validate_presence_of(:balance_cents) }
       it { is_expected.to monetize(:amount) }
+      it { is_expected.to monetize(:balance) }
     end
 
     describe "#denormalize_attributes" do

@@ -9,8 +9,9 @@ module Ledgerizer
     belongs_to :entry
 
     monetize :amount_cents
+    monetize :balance_cents
 
-    validates :amount_cents, presence: true
+    validates :amount_cents, :balance_cents, presence: true
 
     before_save :denormalize_attributes
 

@@ -17,6 +17,8 @@ module Ledgerizer
       it { is_expected.to validate_presence_of(:name) }
       it { is_expected.to validate_presence_of(:account_type) }
       it { is_expected.to validate_presence_of(:currency) }
+      it { is_expected.to validate_presence_of(:balance_cents) }
+      it { is_expected.to monetize(:balance) }
 
       it_behaves_like 'currency', :ledgerizer_account
     end

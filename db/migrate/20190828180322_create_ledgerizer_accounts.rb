@@ -6,6 +6,7 @@ class CreateLedgerizerAccounts < ActiveRecord::Migration[5.2]
       t.string :name
       t.string :currency
       t.string :account_type
+      t.monetize :balance, amount: { null: false, default: 0 }
 
       t.timestamps
     end

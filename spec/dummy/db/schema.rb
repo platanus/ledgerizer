@@ -26,6 +26,8 @@ ActiveRecord::Schema.define(version: 2019_09_26_151926) do
     t.string "name"
     t.string "currency"
     t.string "account_type"
+    t.bigint "balance_cents", default: 0, null: false
+    t.string "balance_currency", default: "CLP", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["accountable_type", "accountable_id"], name: "index_ledgerizer_accounts_on_acc_type_and_acc_id"
@@ -60,6 +62,8 @@ ActiveRecord::Schema.define(version: 2019_09_26_151926) do
     t.string "account_name"
     t.bigint "amount_cents", default: 0, null: false
     t.string "amount_currency", default: "CLP", null: false
+    t.bigint "balance_cents", default: 0, null: false
+    t.string "balance_currency", default: "CLP", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_ledgerizer_lines_on_account_id"
