@@ -17,7 +17,6 @@ module Ledgerizer
         validate_amount!(amount)
 
         @amount = amount
-        @currency = format_currency(amount.currency, strategy: :upcase, use_default: false)
         @accountable = accountable
       end
 

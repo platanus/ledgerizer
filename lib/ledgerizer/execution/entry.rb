@@ -54,6 +54,22 @@ module Ledgerizer
         end
       end
 
+      def related_accounts
+        accounts = []
+
+        adjusted_movements.each do |movement|
+          account = Ledgerizer::Execution::Account.new(
+            tenant: tenant,
+            accountable: movement.accountable,
+            account_name: movement.account_name,
+            currency: movement.signed_amount_currency
+          )
+          accounts << account unless accounts.include?(account)
+        end
+
+        accounts
+      end
+
       private
 
       attr_reader :entry_definition, :tenant

@@ -281,4 +281,118 @@ describe Ledgerizer::Execution::Entry do
       end
     end
   end
+
+  describe "#related_accounts" do
+    let(:account_name1) { :account1 }
+    let(:account_name2) { :account2 }
+    let(:accountable1) { create(:user) }
+    let(:accountable2) { create(:user) }
+    let(:accountable3) { create(:user) }
+
+    let(:another_entry) do
+      create(
+        :ledgerizer_entry,
+        tenant: tenant_instance,
+        document: document_instance,
+        code: entry_code,
+        entry_date: entry_date.to_date + 1.day
+      )
+    end
+
+    let(:expected_accounts) do
+      [
+        build(
+          :executable_account,
+          tenant: tenant_instance,
+          accountable: accountable1,
+          account_name: account_name1,
+          currency: "CLP"
+        ),
+        build(
+          :executable_account,
+          tenant: tenant_instance,
+          accountable: accountable2,
+          account_name: account_name2,
+          currency: "CLP"
+        ),
+        build(
+          :executable_account,
+          tenant: tenant_instance,
+          accountable: accountable3,
+          account_name: account_name2,
+          currency: "CLP"
+        )
+      ]
+    end
+
+    def perform
+      execution_entry.related_accounts.sort
+    end
+
+    before do
+      execution_entry.add_new_movement(
+        movement_type: :debit,
+        account_name: account_name1,
+        accountable: accountable1,
+        amount: clp(10)
+      )
+
+      execution_entry.add_new_movement(
+        movement_type: :credit,
+        account_name: account_name2,
+        accountable: accountable2,
+        amount: clp(5)
+      )
+
+      execution_entry.add_new_movement(
+        movement_type: :credit,
+        account_name: account_name2,
+        accountable: accountable3,
+        amount: clp(5)
+      )
+    end
+
+    it { expect(perform).to eq(expected_accounts) }
+
+    context "with previous entry adding a new account" do
+      let(:accountable4) { create(:user) }
+      let(:updated_expected_accounts) do
+        expected_accounts + [
+          build(
+            :executable_account,
+            tenant: tenant_instance,
+            accountable: accountable4,
+            account_name: account_name2,
+            currency: "CLP"
+          )
+        ]
+      end
+
+      before do
+        create(
+          :ledgerizer_line,
+          entry: another_entry,
+          force_accountable: accountable4,
+          force_account_name: account_name2,
+          amount: clp(100)
+        )
+      end
+
+      it { expect(perform).to eq(updated_expected_accounts) }
+    end
+
+    context "with previous entry not adding a new account" do
+      before do
+        create(
+          :ledgerizer_line,
+          entry: another_entry,
+          force_accountable: accountable1,
+          force_account_name: account_name1,
+          amount: clp(100)
+        )
+      end
+
+      it { expect(perform).to eq(expected_accounts) }
+    end
+  end
 end
