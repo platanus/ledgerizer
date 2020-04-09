@@ -112,4 +112,31 @@ describe Ledgerizer::Execution::Account do
       it { expect(execution_account).not_to eq(other_account) }
     end
   end
+
+  describe "#balance" do
+    let(:params) do
+      {
+        tenant: tenant_instance,
+        accountable: accountable_instance,
+        account_type: account_type,
+        account_name: account_name
+      }
+    end
+
+    let(:sum) { clp(10) }
+
+    let(:lines) do
+      class_double("Ledgerizer::Line")
+    end
+
+    def perform
+      execution_account.balance
+    end
+
+    it "calls lines amounts_sum method with valid params" do
+      expect(Ledgerizer::Line).to receive(:where).with(params).and_return(lines)
+      expect(lines).to receive(:amounts_sum).with(currency).and_return(sum)
+      expect(perform).to eq(sum)
+    end
+  end
 end

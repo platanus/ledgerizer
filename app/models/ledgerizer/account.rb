@@ -54,6 +54,8 @@ end
 #  name             :string
 #  currency         :string
 #  account_type     :string
+#  balance_cents    :bigint           default(0), not null
+#  balance_currency :string           default("CLP"), not null
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #

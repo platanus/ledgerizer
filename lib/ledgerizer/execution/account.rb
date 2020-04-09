@@ -47,6 +47,13 @@ module Ledgerizer
         to_array <=> other.to_array
       end
 
+      def balance
+        params = to_hash.dup
+        params[:account_name] = params.delete(:name)
+        balance_currency = params.delete(:currency)
+        Ledgerizer::Line.where(params).amounts_sum(balance_currency)
+      end
+
       private
 
       attr_reader :tenant, :accountable, :account_type, :account_name, :currency

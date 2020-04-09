@@ -58,6 +58,8 @@ end
 #  account_name     :string
 #  amount_cents     :bigint           default(0), not null
 #  amount_currency  :string           default("CLP"), not null
+#  balance_cents    :bigint           default(0), not null
+#  balance_currency :string           default("CLP"), not null
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #
