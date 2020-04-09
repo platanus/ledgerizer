@@ -4,6 +4,12 @@ module Ledgerizer
       include Ledgerizer::Validators
       include Ledgerizer::Formatters
 
+      attr_writer :running_inside_transactional_fixtures
+
+      def running_inside_transactional_fixtures
+        @running_inside_transactional_fixtures || false
+      end
+
       def add_tenant(model_name:, currency: nil)
         tenant = Ledgerizer::Definition::Tenant.new(
           model_name: model_name,
