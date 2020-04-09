@@ -28,6 +28,12 @@ module Ledgerizer
       ]
     end
 
+    def self.find_by_executable_account(executable_account, lock: false)
+      accounts = where(executable_account.to_hash)
+      accounts = accounts.lock(true) if lock
+      accounts.first
+    end
+
     private
 
     def load_format_currency

@@ -24,5 +24,79 @@ module Ledgerizer
     end
 
     it_behaves_like "ledgerizer lines related", :ledgerizer_account
+
+    describe "#find_by_executable_account" do
+      let(:executable_tenant_instance) { create(:portfolio) }
+      let(:executable_account_type) { :asset }
+      let(:executable_account_name) { :account1 }
+      let(:executable_accountable) { create(:user) }
+      let(:executable_currency) { "CLP" }
+
+      let(:tenant_instance) { executable_tenant_instance }
+      let(:account_type) { executable_account_type }
+      let(:account_name) { executable_account_name }
+      let(:accountable) { executable_accountable }
+      let(:currency) { executable_currency }
+
+      let(:lock) { false }
+
+      let(:executable_account) do
+        build(
+          :executable_account,
+          tenant: executable_tenant_instance,
+          accountable: executable_accountable,
+          account_type: executable_account_type,
+          account_name: executable_account_name,
+          currency: executable_currency
+        )
+      end
+
+      let!(:account) do
+        create(
+          :ledgerizer_account,
+          tenant: tenant_instance,
+          accountable: accountable,
+          account_type: account_type,
+          name: account_name,
+          currency: currency
+        )
+      end
+
+      def perform
+        described_class.find_by_executable_account(executable_account, lock: true)
+      end
+
+      it { expect(perform).to eq(account) }
+
+      context "with executable currency not matching the account" do
+        let(:currency) { "USD" }
+
+        it { expect(perform).to be_nil }
+      end
+
+      context "with executable accountable not matching the account" do
+        let(:accountable) { create(:user) }
+
+        it { expect(perform).to be_nil }
+      end
+
+      context "with executable tenant not matching the account" do
+        let(:tenant_instance) { create(:portfolio) }
+
+        it { expect(perform).to be_nil }
+      end
+
+      context "with executable account_name not matching the account" do
+        let(:account_name) { :account2 }
+
+        it { expect(perform).to be_nil }
+      end
+
+      context "with executable account_type not matching the account" do
+        let(:account_type) { :liability }
+
+        it { expect(perform).to be_nil }
+      end
+    end
   end
 end
