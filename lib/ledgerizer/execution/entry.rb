@@ -62,6 +62,7 @@ module Ledgerizer
             tenant: tenant,
             accountable: movement.accountable,
             account_name: movement.account_name,
+            account_type: movement.account_type,
             currency: movement.signed_amount_currency
           )
           accounts << account unless accounts.include?(account)

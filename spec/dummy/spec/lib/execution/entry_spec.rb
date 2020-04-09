@@ -285,6 +285,10 @@ describe Ledgerizer::Execution::Entry do
   describe "#related_accounts" do
     let(:account_name1) { :account1 }
     let(:account_name2) { :account2 }
+
+    let(:account_type1) { :asset }
+    let(:account_type2) { :liability }
+
     let(:accountable1) { create(:user) }
     let(:accountable2) { create(:user) }
     let(:accountable3) { create(:user) }
@@ -306,6 +310,7 @@ describe Ledgerizer::Execution::Entry do
           tenant: tenant_instance,
           accountable: accountable1,
           account_name: account_name1,
+          account_type: account_type1,
           currency: "CLP"
         ),
         build(
@@ -313,6 +318,7 @@ describe Ledgerizer::Execution::Entry do
           tenant: tenant_instance,
           accountable: accountable2,
           account_name: account_name2,
+          account_type: account_type2,
           currency: "CLP"
         ),
         build(
@@ -320,6 +326,7 @@ describe Ledgerizer::Execution::Entry do
           tenant: tenant_instance,
           accountable: accountable3,
           account_name: account_name2,
+          account_type: account_type2,
           currency: "CLP"
         )
       ]
@@ -363,6 +370,7 @@ describe Ledgerizer::Execution::Entry do
             tenant: tenant_instance,
             accountable: accountable4,
             account_name: account_name2,
+            account_type: account_type2,
             currency: "CLP"
           )
         ]
@@ -374,6 +382,7 @@ describe Ledgerizer::Execution::Entry do
           entry: another_entry,
           force_accountable: accountable4,
           force_account_name: account_name2,
+          force_account_type: account_type2,
           amount: clp(100)
         )
       end
@@ -388,6 +397,7 @@ describe Ledgerizer::Execution::Entry do
           entry: another_entry,
           force_accountable: accountable1,
           force_account_name: account_name1,
+          force_account_type: account_type1,
           amount: clp(100)
         )
       end

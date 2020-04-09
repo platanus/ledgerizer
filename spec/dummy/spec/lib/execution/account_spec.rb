@@ -7,6 +7,7 @@ describe Ledgerizer::Execution::Account do
       tenant: tenant_instance,
       accountable: accountable_instance,
       account_name: account_name,
+      account_type: account_type,
       currency: currency
     )
   end
@@ -14,6 +15,7 @@ describe Ledgerizer::Execution::Account do
   let(:tenant_instance) { create(:portfolio) }
   let(:accountable_instance) { create(:user) }
   let(:account_name) { :cash }
+  let(:account_type) { :asset }
   let(:currency) { "CLP" }
 
   describe "#to_array" do
@@ -23,6 +25,7 @@ describe Ledgerizer::Execution::Account do
         tenant_instance.id,
         "User",
         accountable_instance.id,
+        "asset",
         "cash",
         "CLP"
       ]
@@ -35,10 +38,41 @@ describe Ledgerizer::Execution::Account do
     it { expect(perform).to eq(expected) }
   end
 
+  describe "#identifier" do
+    let(:expected) do
+      "Portfolio::#{tenant_instance.id}::User::#{accountable_instance.id}::asset::cash::CLP"
+    end
+
+    def perform
+      execution_account.identifier
+    end
+
+    it { expect(perform).to eq(expected) }
+  end
+
+  describe "#to_hash" do
+    let(:expected) do
+      {
+        tenant: tenant_instance,
+        accountable: accountable_instance,
+        account_type: account_type,
+        name: account_name,
+        currency: currency
+      }
+    end
+
+    def perform
+      execution_account.to_hash
+    end
+
+    it { expect(perform).to eq(expected) }
+  end
+
   describe "#==" do
     let(:other_tenant_instance) { tenant_instance }
     let(:other_accountable_instance) { accountable_instance }
     let(:other_account_name) { account_name }
+    let(:other_account_type) { account_type }
     let(:other_currency) { currency }
 
     let(:other_account) do
@@ -47,6 +81,7 @@ describe Ledgerizer::Execution::Account do
         tenant: other_tenant_instance,
         accountable: other_accountable_instance,
         account_name: other_account_name,
+        account_type: other_account_type,
         currency: other_currency
       )
     end
