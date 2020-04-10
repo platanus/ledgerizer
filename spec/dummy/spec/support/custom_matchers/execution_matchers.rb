@@ -17,7 +17,9 @@ RSpec::Matchers.define :have_ledger_entry do |entry_code:, entry_date:, document
   end
 end
 
-RSpec::Matchers.define :have_ledger_line do |accountable:, amount:, account_name: nil, account: nil|
+RSpec::Matchers.define :have_ledger_line do |
+  accountable:, amount:, balance: nil, account_name: nil, account: nil
+|
   acc = account_name || account
   fail "missing account_name" unless acc
 
@@ -30,11 +32,18 @@ RSpec::Matchers.define :have_ledger_line do |accountable:, amount:, account_name
       currency: currency
     )
 
-    !!entry.lines.find_by(
+    line_params = {
       amount_cents: amount.cents,
       amount_currency: currency,
       account: account
-    )
+    }
+
+    if balance
+      line_params[:balance_cents] = balance.cents
+      line_params[:balance_currency] = balance.currency.to_s
+    end
+
+    !!entry.lines.find_by(line_params)
   end
 
   description do

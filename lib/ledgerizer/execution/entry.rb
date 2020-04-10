@@ -35,7 +35,6 @@ module Ledgerizer
           entry_data = { code: code, document: document }
           entries = tenant.entries
           entry = find_entry_instance(entries, entry_data) || entries.build(entry_data)
-          entry.entry_date = entry_date
           entry
         end
       end
@@ -63,7 +62,7 @@ module Ledgerizer
             accountable: movement.accountable,
             account_name: movement.account_name,
             account_type: movement.account_type,
-            currency: movement.signed_amount_currency
+            currency: movement.signed_amount_currency.to_s
           )
           accounts << account unless accounts.include?(account)
         end

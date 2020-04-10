@@ -91,7 +91,7 @@ describe Ledgerizer::Execution::Entry do
     it { expect(instance.persisted?).to eq(false) }
     it { expect(instance.code).to eq(entry_code.to_s) }
     it { expect(instance.document).to eq(document_instance) }
-    it { expect(instance.entry_date).to eq(entry_date.to_date) }
+    it { expect(instance.entry_date).to eq(nil) }
 
     context "with persisted entry" do
       before { entry }

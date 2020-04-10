@@ -44,10 +44,10 @@ module Ledgerizer
       end
     end
 
-    # Return the account balance record for the given account name if there's a
+    # Return the account record for the given executable account name if there's a
     # lock on it, or raise a LockNotHeld if there isn't.
-    def self.balance_for_locked_account(account)
-      Lock.new([account]).balance_for(account)
+    def self.account_instance_for_locked_executable_account(account)
+      Lock.new([account]).account_instance_for(account)
     end
 
     class Lock
@@ -70,7 +70,7 @@ module Ledgerizer
 
       # Return true if we're inside a lock_accounts block.
       def in_a_locked_transaction?
-        !locks.nil?
+        !locks.blank?
       end
 
       def ensure_locked!
@@ -82,10 +82,14 @@ module Ledgerizer
         end
       end
 
-      def balance_for(account)
+      def account_instance_for(account)
         ensure_locked!
 
-        locks[account]
+        locks.each do |executable_account, account_instance|
+          if executable_account == account
+            return account_instance
+          end
+        end
       end
 
       private
@@ -104,7 +108,7 @@ module Ledgerizer
 
       # Return true if there's a lock on the given account.
       def lock?(account)
-        in_a_locked_transaction? && locks.key?(account)
+        in_a_locked_transaction? && locks.keys.include?(account)
       end
 
       # Raise an exception unless we're outside any transactions.

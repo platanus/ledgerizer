@@ -116,7 +116,8 @@ describe Ledgerizer::EntryExecutor do
         {
           account_name: :account1,
           accountable: accountable_instance,
-          amount: clp(10)
+          amount: clp(10),
+          balance: clp(10)
         }
       end
 
@@ -124,7 +125,8 @@ describe Ledgerizer::EntryExecutor do
         {
           account_name: :account2,
           accountable: accountable_instance,
-          amount: clp(10)
+          amount: clp(10),
+          balance: clp(10)
         }
       end
 
@@ -166,7 +168,8 @@ describe Ledgerizer::EntryExecutor do
         {
           account_name: :account1,
           accountable: accountable_instance,
-          amount: clp(10)
+          amount: clp(10),
+          balance: clp(10)
         }
       end
 
@@ -174,7 +177,8 @@ describe Ledgerizer::EntryExecutor do
         {
           account_name: :account2,
           accountable: accountable_instance,
-          amount: clp(7)
+          amount: clp(7),
+          balance: clp(7)
         }
       end
 
@@ -182,7 +186,8 @@ describe Ledgerizer::EntryExecutor do
         {
           account_name: :account3,
           accountable: accountable_instance,
-          amount: -clp(3)
+          amount: -clp(3),
+          balance: -clp(3)
         }
       end
 
@@ -250,7 +255,9 @@ describe Ledgerizer::EntryExecutor do
         {
           account_name: :account1,
           accountable: accountable_instance,
-          amount: clp(10)
+          amount: clp(10),
+          balance: clp(10)
+
         }
       end
 
@@ -258,7 +265,8 @@ describe Ledgerizer::EntryExecutor do
         {
           account_name: :account2,
           accountable: accountable_instance,
-          amount: clp(10)
+          amount: clp(10),
+          balance: clp(10)
         }
       end
 
@@ -333,7 +341,8 @@ describe Ledgerizer::EntryExecutor do
           {
             account_name: :account1,
             accountable: accountable_instance,
-            amount: clp(5)
+            amount: clp(5),
+            balance: clp(15)
           }
         end
 
@@ -341,7 +350,8 @@ describe Ledgerizer::EntryExecutor do
           {
             account_name: :account2,
             accountable: accountable_instance,
-            amount: clp(5)
+            amount: clp(5),
+            balance: clp(15)
           }
         end
 
@@ -378,7 +388,8 @@ describe Ledgerizer::EntryExecutor do
           {
             account_name: :account1,
             accountable: accountable_instance,
-            amount: -clp(5)
+            amount: -clp(5),
+            balance: clp(5)
           }
         end
 
@@ -386,7 +397,8 @@ describe Ledgerizer::EntryExecutor do
           {
             account_name: :account2,
             accountable: accountable_instance,
-            amount: -clp(5)
+            amount: -clp(5),
+            balance: clp(5)
           }
         end
 
@@ -425,7 +437,8 @@ describe Ledgerizer::EntryExecutor do
           {
             account_name: :account1,
             accountable: accountable_instance,
-            amount: -clp(10)
+            amount: -clp(10),
+            balance: clp(0)
           }
         end
 
@@ -433,7 +446,8 @@ describe Ledgerizer::EntryExecutor do
           {
             account_name: :account1,
             accountable: another_accountable,
-            amount: clp(10)
+            amount: clp(10),
+            balance: clp(10)
           }
         end
 

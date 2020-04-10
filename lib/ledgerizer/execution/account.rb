@@ -25,8 +25,8 @@ module Ledgerizer
         [
           tenant.class.to_s,
           tenant.id,
-          accountable.class.to_s,
-          accountable.id,
+          accountable&.class.to_s,
+          accountable&.id,
           account_type.to_s,
           account_name.to_s,
           currency.to_s

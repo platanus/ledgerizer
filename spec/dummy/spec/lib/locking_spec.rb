@@ -142,4 +142,96 @@ describe Ledgerizer::Locking do
       end
     end.to raise_error(Ledgerizer::Locking::LockNotHeld, /No lock held for account/)
   end
+
+  context "with entry executor" do
+    let(:tenant_instance) { create(:portfolio) }
+    let(:document_instance) { create(:deposit) }
+    let(:entry_code) { :entry1 }
+    let(:entry_date) { "1984-06-04" }
+    let(:ledgerizer_config) { LedgerizerTestDefinition.definition }
+
+    let(:executor) do
+      Ledgerizer::EntryExecutor.new(
+        config: ledgerizer_config,
+        tenant: tenant_instance,
+        document: document_instance,
+        entry_code: entry_code,
+        entry_date: entry_date
+      )
+    end
+
+    let_definition_class do
+      tenant('portfolio', currency: :clp) do
+        asset(:account1)
+        liability(:account2)
+
+        entry(:entry1, document: :deposit) do
+          debit(account: :account1, accountable: :user)
+          credit(account: :account2, accountable: :user)
+        end
+      end
+    end
+
+    before do
+      executor.add_new_movement(
+        movement_type: :debit,
+        account_name: account_name1,
+        accountable: accountable1,
+        amount: clp(10)
+      )
+
+      executor.add_new_movement(
+        movement_type: :credit,
+        account_name: account_name2,
+        accountable: accountable2,
+        amount: clp(10)
+      )
+    end
+
+    it 'prohibits execution inside a regular transaction' do
+      expect do
+        Ledgerizer::Account.transaction do
+          executor.execute
+        end
+      end.to raise_error(Ledgerizer::Locking::LockMustBeOutermostTransaction)
+    end
+
+    it "allows a transfer inside a lock if we've locked the transaction accounts" do
+      expect do
+        Ledgerizer::Locking.lock_accounts(executable_account1, executable_account2) do
+          executor.execute
+        end
+      end.not_to raise_error
+    end
+
+    it "does not allow a transfer inside a lock if the right locks aren't held" do
+      expect do
+        Ledgerizer::Locking.lock_accounts(executable_account1) do
+          executor.execute
+        end
+      end.to raise_error(Ledgerizer::Locking::LockNotHeld, /No lock held for account/)
+    end
+
+    it 'rolls back a locking transaction' do
+      Ledgerizer::Locking.lock_accounts(executable_account1, executable_account2) do
+        executor.execute
+        fail ActiveRecord::Rollback
+      end
+
+      expect(executable_account1.balance).to eq(clp(0))
+      expect(executable_account2.balance).to eq(clp(0))
+    end
+
+    it "rolls back a locking transaction if there's an exception" do
+      expect do
+        Ledgerizer::Locking.lock_accounts(executable_account1, executable_account2) do
+          executor.execute
+          fail 'Yeah, right'
+        end
+      end.to raise_error('Yeah, right')
+
+      expect(executable_account1.balance).to eq(clp(0))
+      expect(executable_account2.balance).to eq(clp(0))
+    end
+  end
 end
