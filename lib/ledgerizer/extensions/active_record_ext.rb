@@ -16,4 +16,4 @@ module Ledgerizer
   end
 end
 
-ActiveRecord::Base.send(:include, Ledgerizer::ActiveRecordExt)
+ActiveRecord::Base.include Ledgerizer::ActiveRecordExt

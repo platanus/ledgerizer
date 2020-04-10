@@ -47,7 +47,7 @@ RSpec.describe ActiveRecord::LockingExtensions do
 
       it 'publishes a notification' do
         expect(ActiveSupport::Notifications).to receive(:publish).with(
-          'deadlock_restart.double_entry', hash_including(exception: exception)
+          'deadlock_restart.ledgerizer', hash_including(exception: exception)
         )
         expect { User.with_restart_on_deadlock { fail exception } }.to raise_error(
           ActiveRecord::RestartTransaction
@@ -86,7 +86,7 @@ RSpec.describe ActiveRecord::LockingExtensions do
       create(:user, id: 1, name: 'Lean')
 
       expect(ActiveSupport::Notifications).to receive(:publish).with(
-        'duplicate_ignore.double_entry',
+        'duplicate_ignore.ledgerizer',
         hash_including(exception: kind_of(ActiveRecord::RecordNotUnique))
       )
       expect { User.create_ignoring_duplicates! id: 1, name: 'Lean' }.not_to raise_error
@@ -106,7 +106,7 @@ RSpec.describe ActiveRecord::LockingExtensions do
         expect(User).to receive(:create!).ordered.and_return(true)
 
         expect(ActiveSupport::Notifications).to receive(:publish).with(
-          'deadlock_retry.double_entry', hash_including(exception: exception)
+          'deadlock_retry.ledgerizer', hash_including(exception: exception)
         ).twice
 
         expect { User.create_ignoring_duplicates! }.not_to raise_error

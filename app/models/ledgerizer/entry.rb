@@ -34,12 +34,12 @@ end
 #
 # Table name: ledgerizer_entries
 #
-#  id            :integer          not null, primary key
+#  id            :bigint(8)        not null, primary key
 #  tenant_type   :string
-#  tenant_id     :integer
+#  tenant_id     :bigint(8)
 #  code          :string
 #  document_type :string
-#  document_id   :integer
+#  document_id   :bigint(8)
 #  entry_date    :date
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null

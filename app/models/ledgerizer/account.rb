@@ -46,15 +46,15 @@ end
 #
 # Table name: ledgerizer_accounts
 #
-#  id               :integer          not null, primary key
+#  id               :bigint(8)        not null, primary key
 #  tenant_type      :string
-#  tenant_id        :integer
+#  tenant_id        :bigint(8)
 #  accountable_type :string
-#  accountable_id   :integer
+#  accountable_id   :bigint(8)
 #  name             :string
 #  currency         :string
 #  account_type     :string
-#  balance_cents    :bigint           default(0), not null
+#  balance_cents    :bigint(8)        default(0), not null
 #  balance_currency :string           default("CLP"), not null
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
@@ -63,4 +63,5 @@ end
 #
 #  index_ledgerizer_accounts_on_acc_type_and_acc_id        (accountable_type,accountable_id)
 #  index_ledgerizer_accounts_on_tenant_type_and_tenant_id  (tenant_type,tenant_id)
+#  unique_account_index                                    (accountable_type,accountable_id,name,account_type,currency,tenant_id,tenant_type) UNIQUE
 #

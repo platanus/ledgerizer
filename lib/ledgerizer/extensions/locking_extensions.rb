@@ -29,7 +29,7 @@ module ActiveRecord
       yield
     rescue ActiveRecord::StatementInvalid => e
       if e.message =~ /deadlock/i || e.message =~ /database is locked/i
-        ActiveSupport::Notifications.publish('deadlock_restart.double_entry', exception: e)
+        ActiveSupport::Notifications.publish('deadlock_restart.ledgerizer', exception: e)
 
         raise ActiveRecord::RestartTransaction
       else
@@ -53,7 +53,7 @@ module ActiveRecord
       yield
     rescue ActiveRecord::StatementInvalid, ActiveRecord::RecordNotUnique => e
       if  e.message =~ /duplicate/i || e.message =~ /ConstraintException/
-        ActiveSupport::Notifications.publish('duplicate_ignore.double_entry', exception: e)
+        ActiveSupport::Notifications.publish('duplicate_ignore.ledgerizer', exception: e)
 
         # Just ignore it...someone else has already created the record.
       else
@@ -70,7 +70,7 @@ module ActiveRecord
       if e.message =~ /deadlock/i || e.message =~ /database is locked/i
         # Somebody else is in the midst of creating the record. We'd better
         # retry, so we ensure they're done before we move on.
-        ActiveSupport::Notifications.publish('deadlock_retry.double_entry', exception: e)
+        ActiveSupport::Notifications.publish('deadlock_retry.ledgerizer', exception: e)
 
         retry
       else

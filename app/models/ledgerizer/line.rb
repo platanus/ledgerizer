@@ -43,22 +43,22 @@ end
 #
 # Table name: ledgerizer_lines
 #
-#  id               :integer          not null, primary key
+#  id               :bigint(8)        not null, primary key
 #  tenant_type      :string
-#  tenant_id        :integer
-#  entry_id         :integer
+#  tenant_id        :bigint(8)
+#  entry_id         :bigint(8)
 #  entry_date       :date
 #  entry_code       :string
 #  account_type     :string
 #  document_type    :string
-#  document_id      :integer
-#  account_id       :integer
+#  document_id      :bigint(8)
+#  account_id       :bigint(8)
 #  accountable_type :string
-#  accountable_id   :integer
+#  accountable_id   :bigint(8)
 #  account_name     :string
-#  amount_cents     :bigint           default(0), not null
+#  amount_cents     :bigint(8)        default(0), not null
 #  amount_currency  :string           default("CLP"), not null
-#  balance_cents    :bigint           default(0), not null
+#  balance_cents    :bigint(8)        default(0), not null
 #  balance_currency :string           default("CLP"), not null
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
@@ -70,4 +70,9 @@ end
 #  index_ledgerizer_lines_on_document_type_and_document_id        (document_type,document_id)
 #  index_ledgerizer_lines_on_entry_id                             (entry_id)
 #  index_ledgerizer_lines_on_tenant_type_and_tenant_id            (tenant_type,tenant_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (account_id => ledgerizer_accounts.id)
+#  fk_rails_...  (entry_id => ledgerizer_entries.id)
 #

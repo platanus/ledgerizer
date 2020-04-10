@@ -12,6 +12,9 @@
 
 ActiveRecord::Schema.define(version: 2019_09_26_151926) do
 
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
   create_table "deposits", force: :cascade do |t|
     t.text "description"
     t.datetime "created_at", null: false
@@ -20,9 +23,9 @@ ActiveRecord::Schema.define(version: 2019_09_26_151926) do
 
   create_table "ledgerizer_accounts", force: :cascade do |t|
     t.string "tenant_type"
-    t.integer "tenant_id"
+    t.bigint "tenant_id"
     t.string "accountable_type"
-    t.integer "accountable_id"
+    t.bigint "accountable_id"
     t.string "name"
     t.string "currency"
     t.string "account_type"
@@ -30,16 +33,17 @@ ActiveRecord::Schema.define(version: 2019_09_26_151926) do
     t.string "balance_currency", default: "CLP", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["accountable_type", "accountable_id", "name", "account_type", "currency", "tenant_id", "tenant_type"], name: "unique_account_index", unique: true
     t.index ["accountable_type", "accountable_id"], name: "index_ledgerizer_accounts_on_acc_type_and_acc_id"
     t.index ["tenant_type", "tenant_id"], name: "index_ledgerizer_accounts_on_tenant_type_and_tenant_id"
   end
 
   create_table "ledgerizer_entries", force: :cascade do |t|
     t.string "tenant_type"
-    t.integer "tenant_id"
+    t.bigint "tenant_id"
     t.string "code"
     t.string "document_type"
-    t.integer "document_id"
+    t.bigint "document_id"
     t.date "entry_date"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -49,16 +53,16 @@ ActiveRecord::Schema.define(version: 2019_09_26_151926) do
 
   create_table "ledgerizer_lines", force: :cascade do |t|
     t.string "tenant_type"
-    t.integer "tenant_id"
-    t.integer "entry_id"
+    t.bigint "tenant_id"
+    t.bigint "entry_id"
     t.date "entry_date"
     t.string "entry_code"
     t.string "account_type"
     t.string "document_type"
-    t.integer "document_id"
-    t.integer "account_id"
+    t.bigint "document_id"
+    t.bigint "account_id"
     t.string "accountable_type"
-    t.integer "accountable_id"
+    t.bigint "accountable_id"
     t.string "account_name"
     t.bigint "amount_cents", default: 0, null: false
     t.string "amount_currency", default: "CLP", null: false
@@ -85,4 +89,6 @@ ActiveRecord::Schema.define(version: 2019_09_26_151926) do
     t.datetime "updated_at", null: false
   end
 
+  add_foreign_key "ledgerizer_lines", "ledgerizer_accounts", column: "account_id"
+  add_foreign_key "ledgerizer_lines", "ledgerizer_entries", column: "entry_id"
 end
