@@ -26,8 +26,8 @@ shared_examples "ledgerizer lines related" do |entity_name|
       entity.ledger_lines(filters)
     end
 
-    def ledger_balance
-      entity.ledger_balance(filters)
+    def ledger_sum
+      entity.ledger_sum(filters)
     end
 
     before do
@@ -44,7 +44,7 @@ shared_examples "ledgerizer lines related" do |entity_name|
     end
 
     it "calls Line#amounts_sum method with valid params" do
-      ledger_balance
+      ledger_sum
 
       expect(lines).to have_received(:amounts_sum)
         .with(entity.currency)

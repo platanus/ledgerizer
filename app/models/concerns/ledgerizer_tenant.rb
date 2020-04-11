@@ -37,5 +37,17 @@ module LedgerizerTenant
         entry_date: executable_entry.entry_date
       )
     end
+
+    def account_balance(account_name, currency)
+      sum = accounts.where(name: account_name, currency: format_to_upcase(currency))
+                    .sum(:balance_cents)
+      Money.new(sum, currency)
+    end
+
+    def account_type_balance(account_type, currency)
+      sum = accounts.where(account_type: account_type, currency: format_to_upcase(currency))
+                    .sum(:balance_cents)
+      Money.new(sum, currency)
+    end
   end
 end

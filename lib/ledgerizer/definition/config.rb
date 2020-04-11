@@ -34,6 +34,12 @@ module Ledgerizer
         config.currency
       end
 
+      def get_tenant_account_names(tenant)
+        config = find_tenant(tenant)
+        raise_config_error("tenant's config does not exist") unless config
+        config.account_names
+      end
+
       private
 
       def tenants

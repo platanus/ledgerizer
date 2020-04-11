@@ -7,7 +7,7 @@ module LedgerizerLinesRelated
       lines.filtered(filters)
     end
 
-    def ledger_balance(filters = {})
+    def ledger_sum(filters = {})
       ledger_lines(filters).amounts_sum(currency)
     end
 

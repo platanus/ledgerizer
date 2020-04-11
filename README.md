@@ -183,22 +183,26 @@ Con esto podemos hacer:
 
 *Para tenant*
 
+- `tenant.account_balance(account_name, currency)`: devuelve el balance de una cuenta. Ejemplo: `tenant.account_balance(:bank, "CLP")`
+- `tenant.account_type_balance(account_type, currency)`: devuelve el balance de un tipo de cuenta. Ejemplo: `tenant.account_type_balance(:asset, "CLP")`. Los tipos pueden ser: `asset, expense, liability, income, equity`
 - `tenant.accounts`: devuelve todas las `Ledgerizer::Account` asociadas al tenant
 - `tenant.entries`: devuelve todas las `Ledgerizer::Entry` asociadas al tenant
 - `tenant.ledger_lines(filters)`: devuelve todas las `Ledgerizer::Line` asociadas al tenant
-- `tenant.ledger_balance(filters)`: devuelve la suma de todas las `Ledgerizer::Line` asociadas al tenant
+- `tenant.ledger_sum(filters)`: devuelve la suma de todas las `Ledgerizer::Line` asociadas al tenant
 
 *Para entry*
 
 - `entry.ledger_lines(filters)`: devuelve todas las `Ledgerizer::Line` asociadas a la entry
-- `entry.ledger_balance(filters)`: devuelve la suma de todas las `Ledgerizer::Line` asociadas a la entry
+- `entry.ledger_sum(filters)`: devuelve la suma de todas las `Ledgerizer::Line` asociadas a la entry
 
 *Para account*
 
+- `account.balance`: devuelve el balance de la cuenta desde caché
+- `account.balance_at(date)`: devuelve el balance de la cuenta desde caché hasta una fecha
 - `account.ledger_lines(filters)`: devuelve todas las `Ledgerizer::Line` asociadas al account
-- `account.ledger_balance(filters)`: devuelve la suma de todas las `Ledgerizer::Line` asociadas al account
+- `account.ledger_sum(filters)`: devuelve la suma de todas las `Ledgerizer::Line` asociadas al account
 
-Los métodos `ledger_lines` y `ledger_balance` aceptan los siguientes filtros:
+Los métodos `ledger_lines` y `ledger_sum` aceptan los siguientes filtros:
 
 - `entries`: Array de objetos `Ledgerizer::Entry`. También se puede usar `entry` para filtrar por un único objeto.
 - `entry_codes`: Array de `code`s definidos en el `tenant`. En el ejemplo: `:user_deposit` y `user_deposit_distribution`. También se puede usar `entry_code` para filtrar por un único código.
@@ -210,7 +214,7 @@ Los métodos `ledger_lines` y `ledger_balance` aceptan los siguientes filtros:
 - `amount[_lt|_lteq|_gt|_gteq]`: Para filtrar por `amount` <, <=, > o >=. Debe ser una instancia de `Money` y si no se usa sufijo (_xxx) se buscará un monto igual.
 - `entry_date[_lt|_lteq|_gt|_gteq]`: Para filtrar por `entry_date` <, <=, > o >=. Debe ser una instancia de `Date` y si no se usa sufijo (_xxx) se buscará una fecha igual.
 
-> Se debe tener en cuenta que algunos filtros no harán sentido en aglunos contextos y por esto serán ignorados. Por ejemplo: si ejecuto `entry.ledger_balance(documents: [Deposit.last])`, el filtro `documents` será ignorado ya que ese filtro saldrá de `entry`.
+> Se debe tener en cuenta que algunos filtros no harán sentido en aglunos contextos y por esto serán ignorados. Por ejemplo: si ejecuto `entry.ledger_sum(documents: [Deposit.last])`, el filtro `documents` será ignorado ya que ese filtro saldrá de `entry`.
 
 #### Ejemplo de uso:
 
@@ -218,7 +222,7 @@ Los métodos `ledger_lines` y `ledger_balance` aceptan los siguientes filtros:
 
   ```ruby
   tenant.accounts.where(account_type: :asset).each do |asset_account|
-    p "#{asset_account.name}: #{asset_account.ledger_balance(entry_date_lteq: '2019-01-10')}"
+    p "#{asset_account.name}: #{asset_account.ledger_sum(entry_date_lteq: '2019-01-10')}"
   end
   ```
 
