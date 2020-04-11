@@ -2,6 +2,10 @@ sudo: false
 language: ruby
 rvm:
   - 2.5.0
+services:
+  - postgresql
+before_script:
+  - psql -c 'create database ledgerizer_test;' -U postgres
 script:
   - RAILS_ENV=test bundle exec rake db:create db:migrate
   - bundle exec rspec spec
