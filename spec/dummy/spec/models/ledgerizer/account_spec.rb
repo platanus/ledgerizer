@@ -98,5 +98,56 @@ module Ledgerizer
         it { expect(perform).to be_nil }
       end
     end
+
+    describe "check_integrity" do
+      let(:account_balance) { nil }
+      let(:account) { create(:ledgerizer_account, balance: account_balance) }
+
+      def perform
+        account.check_integrity
+      end
+
+      context "with no lines" do
+        let(:account_balance) { clp(0) }
+
+        it { expect(perform).to eq(true) }
+      end
+
+      context "with valid lines matching account balance" do
+        let(:account_balance) { clp(20) }
+
+        before do
+          create(:ledgerizer_line, account: account, amount: clp(10), balance: clp(10))
+          create(:ledgerizer_line, account: account, amount: clp(5), balance: clp(15))
+          create(:ledgerizer_line, account: account, amount: clp(5), balance: clp(20))
+        end
+
+        it { expect(perform).to eq(true) }
+      end
+
+      context "with valid lines not matching account balance" do
+        let(:account_balance) { clp(666) }
+
+        before do
+          create(:ledgerizer_line, account: account, amount: clp(10), balance: clp(10))
+          create(:ledgerizer_line, account: account, amount: clp(5), balance: clp(15))
+          create(:ledgerizer_line, account: account, amount: clp(5), balance: clp(20))
+        end
+
+        it { expect(perform).to eq(false) }
+      end
+
+      context "with invalid lines balances" do
+        let(:account_balance) { clp(20) }
+
+        before do
+          create(:ledgerizer_line, account: account, amount: clp(10), balance: clp(10))
+          create(:ledgerizer_line, account: account, amount: clp(666), balance: clp(15))
+          create(:ledgerizer_line, account: account, amount: clp(5), balance: clp(20))
+        end
+
+        it { expect(perform).to eq(false) }
+      end
+    end
   end
 end

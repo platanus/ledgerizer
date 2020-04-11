@@ -28,6 +28,18 @@ module Ledgerizer
       ]
     end
 
+    def check_integrity
+      prev_balance = Money.new(0, currency)
+
+      lines.order(:created_at).each do |line|
+        return false if line.balance != prev_balance + line.amount
+
+        prev_balance = line.balance
+      end
+
+      prev_balance == balance
+    end
+
     def self.find_by_executable_account(executable_account, lock: false)
       accounts = where(executable_account.to_hash)
       accounts = accounts.lock(true) if lock
