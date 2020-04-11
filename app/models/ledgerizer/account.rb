@@ -28,6 +28,11 @@ module Ledgerizer
       ]
     end
 
+    def balance_at(date = nil)
+      date ||= Date.current
+      lines.filtered(entry_date_lteq: date.to_date).first&.balance || Money.new(0, currency)
+    end
+
     def check_integrity
       prev_balance = Money.new(0, currency)
 

@@ -99,6 +99,43 @@ module Ledgerizer
       end
     end
 
+    describe "#balance_at" do
+      let(:date) { nil }
+      let(:account) { create(:ledgerizer_account) }
+
+      def perform
+        account.balance_at(date)
+      end
+
+      before do
+        create(:ledgerizer_line, account: account, force_entry_date: "1984-06-04", balance: clp(10))
+        create(:ledgerizer_line, account: account, force_entry_date: "1984-06-05", balance: clp(15))
+        create(:ledgerizer_line, account: account, force_entry_date: "1984-06-05", balance: clp(20))
+        create(:ledgerizer_line, account: account, force_entry_date: "1984-06-05", balance: clp(25))
+        create(:ledgerizer_line, account: account, force_entry_date: "1984-06-06", balance: clp(30))
+      end
+
+      it { expect(perform).to eq(clp(30)) }
+
+      context "with specific date" do
+        let(:date) { "1984-06-05".to_date }
+
+        it { expect(perform).to eq(clp(25)) }
+      end
+
+      context "with super old date" do
+        let(:date) { "1974-06-05".to_date }
+
+        it { expect(perform).to eq(clp(0)) }
+      end
+
+      context "with super new date" do
+        let(:date) { "2084-06-05".to_date }
+
+        it { expect(perform).to eq(clp(30)) }
+      end
+    end
+
     describe "check_integrity" do
       let(:account_balance) { nil }
       let(:account) { create(:ledgerizer_account, balance: account_balance) }
