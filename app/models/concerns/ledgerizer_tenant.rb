@@ -37,14 +37,5 @@ module LedgerizerTenant
         entry_date: executable_entry.entry_date
       )
     end
-
-    def find_or_create_account_from_executable_movement!(movement)
-      accounts.find_or_create_by!(
-        accountable: movement.accountable,
-        name: movement.account_name,
-        currency: format_to_upcase(movement.base_currency),
-        account_type: movement.account_type
-      )
-    end
   end
 end

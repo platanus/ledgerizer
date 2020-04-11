@@ -34,14 +34,13 @@ module Ledgerizer
 
         locked_accounts = get_locked_accounts
         last_entry_date = entry_instance.entry_date || entry_date
-        persist_new_movements!
-        locked_accounts.each do |locked_account|
+        persist_new_movements!(locked_accounts)
+        locked_accounts.values.each do |locked_account|
           last_account_line = update_account_related_lines_balances(
             last_entry_date,
             locked_account
           )
-          locked_account.balance = last_account_line.balance
-          locked_account.save!
+          locked_account.update_attribute(:balance, last_account_line.balance)
         end
       end
     end
@@ -67,18 +66,25 @@ module Ledgerizer
       locked_account.lines.filtered(entry_date_gteq: last_entry_date)
     end
 
-    def persist_new_movements!
+    def persist_new_movements!(locked_accounts)
       validate_zero_trial_balance!(adjusted_movements)
       entry_instance.entry_date = entry_date
       entry_instance.save!
       adjusted_movements.each do |movement|
-        entry_instance.create_line!(movement)
+        locked_account = locked_accounts[movement.account_identifier]
+        entry_instance.lines.create!(
+          account: locked_account,
+          amount_cents: movement.signed_amount_cents,
+          amount_currency: movement.signed_amount_currency
+        )
       end
     end
 
     def get_locked_accounts
-      related_accounts.map do |executable_account|
-        Locking.account_instance_for_locked_executable_account(executable_account)
+      related_accounts.inject({}) do |result, executable_account|
+        key = executable_account.identifier
+        result[key] = Locking.account_instance_for_locked_executable_account(executable_account)
+        result
       end
     end
 

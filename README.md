@@ -258,7 +258,7 @@ Partiendo de aquí, veamos los siguientes casos de ajuste:
 
 > Para facilitar la explicación, en cada caso iré variando la definición del comando `DepositFixer` que será el encargado de aplicar los ajustes.
 
-### Caso 1: se ejecuta nuevamente una entry que aumenta los `amounts` de cada cuenta.
+#### Caso 1: se ejecuta nuevamente una entry que aumenta los `amounts` de cada cuenta.
 
 ```ruby
 class DepositFixer
@@ -282,7 +282,7 @@ Al ejecutar el `DepositFixer` obtendré una nueva entry con dos líneas:
 
 Como pueden ver, las líneas se crearon por la diferencia (5 CLP) en vez del total (15 CLP) porque 10 CLP ya habían sido registrados por el `DepositCreator` anteriormente.
 
-### Caso 2: se ejecuta nuevamente una entry que disminuye los `amounts` de cada cuenta.
+#### Caso 2: se ejecuta nuevamente una entry que disminuye los `amounts` de cada cuenta.
 
 ```ruby
 class DepositFixer
@@ -304,7 +304,7 @@ Al ejecutar el `DepositFixer` obtendré una nueva entry con dos líneas:
 
 - Una relacionada con la cuenta `funds_to_invest` por `amount: -8 CLP`
 
-### Caso 3: se ejecuta nuevamente una entry que no modifica nada:
+#### Caso 3: se ejecuta nuevamente una entry que no modifica nada:
 
 ```ruby
 class DepositFixer
@@ -321,7 +321,7 @@ end
 
 En este caso, no se creará ninguna entry porque no hubo modificación en los montos.
 
-### Caso 4: se ejecuta nuevamente una entry que cambia el `accountable` de una cuenta:
+#### Caso 4: se ejecuta nuevamente una entry que cambia el `accountable` de una cuenta:
 
 ```ruby
 class DepositFixer
@@ -344,7 +344,7 @@ Al ejecutar el `DepositFixer` obtendré una nueva entry con 2 líneas:
 
 Verán también que no se creó ninguna línea para `funds_to_invest` porque no sufrió modificaciones.
 
-### Caso 5: se ejecuta nuevamente una entry con fecha anterior a la fecha del movimiento original:
+#### Caso 5: se ejecuta nuevamente una entry con fecha anterior a la fecha del movimiento original:
 
 ```ruby
 class DepositFixer
@@ -370,6 +370,18 @@ bundle exec guard
 ```
 
 You need to put **all your tests** in the `/ledgerizer/spec/dummy/spec/` directory.
+
+### Jackhammer
+
+Inspirado en [double entry](https://github.com/envato/double_entry#jackhammer)...
+
+Se puede correr el siguiente comando:
+
+```bash
+bin/jack_hammer -p 5 -e 50
+```
+
+Para probar que al ejecutar varias entries, de manera concurrente, todas las líneas y balances se generan correctamente.
 
 ## Contributing
 

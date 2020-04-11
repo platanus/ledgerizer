@@ -5,7 +5,7 @@ module Ledgerizer
       include Ledgerizer::Formatters
 
       attr_reader :accountable, :movement_definition
-      attr_accessor :amount
+      attr_accessor :amount, :account_identifier
 
       delegate :credit?, :debit?, :contra, :base_currency,
                :movement_type, :account_name, :account_type,

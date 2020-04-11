@@ -64,6 +64,7 @@ module Ledgerizer
             account_type: movement.account_type,
             currency: movement.signed_amount_currency.to_s
           )
+          movement.account_identifier = account.identifier
           accounts << account unless accounts.include?(account)
         end
 

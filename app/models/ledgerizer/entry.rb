@@ -19,14 +19,6 @@ module Ledgerizer
         :document, :documents
       ]
     end
-
-    def create_line!(executable_movement)
-      lines.create!(
-        account: tenant.find_or_create_account_from_executable_movement!(executable_movement),
-        amount_cents: executable_movement.signed_amount_cents,
-        amount_currency: executable_movement.signed_amount_currency
-      )
-    end
   end
 end
 
