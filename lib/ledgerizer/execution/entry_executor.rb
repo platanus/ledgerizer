@@ -36,11 +36,11 @@ module Ledgerizer
         last_entry_date = entry_instance.entry_date || entry_date
         persist_new_movements!(locked_accounts)
         locked_accounts.values.each do |locked_account|
-          last_account_line = update_account_related_lines_balances(
-            last_entry_date,
-            locked_account
+          last_account_line = update_account_related_lines_balances(last_entry_date, locked_account)
+          locked_account.update_attributes(
+            balance_cents: last_account_line.balance_cents,
+            balance_currency: last_account_line.balance_currency
           )
-          locked_account.update_attribute(:balance, last_account_line.balance)
         end
       end
     end
@@ -50,7 +50,9 @@ module Ledgerizer
       lines = lines_from_entry_date(locked_account, last_entry_date).to_a.reverse
 
       lines.each do |line|
-        line.balance = (prev_line&.balance || Money.new(0, line.amount.currency)) + line.amount
+        balance = (prev_line&.balance || Money.new(0, line.amount.currency)) + line.amount
+        line.balance_cents = balance.cents
+        line.balance_currency = balance.currency
         line.save!
         prev_line = line
       end
