@@ -8,7 +8,7 @@ describe Ledgerizer::Execution::Entry do
       tenant: tenant_instance,
       document: document_instance,
       entry_code: entry_code,
-      entry_date: entry_date
+      entry_time: entry_time
     )
   end
 
@@ -17,8 +17,8 @@ describe Ledgerizer::Execution::Entry do
   let(:document) { :deposit }
   let(:document_instance) { create(:deposit) }
   let(:entry_code) { :deposit }
-  let(:entry_date) { "1984-06-04" }
-  let(:entry_instance_date) { entry_date }
+  let(:entry_time) { "1984-06-04" }
+  let(:entry_instance_date) { entry_time }
 
   let(:entry) do
     create(
@@ -26,7 +26,7 @@ describe Ledgerizer::Execution::Entry do
       tenant: tenant_instance,
       document: document_instance,
       code: entry_code,
-      entry_date: entry_instance_date
+      entry_time: entry_instance_date
     )
   end
 
@@ -42,7 +42,7 @@ describe Ledgerizer::Execution::Entry do
     end
   end
 
-  it { expect(execution_entry.entry_date).to eq(entry_date.to_date) }
+  it { expect(execution_entry.entry_time).to eq(entry_time.to_datetime) }
   it { expect(execution_entry.document).to eq(document_instance) }
 
   context "with invalid tenant type" do
@@ -76,9 +76,9 @@ describe Ledgerizer::Execution::Entry do
   end
 
   context "with invalid date" do
-    let(:entry_date) { "1984-06-32" }
+    let(:entry_time) { "1984-06-32" }
 
-    it { expect { execution_entry }.to raise_error("invalid date given") }
+    it { expect { execution_entry }.to raise_error("invalid datetime given") }
   end
 
   describe "#entry_instance" do
@@ -91,7 +91,7 @@ describe Ledgerizer::Execution::Entry do
     it { expect(instance.persisted?).to eq(false) }
     it { expect(instance.code).to eq(entry_code.to_s) }
     it { expect(instance.document).to eq(document_instance) }
-    it { expect(instance.entry_date).to eq(nil) }
+    it { expect(instance.entry_time).to eq(nil) }
 
     context "with persisted entry" do
       before { entry }
@@ -101,12 +101,12 @@ describe Ledgerizer::Execution::Entry do
       it { expect(instance.persisted?).to eq(false) }
       it { expect(instance.code).to eq(entry_code.to_s) }
       it { expect(instance.document).to eq(document_instance) }
-      it { expect(instance.entry_date).to eq(entry_date.to_date) }
+      it { expect(instance.entry_time).to eq(entry_time.to_datetime) }
 
-      context "with invalid entry_date" do
-        let(:entry_instance_date) { entry_date.to_date + 1.day }
+      context "with invalid entry_time" do
+        let(:entry_instance_date) { entry_time.to_datetime + 1.day }
 
-        it { expect { instance }.to raise_error(/\(1984-06-04\) must be greater/) }
+        it { expect { instance }.to raise_error(/must be greater/) }
       end
     end
   end
@@ -262,7 +262,7 @@ describe Ledgerizer::Execution::Entry do
             tenant: tenant_instance,
             document: document_instance,
             code: entry_code,
-            entry_date: entry_date.to_date + 1.day
+            entry_time: entry_time.to_datetime + 1.day
           )
         end
 
@@ -299,7 +299,7 @@ describe Ledgerizer::Execution::Entry do
         tenant: tenant_instance,
         document: document_instance,
         code: entry_code,
-        entry_date: entry_date.to_date + 1.day
+        entry_time: entry_time.to_datetime + 1.day
       )
     end
 

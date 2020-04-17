@@ -21,5 +21,5 @@ describe Ledgerizer::FilteredLinesQuery do
   it_behaves_like "filtered lines by predicated attribute",
                   :amount, :amount, Money.from_amount(10, 'CLP')
   it_behaves_like "filtered lines by predicated attribute",
-                  :force_entry_date, :entry_date, Date.current
+                  :force_entry_time, :entry_time, Date.current
 end

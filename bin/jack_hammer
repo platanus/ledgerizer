@@ -145,7 +145,7 @@ def run_process(iterations, process_num)
       tenant: $tenant,
       document: Deposit.create!,
       entry_code: :test,
-      entry_date: Date.current
+      entry_time: Date.current
     )
 
     executor.add_new_movement(

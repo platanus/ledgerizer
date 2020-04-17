@@ -14,7 +14,7 @@ module Ledgerizer
 
     describe "validations" do
       it { is_expected.to validate_presence_of(:code) }
-      it { is_expected.to validate_presence_of(:entry_date) }
+      it { is_expected.to validate_presence_of(:entry_time) }
     end
 
     it_behaves_like "ledgerizer lines related", :ledgerizer_entry

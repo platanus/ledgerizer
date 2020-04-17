@@ -4,18 +4,18 @@ module Ledgerizer
       include Ledgerizer::Validators
       include Ledgerizer::Formatters
 
-      attr_reader :document, :entry_date
+      attr_reader :document, :entry_time
 
       delegate :code, to: :entry_definition, prefix: false
 
-      def initialize(config:, tenant:, document:, entry_code:, entry_date:)
+      def initialize(config:, tenant:, document:, entry_code:, entry_time:)
         tenant_definition = get_tenant_definition!(config, tenant)
         @tenant = tenant
         @entry_definition = get_entry_definition!(tenant_definition, entry_code)
         validate_entry_document!(document)
         @document = document
-        validate_date!(entry_date)
-        @entry_date = entry_date.to_date
+        validate_datetime!(entry_time)
+        @entry_time = entry_time.to_datetime
       end
 
       def add_new_movement(movement_type:, account_name:, accountable:, amount:)
@@ -86,18 +86,18 @@ module Ledgerizer
       end
 
       def find_entry_instance(entries, entry_data)
-        entry = entries.where(entry_data).order(:created_at).last
+        entry = entries.where(entry_data).order(:entry_time).last
         return unless entry
 
-        validate_adjustment_date_greater_than_old_entry_date!(entry)
+        validate_adjustment_date_greater_than_old_entry_time!(entry)
         entry.dup
       end
 
-      def validate_adjustment_date_greater_than_old_entry_date!(entry)
-        if entry.entry_date > entry_date
+      def validate_adjustment_date_greater_than_old_entry_time!(entry)
+        if entry.entry_time > entry_time
           raise_error(
-            "adjustment date (#{entry_date}) must be greater \
-than old entry date (#{entry.entry_date})"
+            "adjustment date (#{entry_time}) must be greater \
+than old entry date (#{entry.entry_time})"
           )
         end
       end

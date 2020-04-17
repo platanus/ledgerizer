@@ -104,7 +104,7 @@ class DepositCreator
   include Ledgerizer::Execution::Dsl
 
   def perform
-    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, date: "1984-06-04") do
+    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, datetime: "1984-06-04") do
       debit(account: :bank, accountable: Bank.first, amount: Money.from_amount(10, 'CLP'))
       credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(10, 'CLP'))
     end
@@ -121,7 +121,7 @@ La ejecución de `DepositCreator.new.perform` creará:
   - Otra con `name: 'funds_to_invest'`, `tenant: Portfolio.first`, `accountable: User.first`, `account_type: 'liability' y `currency: 'CLP'`
 
 
-2. Una `Ledgerizer::Entry` con: `code: 'user_deposit'`, `tenant: Portfolio.first`, `document: UserDeposit.first` y `entry_date: '1984-06-04'`
+2. Una `Ledgerizer::Entry` con: `code: 'user_deposit'`, `tenant: Portfolio.first`, `document: UserDeposit.first` y `entry_time: '1984-06-04'`
 
 
 3. Dos `Ledgerizer::Line`. Una por cada movimiento de la entry.
@@ -132,7 +132,7 @@ La ejecución de `DepositCreator.new.perform` creará:
 
 ### Tener en cuenta
 
-- Cada `Ledgerizer::Line` además incluye información desnormalizada para facilitar consultas. Esto es: `tenant`, `document`, `entry_date`, `entry_code`
+- Cada `Ledgerizer::Line` además incluye información desnormalizada para facilitar consultas. Esto es: `tenant`, `document`, `entry_time`, `entry_code`
 - Al ejecutar una entry, se puede dividir el monto en n movmientos siempre y cuando se respete lo que está en la definición para esa entry. Por ej, algo como lo siguiente, sería válido:
 
   ```ruby
@@ -140,7 +140,7 @@ La ejecución de `DepositCreator.new.perform` creará:
     include Ledgerizer::Execution::Dsl
 
     def perform
-      execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, date: "1984-06-04") do
+      execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, datetime: "1984-06-04") do
         debit(account: :bank, accountable: Bank.first, amount: Money.from_amount(10, 'CLP'))
         credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(6, 'CLP'))
         credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(3, 'CLP'))
@@ -212,7 +212,7 @@ Los métodos `ledger_lines` y `ledger_sum` aceptan los siguientes filtros:
 - `account_types`: Array de tipos de cuenta. Puede ser: `asset`, `expense`, `liability`, `income` y `equity`. También se puede usar `account_type` para filtrar por un único tipo de cuenta.
 - `documents`: Array de objetos `ActiveRecord` que son utilizados como `document` en `Ledgerizer::Entry`s. En el ejemplo: `UserDeposit.first`. También se puede usar `document` para filtrar por un único documento.
 - `amount[_lt|_lteq|_gt|_gteq]`: Para filtrar por `amount` <, <=, > o >=. Debe ser una instancia de `Money` y si no se usa sufijo (_xxx) se buscará un monto igual.
-- `entry_date[_lt|_lteq|_gt|_gteq]`: Para filtrar por `entry_date` <, <=, > o >=. Debe ser una instancia de `Date` y si no se usa sufijo (_xxx) se buscará una fecha igual.
+- `entry_time[_lt|_lteq|_gt|_gteq]`: Para filtrar por `entry_time` <, <=, > o >=. Debe ser una instancia de `DateTime` y si no se usa sufijo (_xxx) se buscará una fecha/hora igual.
 
 > Se debe tener en cuenta que algunos filtros no harán sentido en aglunos contextos y por esto serán ignorados. Por ejemplo: si ejecuto `entry.ledger_sum(documents: [Deposit.last])`, el filtro `documents` será ignorado ya que ese filtro saldrá de `entry`.
 
@@ -222,14 +222,14 @@ Los métodos `ledger_lines` y `ledger_sum` aceptan los siguientes filtros:
 
   ```ruby
   tenant.accounts.where(account_type: :asset).each do |asset_account|
-    p "#{asset_account.name}: #{asset_account.ledger_sum(entry_date_lteq: '2019-01-10')}"
+    p "#{asset_account.name}: #{asset_account.ledger_sum(entry_time_lteq: '2019-01-10')}"
   end
   ```
 
 - Saber las líneas que conforman un una entry con código `user_deposit` para el día 10 de enero 2019.
 
   ```ruby
-  tenant.ledger_lines(entry_code: :user_deposit, entry_date: '2019-01-10')
+  tenant.ledger_lines(entry_code: :user_deposit, entry_time: '2019-01-10')
   ```
 
 ### Ajuste de Entries
@@ -244,7 +244,7 @@ class DepositCreator
   include Ledgerizer::Execution::Dsl
 
   def perform
-    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, date: "1984-06-04") do
+    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, datetime: "1984-06-04") do
       debit(account: :bank, accountable: Bank.first, amount: Money.from_amount(10, 'CLP'))
       credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(10, 'CLP'))
     end
@@ -269,7 +269,7 @@ class DepositFixer
   include Ledgerizer::Execution::Dsl
 
   def perform
-    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, date: "1984-06-04") do
+    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, datetime: "1984-06-04") do
       debit(account: :bank, accountable: Bank.first, amount: Money.from_amount(15, 'CLP'))
       credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(15, 'CLP'))
     end
@@ -293,7 +293,7 @@ class DepositFixer
   include Ledgerizer::Execution::Dsl
 
   def perform
-    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, date: "1984-06-04") do
+    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, datetime: "1984-06-04") do
       debit(account: :bank, accountable: Bank.first, amount: Money.from_amount(2, 'CLP'))
       credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(2, 'CLP'))
     end
@@ -315,7 +315,7 @@ class DepositFixer
   include Ledgerizer::Execution::Dsl
 
   def perform
-    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, date: "1984-06-04") do
+    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, datetime: "1984-06-04") do
       debit(account: :bank, accountable: Bank.first, amount: Money.from_amount(10, 'CLP'))
       credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(10, 'CLP'))
     end
@@ -332,7 +332,7 @@ class DepositFixer
   include Ledgerizer::Execution::Dsl
 
   def perform
-    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, date: "1984-06-04") do
+    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, datetime: "1984-06-04") do
       debit(account: :bank, accountable: Bank.find(666), amount: Money.from_amount(10, 'CLP'))
       credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(10, 'CLP'))
     end
@@ -355,7 +355,7 @@ class DepositFixer
   include Ledgerizer::Execution::Dsl
 
   def perform
-    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, date: "1984-06-03") do
+    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, datetime: "1984-06-03") do
       debit(account: :bank, accountable: Bank.first, amount: Money.from_amount(10, 'CLP'))
       credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(10, 'CLP'))
     end

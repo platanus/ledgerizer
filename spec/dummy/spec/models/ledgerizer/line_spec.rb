@@ -24,7 +24,7 @@ module Ledgerizer
       it { expect(line.tenant).to eq(line.entry.tenant) }
       it { expect(line.document).to eq(line.entry.document) }
       it { expect(line.entry_code).to eq(line.entry.code) }
-      it { expect(line.entry_date).to eq(line.entry.entry_date) }
+      it { expect(line.entry_time).to eq(line.entry.entry_time) }
       it { expect(line.accountable).to eq(line.account.accountable) }
       it { expect(line.account_name).to eq(line.account.name) }
       it { expect(line.account_type).to eq(line.account.account_type) }

@@ -6,7 +6,7 @@ module Ledgerizer
     belongs_to :document, polymorphic: true
     has_many :lines, dependent: :destroy
 
-    validates :code, :entry_date, presence: true
+    validates :code, :entry_time, presence: true
 
     delegate :currency, to: :tenant, prefix: false # TODO: denormalize
 
@@ -15,7 +15,7 @@ module Ledgerizer
         :tenant, :tenants,
         :entry, :entries,
         :entry_code, :entry_codes,
-        :entry_date, :entry_dates,
+        :entry_time, :entry_times,
         :document, :documents
       ]
     end
@@ -32,9 +32,7 @@ end
 #  code          :string
 #  document_type :string
 #  document_id   :bigint(8)
-#  entry_date    :date
-#  created_at    :datetime         not null
-#  updated_at    :datetime         not null
+#  entry_time    :datetime
 #
 # Indexes
 #

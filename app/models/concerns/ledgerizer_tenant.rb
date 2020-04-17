@@ -34,7 +34,7 @@ module LedgerizerTenant
       entries.create!(
         code: executable_entry.code,
         document: executable_entry.document,
-        entry_date: executable_entry.entry_date
+        entry_time: executable_entry.entry_time
       )
     end
 

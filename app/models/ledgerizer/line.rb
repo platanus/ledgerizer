@@ -31,7 +31,7 @@ module Ledgerizer
       self.tenant = entry.tenant
       self.document = entry.document
       self.entry_code = entry.code
-      self.entry_date = entry.entry_date
+      self.entry_time = entry.entry_time
       self.accountable = account.accountable
       self.account_name = account.name
       self.account_type = account.account_type
@@ -47,7 +47,7 @@ end
 #  tenant_type      :string
 #  tenant_id        :bigint(8)
 #  entry_id         :bigint(8)
-#  entry_date       :date
+#  entry_time       :datetime
 #  entry_code       :string
 #  account_type     :string
 #  document_type    :string
@@ -60,8 +60,6 @@ end
 #  amount_currency  :string           default("CLP"), not null
 #  balance_cents    :bigint(8)        default(0), not null
 #  balance_currency :string           default("CLP"), not null
-#  created_at       :datetime         not null
-#  updated_at       :datetime         not null
 #
 # Indexes
 #

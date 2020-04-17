@@ -6,7 +6,7 @@ describe Ledgerizer::EntryExecutor do
   let(:document_instance) { create(:deposit) }
   let(:accountable_instance) { create(:user) }
   let(:entry_code) { :entry1 }
-  let(:entry_date) { "1984-06-04" }
+  let(:entry_time) { "1984-06-04" }
   let(:ledgerizer_config) { LedgerizerTestDefinition.definition }
 
   let(:executor) do
@@ -15,7 +15,7 @@ describe Ledgerizer::EntryExecutor do
       tenant: tenant_instance,
       document: document_instance,
       entry_code: entry_code,
-      entry_date: entry_date
+      entry_time: entry_time
     )
   end
 
@@ -107,7 +107,7 @@ describe Ledgerizer::EntryExecutor do
       let(:expected_entry) do
         {
           entry_code: entry_code,
-          entry_date: entry_date,
+          entry_time: entry_time,
           document: document_instance
         }
       end
@@ -159,7 +159,7 @@ describe Ledgerizer::EntryExecutor do
       let(:expected_entry) do
         {
           entry_code: entry_code,
-          entry_date: entry_date,
+          entry_time: entry_time,
           document: document_instance
         }
       end
@@ -229,16 +229,16 @@ describe Ledgerizer::EntryExecutor do
           tenant: tenant_instance,
           document: document_instance,
           entry_code: entry_code,
-          entry_date: adjustment_entry_date
+          entry_time: adjustment_entry_time
         )
       end
 
-      let(:adjustment_entry_date) { "1984-06-05" }
+      let(:adjustment_entry_time) { "1984-06-05" }
 
       let(:expected_new_entry) do
         {
           entry_code: entry_code,
-          entry_date: adjustment_entry_date,
+          entry_time: adjustment_entry_time,
           document: document_instance
         }
       end
@@ -246,7 +246,7 @@ describe Ledgerizer::EntryExecutor do
       let(:expected_old_entry) do
         {
           entry_code: entry_code,
-          entry_date: entry_date,
+          entry_time: entry_time,
           document: document_instance
         }
       end
@@ -315,7 +315,7 @@ describe Ledgerizer::EntryExecutor do
       end
 
       context "when old entry date is greater than adjustment date" do
-        let(:adjustment_entry_date) { "1984-06-03" }
+        let(:adjustment_entry_time) { "1984-06-03" }
 
         before do
           another_executor.add_new_movement(
@@ -333,7 +333,7 @@ describe Ledgerizer::EntryExecutor do
           )
         end
 
-        it { expect { perform_adjustment }.to raise_error(/than old entry date \(1984-06-04\)/) }
+        it { expect { perform_adjustment }.to raise_error(/than old entry date \(1984-06-04/) }
       end
 
       context "with new movements increasing old amounts" do

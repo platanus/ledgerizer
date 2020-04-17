@@ -4,9 +4,7 @@ class CreateLedgerizerEntries < ActiveRecord::Migration[5.2]
       t.references :tenant, polymorphic: true
       t.string :code
       t.references :document, polymorphic: true
-      t.date :entry_date
-
-      t.timestamps
+      t.datetime :entry_time
     end
   end
 end

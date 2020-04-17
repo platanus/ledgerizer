@@ -4,16 +4,16 @@ module Ledgerizer
     include Ledgerizer::Formatters
 
     delegate :new_movements, :adjusted_movements, :add_new_movement,
-             :related_accounts, :entry_date, :entry_instance,
+             :related_accounts, :entry_time, :entry_instance,
              to: :executable_entry, prefix: false
 
-    def initialize(config:, tenant:, document:, entry_code:, entry_date:)
+    def initialize(config:, tenant:, document:, entry_code:, entry_time:)
       @executable_entry = Ledgerizer::Execution::Entry.new(
         config: config,
         tenant: tenant,
         document: document,
         entry_code: entry_code,
-        entry_date: entry_date
+        entry_time: entry_time
       )
     end
 
@@ -33,10 +33,10 @@ module Ledgerizer
         return if adjusted_movements.none?
 
         locked_accounts = get_locked_accounts
-        last_entry_date = entry_instance.entry_date || entry_date
+        last_entry_time = entry_instance.entry_time || entry_time
         persist_new_movements!(locked_accounts)
         locked_accounts.values.each do |locked_account|
-          last_account_line = update_account_related_lines_balances(last_entry_date, locked_account)
+          last_account_line = update_account_related_lines_balances(last_entry_time, locked_account)
           locked_account.update_attributes(
             balance_cents: last_account_line.balance_cents,
             balance_currency: last_account_line.balance_currency
@@ -45,9 +45,9 @@ module Ledgerizer
       end
     end
 
-    def update_account_related_lines_balances(last_entry_date, locked_account)
-      prev_line = last_prev_line_for_entry_date(locked_account, last_entry_date)
-      lines = lines_from_entry_date(locked_account, last_entry_date).to_a.reverse
+    def update_account_related_lines_balances(last_entry_time, locked_account)
+      prev_line = last_prev_line_for_entry_time(locked_account, last_entry_time)
+      lines = lines_from_entry_time(locked_account, last_entry_time).to_a.reverse
 
       lines.each do |line|
         balance = (prev_line&.balance || Money.new(0, line.amount.currency)) + line.amount
@@ -60,17 +60,17 @@ module Ledgerizer
       prev_line
     end
 
-    def last_prev_line_for_entry_date(locked_account, last_entry_date)
-      locked_account.lines.filtered(entry_date_lt: last_entry_date).first
+    def last_prev_line_for_entry_time(locked_account, last_entry_time)
+      locked_account.lines.filtered(entry_time_lt: last_entry_time).first
     end
 
-    def lines_from_entry_date(locked_account, last_entry_date)
-      locked_account.lines.filtered(entry_date_gteq: last_entry_date)
+    def lines_from_entry_time(locked_account, last_entry_time)
+      locked_account.lines.filtered(entry_time_gteq: last_entry_time)
     end
 
     def persist_new_movements!(locked_accounts)
       validate_zero_trial_balance!(adjusted_movements)
-      entry_instance.entry_date = entry_date
+      entry_instance.entry_time = entry_time
       entry_instance.save!
       adjusted_movements.each do |movement|
         locked_account = locked_accounts[movement.account_identifier]

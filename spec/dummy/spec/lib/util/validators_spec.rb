@@ -82,23 +82,23 @@ RSpec.describe Ledgerizer::Validators do
     end
   end
 
-  describe '#validate_date!' do
-    let(:date) { "1984-06-04" }
+  describe '#validate_datetime!' do
+    let(:datetime) { "1984-06-04".to_datetime }
 
     let_test_class do
       include Ledgerizer::Validators
     end
 
     def perform
-      test_class.new.validate_date!(date)
+      test_class.new.validate_datetime!(datetime)
     end
 
     it { expect(perform).to eq(true) }
 
     context "when invalid date" do
-      let(:date) { "invalid" }
+      let(:datetime) { "invalid" }
 
-      it { expect { perform }.to raise_error("invalid date given") }
+      it { expect { perform }.to raise_error("invalid datetime given") }
     end
   end
 

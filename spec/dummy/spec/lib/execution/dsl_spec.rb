@@ -27,13 +27,13 @@ RSpec.describe Ledgerizer::Execution::Dsl do
 
   let(:tenant) { create(:portfolio) }
   let(:document) { create(:user) }
-  let(:date) { "1984-06-04".to_date }
+  let(:datetime) { "1984-06-04".to_datetime }
 
   describe '#executor_xxx_entry' do
     context "with invalid entry" do
       def perform
         LedgerizerTestExecution.new.execute_fake_entry(
-          tenant: tenant, document: document, date: date
+          tenant: tenant, document: document, datetime: datetime
         )
       end
 
@@ -43,7 +43,7 @@ RSpec.describe Ledgerizer::Execution::Dsl do
     context "with no movements" do
       def perform
         LedgerizerTestExecution.new.execute_entry1_entry(
-          tenant: tenant, document: document, date: date
+          tenant: tenant, document: document, datetime: datetime
         )
       end
 
@@ -55,7 +55,7 @@ RSpec.describe Ledgerizer::Execution::Dsl do
 
       def perform
         LedgerizerTestExecution.new.execute_entry1_entry(
-          tenant: tenant, document: document, date: date
+          tenant: tenant, document: document, datetime: datetime
         )
       end
 
@@ -67,7 +67,7 @@ RSpec.describe Ledgerizer::Execution::Dsl do
 
       def perform
         LedgerizerTestExecution.new.execute_entry1_entry(
-          tenant: tenant, document: document, date: date
+          tenant: tenant, document: document, datetime: datetime
         )
       end
 
@@ -75,21 +75,21 @@ RSpec.describe Ledgerizer::Execution::Dsl do
     end
 
     context "with invalid entry date" do
-      let(:date) { 'invalid' }
+      let(:datetime) { 'invalid' }
 
       def perform
         LedgerizerTestExecution.new.execute_entry1_entry(
-          tenant: tenant, document: document, date: date
+          tenant: tenant, document: document, datetime: datetime
         )
       end
 
-      it { expect { perform }.to raise_error("invalid date given") }
+      it { expect { perform }.to raise_error("invalid datetime given") }
     end
 
     context "with invalid amounts" do
       def perform
         LedgerizerTestExecution.new.execute_entry1_entry(
-          tenant: tenant, document: document, date: date
+          tenant: tenant, document: document, datetime: datetime
         ) do
           debit(account: :account1, accountable: FactoryBot.create(:user), amount: Money.new(10))
           credit(account: :account2, accountable: FactoryBot.create(:user), amount: Money.new(7))
@@ -103,7 +103,7 @@ RSpec.describe Ledgerizer::Execution::Dsl do
       let(:expected_entry) do
         {
           entry_code: :entry1,
-          entry_date: date,
+          entry_time: datetime,
           document: document
         }
       end
@@ -126,7 +126,7 @@ RSpec.describe Ledgerizer::Execution::Dsl do
 
       before do
         LedgerizerTestExecution.new(debit: debit_data, credit: credit_data).execute_entry1_entry(
-          tenant: tenant, document: document, date: date
+          tenant: tenant, document: document, datetime: datetime
         ) do
           debit(data[:debit])
           credit(data[:credit])
@@ -142,7 +142,7 @@ RSpec.describe Ledgerizer::Execution::Dsl do
       let(:expected_entry) do
         {
           entry_code: :entry3,
-          entry_date: date,
+          entry_time: datetime,
           document: document
         }
       end
@@ -165,7 +165,7 @@ RSpec.describe Ledgerizer::Execution::Dsl do
 
       before do
         LedgerizerTestExecution.new(debit: debit_data, credit: credit_data).execute_entry3_entry(
-          tenant: tenant, document: document, date: date
+          tenant: tenant, document: document, datetime: datetime
         ) do
           debit(data[:debit])
           credit(data[:credit])
@@ -181,7 +181,7 @@ RSpec.describe Ledgerizer::Execution::Dsl do
       let(:expected_entry) do
         {
           entry_code: :entry2,
-          entry_date: date,
+          entry_time: datetime,
           document: document
         }
       end
@@ -219,7 +219,7 @@ RSpec.describe Ledgerizer::Execution::Dsl do
       before do
         data = { debit: debit_data, credit: [credit_data1, credit_data2] }
         LedgerizerTestExecution.new(data).execute_entry2_entry(
-          tenant: tenant, document: document, date: date
+          tenant: tenant, document: document, datetime: datetime
         ) do
           debit(data[:debit])
           credit(data[:credit].first)
