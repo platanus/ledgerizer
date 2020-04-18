@@ -5,6 +5,7 @@ module Ledgerizer
     belongs_to :tenant, polymorphic: true
     belongs_to :document, polymorphic: true
     has_many :lines, dependent: :destroy
+    has_many :accounts, through: :lines
 
     validates :code, :entry_time, presence: true
 
@@ -38,4 +39,5 @@ end
 #
 #  index_ledgerizer_entries_on_document_type_and_document_id  (document_type,document_id)
 #  index_ledgerizer_entries_on_tenant_type_and_tenant_id      (tenant_type,tenant_id)
+#  unique_entry_index                                         (tenant_id,tenant_type,document_id,document_type,code) UNIQUE
 #

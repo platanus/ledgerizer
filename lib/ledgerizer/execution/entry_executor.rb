@@ -3,8 +3,7 @@ module Ledgerizer
     include Ledgerizer::Validators
     include Ledgerizer::Formatters
 
-    delegate :new_movements, :adjusted_movements, :add_new_movement,
-             :related_accounts, :entry_time, :entry_instance,
+    delegate :new_movements, :add_new_movement, :related_accounts, :entry_instance,
              to: :executable_entry, prefix: false
 
     def initialize(config:, tenant:, document:, entry_code:, entry_time:)
@@ -19,7 +18,7 @@ module Ledgerizer
 
     def execute
       validate_existent_movements!
-      validate_zero_trial_balance!(new_movements)
+      validate_zero_trial_balance!
       create_entry
       true
     end
@@ -30,24 +29,33 @@ module Ledgerizer
 
     def create_entry
       Locking.lock_accounts(*related_accounts) do
-        return if adjusted_movements.none?
+        return if new_movements.none?
 
+        entry_instance.lines.destroy_all if entry_instance.lines.any?
         locked_accounts = get_locked_accounts
-        last_entry_time = entry_instance.entry_time || entry_time
-        persist_new_movements!(locked_accounts)
-        locked_accounts.values.each do |locked_account|
-          last_account_line = update_account_related_lines_balances(last_entry_time, locked_account)
-          locked_account.update_attributes(
-            balance_cents: last_account_line.balance_cents,
-            balance_currency: last_account_line.balance_currency
-          )
-        end
+        persist_movements!(locked_accounts)
+        update_related_accounts_balances(locked_accounts)
       end
     end
 
-    def update_account_related_lines_balances(last_entry_time, locked_account)
-      prev_line = last_prev_line_for_entry_time(locked_account, last_entry_time)
-      lines = lines_from_entry_time(locked_account, last_entry_time).to_a.reverse
+    def update_related_accounts_balances(locked_accounts)
+      locked_accounts.values.each do |locked_account|
+        if locked_account.lines.none?
+          locked_account.destroy!
+          next
+        end
+
+        last_account_line = update_related_account_lines_balances(locked_account)
+        locked_account.update_attributes(
+          balance_cents: last_account_line.balance_cents,
+          balance_currency: last_account_line.balance_currency
+        )
+      end
+    end
+
+    def update_related_account_lines_balances(locked_account)
+      prev_line = last_prev_line_for_entry_time(locked_account)
+      lines = lines_from_entry_time(locked_account).to_a.reverse
 
       lines.each do |line|
         balance = (prev_line&.balance || Money.new(0, line.amount.currency)) + line.amount
@@ -60,19 +68,16 @@ module Ledgerizer
       prev_line
     end
 
-    def last_prev_line_for_entry_time(locked_account, last_entry_time)
-      locked_account.lines.filtered(entry_time_lt: last_entry_time).first
+    def last_prev_line_for_entry_time(locked_account)
+      locked_account.lines.filtered(entry_time_lt: entry_instance.entry_time).first
     end
 
-    def lines_from_entry_time(locked_account, last_entry_time)
-      locked_account.lines.filtered(entry_time_gteq: last_entry_time)
+    def lines_from_entry_time(locked_account)
+      locked_account.lines.filtered(entry_time_gteq: entry_instance.entry_time)
     end
 
-    def persist_new_movements!(locked_accounts)
-      validate_zero_trial_balance!(adjusted_movements)
-      entry_instance.entry_time = entry_time
-      entry_instance.save!
-      adjusted_movements.each do |movement|
+    def persist_movements!(locked_accounts)
+      new_movements.each do |movement|
         locked_account = locked_accounts[movement.account_identifier]
         entry_instance.lines.create!(
           account: locked_account,
@@ -94,8 +99,8 @@ module Ledgerizer
       raise_error("can't execute entry without movements") if new_movements.none?
     end
 
-    def validate_zero_trial_balance!(movements)
-      raise_error("trial balance must be zero") unless zero_trial_balance?(movements)
+    def validate_zero_trial_balance!
+      raise_error("trial balance must be zero") unless zero_trial_balance?(new_movements)
     end
 
     def zero_trial_balance?(movements)

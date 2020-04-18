@@ -86,28 +86,18 @@ describe Ledgerizer::Execution::Entry do
       execution_entry.entry_instance
     end
 
+    it { expect { instance }.to change(Ledgerizer::Entry, :count).from(0).to(1) }
     it { expect(instance).to be_a(Ledgerizer::Entry) }
     it { expect(instance.tenant).to eq(tenant_instance) }
-    it { expect(instance.persisted?).to eq(false) }
     it { expect(instance.code).to eq(entry_code.to_s) }
     it { expect(instance.document).to eq(document_instance) }
-    it { expect(instance.entry_time).to eq(nil) }
+    it { expect(instance.entry_time).to eq(entry_time.to_datetime) }
 
     context "with persisted entry" do
       before { entry }
 
-      it { expect(instance).to be_a(Ledgerizer::Entry) }
-      it { expect(instance.tenant).to eq(tenant_instance) }
-      it { expect(instance.persisted?).to eq(false) }
-      it { expect(instance.code).to eq(entry_code.to_s) }
-      it { expect(instance.document).to eq(document_instance) }
-      it { expect(instance.entry_time).to eq(entry_time.to_datetime) }
-
-      context "with invalid entry_time" do
-        let(:entry_instance_date) { entry_time.to_datetime + 1.day }
-
-        it { expect { instance }.to raise_error(/must be greater/) }
-      end
+      it { expect { instance }.not_to change(Ledgerizer::Entry, :count) }
+      it { expect(instance).to eq(entry) }
     end
   end
 
@@ -171,117 +161,6 @@ describe Ledgerizer::Execution::Entry do
     end
   end
 
-  describe "#adjusted_movements" do
-    let(:account_name) { :account1 }
-    let(:accountable_instance) { create(:user) }
-
-    def perform
-      execution_entry.adjusted_movements
-    end
-
-    it { expect(perform.count).to eq(0) }
-
-    context "with a single line matching entry and movement definition" do
-      before do
-        create(
-          :ledgerizer_line,
-          entry: entry,
-          force_accountable: accountable_instance,
-          force_account_name: account_name,
-          amount: clp(333)
-        )
-      end
-
-      it { expect(perform.count).to eq(1) }
-      it { expect(perform.first.amount).to eq(-clp(333)) }
-
-      context "with another line matching the same entry en movement definition" do
-        before do
-          create(
-            :ledgerizer_line,
-            entry: entry,
-            force_accountable: accountable_instance,
-            force_account_name: account_name,
-            amount: clp(333)
-          )
-        end
-
-        it { expect(perform.count).to eq(1) }
-        it { expect(perform.first.amount).to eq(-clp(666)) }
-      end
-
-      context "with line with negative amount" do
-        before do
-          create(
-            :ledgerizer_line,
-            entry: entry,
-            force_accountable: accountable_instance,
-            force_account_name: account_name,
-            amount: -clp(666)
-          )
-        end
-
-        it { expect(perform.count).to eq(1) }
-        it { expect(perform.first.amount).to eq(clp(333)) }
-      end
-
-      context "with another line with different accountable" do
-        before do
-          create(
-            :ledgerizer_line,
-            entry: entry,
-            force_account_name: account_name,
-            amount: clp(222)
-          )
-        end
-
-        it { expect(perform.count).to eq(2) }
-        it { expect(perform.first.amount).to eq(-clp(333)) }
-        it { expect(perform.last.amount).to eq(-clp(222)) }
-      end
-
-      context "with line entry not matching entry param" do
-        before do
-          create(
-            :ledgerizer_line,
-            entry: create(:ledgerizer_entry),
-            force_accountable: accountable_instance,
-            force_account_name: account_name,
-            amount: clp(222)
-          )
-        end
-
-        it { expect(perform.count).to eq(1) }
-        it { expect(perform.first.amount).to eq(-clp(333)) }
-      end
-
-      context "with line with another entry having same sensible attributes as entry param" do
-        let(:another_entry) do
-          create(
-            :ledgerizer_entry,
-            tenant: tenant_instance,
-            document: document_instance,
-            code: entry_code,
-            entry_time: entry_time.to_datetime + 1.day
-          )
-        end
-
-        before do
-          create(
-            :ledgerizer_line,
-            entry: another_entry,
-            force_accountable: accountable_instance,
-            force_account_name: account_name,
-            amount: clp(222)
-          )
-        end
-
-        it { expect(perform.count).to eq(1) }
-        it { expect(perform.first.amount).to eq(-clp(555)) }
-      end
-    end
-  end
-
   describe "#related_accounts" do
     let(:account_name1) { :account1 }
     let(:account_name2) { :account2 }
@@ -292,16 +171,6 @@ describe Ledgerizer::Execution::Entry do
     let(:accountable1) { create(:user) }
     let(:accountable2) { create(:user) }
     let(:accountable3) { create(:user) }
-
-    let(:another_entry) do
-      create(
-        :ledgerizer_entry,
-        tenant: tenant_instance,
-        document: document_instance,
-        code: entry_code,
-        entry_time: entry_time.to_datetime + 1.day
-      )
-    end
 
     let(:expected_accounts) do
       [
@@ -361,7 +230,7 @@ describe Ledgerizer::Execution::Entry do
 
     it { expect(perform).to eq(expected_accounts) }
 
-    context "with previous entry adding a new account" do
+    context "with persisted entry adding a new account" do
       let(:accountable4) { create(:user) }
       let(:updated_expected_accounts) do
         expected_accounts + [
@@ -379,11 +248,14 @@ describe Ledgerizer::Execution::Entry do
       before do
         create(
           :ledgerizer_line,
-          entry: another_entry,
-          force_accountable: accountable4,
-          force_account_name: account_name2,
-          force_account_type: account_type2,
-          amount: clp(100)
+          entry: entry,
+          account: create(
+            :ledgerizer_account,
+            tenant: tenant_instance,
+            name: account_name2,
+            accountable: accountable4,
+            account_type: account_type2
+          )
         )
       end
 
@@ -394,11 +266,14 @@ describe Ledgerizer::Execution::Entry do
       before do
         create(
           :ledgerizer_line,
-          entry: another_entry,
-          force_accountable: accountable1,
-          force_account_name: account_name1,
-          force_account_type: account_type1,
-          amount: clp(100)
+          entry: entry,
+          account: create(
+            :ledgerizer_account,
+            tenant: tenant_instance,
+            name: account_name1,
+            accountable: accountable1,
+            account_type: account_type1
+          )
         )
       end
 

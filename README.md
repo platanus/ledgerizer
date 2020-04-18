@@ -234,8 +234,9 @@ Los métodos `ledger_lines` y `ledger_sum` aceptan los siguientes filtros:
 
 ### Ajuste de Entries
 
+
 Este mecanismo sirve para corregir errores en entries creadas con anterioridad.
-Toda entry que se ejecute con el mismo `document` más de una vez, será considerada un ajuste:
+Toda entry que se ejecute con el mismo `document` y `datetime` más de una vez, será considerada un ajuste y debido a esto se reemplazarán las lines de la entry previamente guardada.
 
 Siguendo con el ejemplo del `DepositCreator`...
 
@@ -258,11 +259,7 @@ Si lo ejecuto una vez, obtendré las dos líneas que mencioné anteriormente:
 
 - Una relacionada con la cuenta `funds_to_invest` por `amount: 10 CLP`
 
-Partiendo de aquí, veamos los siguientes casos de ajuste:
-
-> Para facilitar la explicación, en cada caso iré variando la definición del comando `DepositFixer` que será el encargado de aplicar los ajustes.
-
-#### Caso 1: se ejecuta nuevamente una entry que aumenta los `amounts` de cada cuenta.
+Hasta aquí es un caso normal. Ahora supongamos que tenenmos la siguiente clase que modifica solo los montos de `DepositCreator`.
 
 ```ruby
 class DepositFixer
@@ -277,93 +274,17 @@ class DepositFixer
 end
 ```
 
-En este ejemplo, los montos difieren del `DepositCreator` por 5 CLP.
-Al ejecutar el `DepositFixer` obtendré una nueva entry con dos líneas:
+Al ejecutar el `DepositFixer` se borrarán las líneas:
 
-- Una relacionada con la cuenta `bank` por `amount: 5 CLP`
+- La relacionada con la cuenta `bank` por `amount: 10 CLP`
 
-- Una relacionada con la cuenta `funds_to_invest` por `amount: 5 CLP`
+- La relacionada con la `funds_to_invest` por `amount: 10 CLP`
 
-Como pueden ver, las líneas se crearon por la diferencia (5 CLP) en vez del total (15 CLP) porque 10 CLP ya habían sido registrados por el `DepositCreator` anteriormente.
+y se agregarán 2 nuevas:
 
-#### Caso 2: se ejecuta nuevamente una entry que disminuye los `amounts` de cada cuenta.
+- Una relacionada con la cuenta `bank` por `amount: 15 CLP`
 
-```ruby
-class DepositFixer
-  include Ledgerizer::Execution::Dsl
-
-  def perform
-    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, datetime: "1984-06-04") do
-      debit(account: :bank, accountable: Bank.first, amount: Money.from_amount(2, 'CLP'))
-      credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(2, 'CLP'))
-    end
-  end
-end
-```
-
-En este ejemplo, los montos difieren del `DepositCreator` por -8 CLP.
-Al ejecutar el `DepositFixer` obtendré una nueva entry con dos líneas:
-
-- Una relacionada con la cuenta `bank` por `amount: -8 CLP`
-
-- Una relacionada con la cuenta `funds_to_invest` por `amount: -8 CLP`
-
-#### Caso 3: se ejecuta nuevamente una entry que no modifica nada:
-
-```ruby
-class DepositFixer
-  include Ledgerizer::Execution::Dsl
-
-  def perform
-    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, datetime: "1984-06-04") do
-      debit(account: :bank, accountable: Bank.first, amount: Money.from_amount(10, 'CLP'))
-      credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(10, 'CLP'))
-    end
-  end
-end
-```
-
-En este caso, no se creará ninguna entry porque no hubo modificación en los montos.
-
-#### Caso 4: se ejecuta nuevamente una entry que cambia el `accountable` de una cuenta:
-
-```ruby
-class DepositFixer
-  include Ledgerizer::Execution::Dsl
-
-  def perform
-    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, datetime: "1984-06-04") do
-      debit(account: :bank, accountable: Bank.find(666), amount: Money.from_amount(10, 'CLP'))
-      credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(10, 'CLP'))
-    end
-  end
-end
-```
-
-Al ejecutar el `DepositFixer` obtendré una nueva entry con 2 líneas:
-
-- Una relacionada con la cuenta `bank` y `accountable: Bank.first` por `amount: -10 CLP` (esto porque se tuvo que dar de baja el movimiento anterior)
-
-- Una relacionada con la cuenta `bank` y `accountable: Bank.find(666)` por `amount: +10 CLP` (porque se necesita registrar íntegramente movimiento para la nueva cuenta)
-
-Verán también que no se creó ninguna línea para `funds_to_invest` porque no sufrió modificaciones.
-
-#### Caso 5: se ejecuta nuevamente una entry con fecha anterior a la fecha del movimiento original:
-
-```ruby
-class DepositFixer
-  include Ledgerizer::Execution::Dsl
-
-  def perform
-    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, datetime: "1984-06-03") do
-      debit(account: :bank, accountable: Bank.first, amount: Money.from_amount(10, 'CLP'))
-      credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(10, 'CLP'))
-    end
-  end
-end
-```
-
-En estos casos obtendremos un error de ejecución porque no se debería poder ajustar una entrada del futuro.
+- Una relacionada con la cuenta `funds_to_invest` por `amount: 15 CLP`
 
 ## Testing
 

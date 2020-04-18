@@ -10,6 +10,7 @@ module Ledgerizer
       it { is_expected.to belong_to(:tenant) }
       it { is_expected.to belong_to(:document) }
       it { is_expected.to have_many(:lines).dependent(:destroy) }
+      it { is_expected.to have_many(:accounts) }
     end
 
     describe "validations" do

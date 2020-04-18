@@ -31,109 +31,58 @@ module Ledgerizer
       end
 
       def entry_instance
-        @entry_instance ||= begin
-          entry_data = { code: code, document: document }
-          entries = tenant.entries
-          entry = find_entry_instance(entries, entry_data) || entries.build(entry_data)
-          entry
-        end
+        @entry_instance ||= find_or_create_entry_instance
       end
 
       def new_movements
         @new_movements ||= []
       end
 
-      def adjusted_movements
-        @adjusted_movements ||= begin
-          old_movements.inject([]) do |result, old_movement|
-            adjusted_movement = adjust_old_movement(old_movement)
-            result << adjusted_movement if adjusted_movement
-            result
-          end + new_movements
-        end
-      end
-
       def related_accounts
-        accounts = []
-
-        adjusted_movements.each do |movement|
-          account = Ledgerizer::Execution::Account.new(
-            tenant: tenant,
-            accountable: movement.accountable,
-            account_name: movement.account_name,
-            account_type: movement.account_type,
-            currency: movement.signed_amount_currency.to_s
-          )
-          movement.account_identifier = account.identifier
-          accounts << account unless accounts.include?(account)
+        @related_accounts ||= begin
+          (accounts_from_new_movements + accounts_from_entry_instance).inject([]) do |memo, account|
+            memo << account unless memo.include?(account)
+            memo
+          end
         end
-
-        accounts
       end
 
       private
 
       attr_reader :entry_definition, :tenant
 
-      def old_movements
-        found_movements = []
+      def find_or_create_entry_instance
+        entry_data = { code: code, document: document, entry_time: entry_time }
+        entry = tenant.entries.find_by(entry_data)
+        return entry if entry
 
-        for_each_grouped_by_accountable_and_currency_movement do |movement|
-          found_movements << Ledgerizer::Execution::Movement.new(movement)
+        tenant.entries.create!(entry_data)
+      end
+
+      def accounts_from_new_movements
+        new_movements.map do |movement|
+          account = Ledgerizer::Execution::Account.new(
+            tenant: tenant,
+            accountable: movement.accountable,
+            account_name: movement.account_name.to_sym,
+            account_type: movement.account_type.to_sym,
+            currency: movement.signed_amount_currency.to_s
+          )
+          movement.account_identifier = account.identifier
+          account
         end
-
-        found_movements
       end
 
-      def find_entry_instance(entries, entry_data)
-        entry = entries.where(entry_data).order(:entry_time).last
-        return unless entry
-
-        validate_adjustment_date_greater_than_old_entry_time!(entry)
-        entry.dup
-      end
-
-      def validate_adjustment_date_greater_than_old_entry_time!(entry)
-        if entry.entry_time > entry_time
-          raise_error(
-            "adjustment date (#{entry_time}) must be greater \
-than old entry date (#{entry.entry_time})"
+      def accounts_from_entry_instance
+        entry_instance.accounts.to_a.map do |account|
+          Ledgerizer::Execution::Account.new(
+            tenant: account.tenant,
+            accountable: account.accountable,
+            account_name: account.name.to_sym,
+            account_type: get_movement_definition_from_account(account).account_type.to_sym,
+            currency: account.balance_currency
           )
         end
-      end
-
-      def for_each_grouped_by_accountable_and_currency_movement(&block)
-        entry_definition.movements.each do |movement_definition|
-          groups = amounts_grouped_by_accountable_and_currency(movement_definition)
-          groups.each do |accountabe_data, amount_cents|
-            accountable_id, currency = accountabe_data
-            accountable = movement_definition.accountable_class&.find(accountable_id)
-
-            block.call(
-              accountable: accountable,
-              movement_definition: movement_definition,
-              amount: Money.new(amount_cents, currency),
-              allow_negative_amount: true
-            )
-          end
-        end
-      end
-
-      def amounts_grouped_by_accountable_and_currency(movement_definition)
-        attrs = %i{accountable_id amount_currency}
-        lines_by_movement_definition(
-          movement_definition
-        ).select(*attrs).group(*attrs).sum(:amount_cents)
-      end
-
-      def lines_by_movement_definition(movement_definition)
-        Ledgerizer::Line.where(
-          tenant: tenant,
-          entry_code: code,
-          document: document,
-          accountable_type: movement_definition.accountable_string_class,
-          account_name: movement_definition.account_name
-        )
       end
 
       def validate_entry_document!(document)
@@ -160,6 +109,16 @@ than old entry date (#{entry.entry_time})"
         )
       end
 
+      def get_movement_definition_from_account(account)
+        %i{debit credit}.map do |movement_type|
+          entry_definition.find_movement(
+            movement_type: movement_type,
+            account_name: format_to_symbol_identifier(account.name),
+            accountable: format_model_to_sym(account.accountable)
+          )
+        end.compact.first
+      end
+
       def get_tenant_definition!(config, tenant)
         validate_active_record_instance!(tenant, "tenant")
         tenant_definition = config.find_tenant(tenant)
@@ -174,24 +133,6 @@ than old entry date (#{entry.entry_time})"
         return entry_definition if entry_definition
 
         raise_error("invalid entry code #{entry_code} for given tenant")
-      end
-
-      def adjust_old_movement(old_movement)
-        new_movement = get_new_from_old_movement(old_movement)
-        old_amount = old_movement.amount
-        new_amount = new_movement&.amount || 0
-        diff = new_amount - old_amount
-        return if diff.zero?
-
-        old_movement.amount = diff
-        old_movement
-      end
-
-      def get_new_from_old_movement(old_movement)
-        found = new_movements.find { |new_movement| old_movement == new_movement }
-        return unless found
-
-        new_movements.delete(found)
       end
     end
   end

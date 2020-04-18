@@ -55,6 +55,7 @@ def parse_options
   $process_count = 20
   $entry_count = 20000
   $use_threads = false
+  $test_dup_entries = false
 
   options = OptionParser.new
 
@@ -70,6 +71,10 @@ def parse_options
     $use_threads = !!value
   end
 
+  options.on("-d", "--test-dup-entries", "To test duplicated entries") do |value|
+    $test_dup_entries = !!value
+  end
+
   options.parse(*ARGV)
 end
 
@@ -79,7 +84,7 @@ def clean_out_database
   DatabaseCleaner.clean_with(:truncation)
 end
 
-def define_accounts_and_entries
+def setup
   puts "Setting up accounts and entries..."
 
   LedgerizerTest.setup do |conf|
@@ -94,12 +99,18 @@ def define_accounts_and_entries
     end
   end
 
+  now = DateTime.current
+  entry_times = [now - 1.day, now - 2.days]
+
   $ledgerizer_config = LedgerizerTest.definition
   $tenant = Portfolio.create!
   $asset_accountables = []
   $liability_accountables = []
+  $documents = []
+
   3.times { $asset_accountables << User.create! }
   3.times { $liability_accountables << User.create! }
+  60.times { $documents << [Deposit.create!, entry_times.sample]  }
 end
 
 def run_tests
@@ -137,15 +148,16 @@ def run_process(iterations, process_num)
   iterations.times do |i|
     accountable_a = $asset_accountables.sample
     accountable_b = $liability_accountables.sample
-    amount = rand(1000000) + 1
+    amount = 5.times.map { |n| (n+1) * 10000 }.sample
     clp_amount = Money.new(amount, "CLP")
+    doc, time = $documents.sample
 
     executor = Ledgerizer::EntryExecutor.new(
       config: $ledgerizer_config,
       tenant: $tenant,
-      document: Deposit.create!,
+      document: $test_dup_entries ? doc : Deposit.create!,
       entry_code: :test,
-      entry_time: Date.current
+      entry_time: time
     )
 
     executor.add_new_movement(
@@ -163,8 +175,6 @@ def run_process(iterations, process_num)
     )
 
     executor.execute
-
-    puts "Process #{process_num} completed #{i+1} entries" if (i+1) % 100 == 0
   end
 end
 
@@ -172,9 +182,9 @@ def check_results
   puts "Checking account lines and balances..."
 
   if Ledgerizer::Line.count == $entry_count * 2
-    puts "All the Line records were written, FTW!"
+    puts "All the Line records were written :)"
   else
-    puts "Not enough Line records written. :("
+    puts "Not enough Line records written :(" unless $test_dup_entries
   end
 
   lines_count = 0
@@ -185,19 +195,19 @@ def check_results
     lines_sum_balance = account.lines.amounts_sum("CLP")
     lines_count += account.lines.count
 
-
     if account.check_integrity
-      puts "success :) - account ##{account.id} with valid lines and balance"
+      puts "success :) - account ##{account.id} with valid lines and balance #{account.balance}"
     else
       puts "failure :( - account ##{account.id} with invalid lines and balance"
     end
   end
 
+  puts "entries count: #{Ledgerizer::Entry.count}"
   puts "lines count: #{lines_count}"
 end
 
 parse_options
 clean_out_database
-define_accounts_and_entries
+setup
 run_tests
 check_results

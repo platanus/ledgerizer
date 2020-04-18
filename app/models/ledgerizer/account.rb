@@ -36,7 +36,7 @@ module Ledgerizer
     def check_integrity
       prev_balance = Money.new(0, currency)
 
-      lines.order(:entry_time).each do |line|
+      lines.filtered.reverse.each do |line|
         return false if line.balance != prev_balance + line.amount
 
         prev_balance = line.balance

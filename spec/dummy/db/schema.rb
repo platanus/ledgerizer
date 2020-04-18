@@ -46,6 +46,7 @@ ActiveRecord::Schema.define(version: 2019_09_26_151926) do
     t.bigint "document_id"
     t.datetime "entry_time"
     t.index ["document_type", "document_id"], name: "index_ledgerizer_entries_on_document_type_and_document_id"
+    t.index ["tenant_id", "tenant_type", "document_id", "document_type", "code"], name: "unique_entry_index", unique: true
     t.index ["tenant_type", "tenant_id"], name: "index_ledgerizer_entries_on_tenant_type_and_tenant_id"
   end
 
