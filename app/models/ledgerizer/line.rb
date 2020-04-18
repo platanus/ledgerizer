@@ -15,6 +15,8 @@ module Ledgerizer
 
     before_save :denormalize_attributes
 
+    scope :sorted, -> { order(entry_time: :desc, id: :desc) }
+
     def self.filtered(filters = {})
       Ledgerizer::FilteredLinesQuery.new(relation: self, filters: filters).all
     end

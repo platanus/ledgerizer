@@ -4,7 +4,7 @@ module Ledgerizer
 
     belongs_to :tenant, polymorphic: true
     belongs_to :document, polymorphic: true
-    has_many :lines, dependent: :destroy
+    has_many :lines, -> { sorted }, dependent: :destroy
     has_many :accounts, through: :lines
 
     validates :code, :entry_time, presence: true

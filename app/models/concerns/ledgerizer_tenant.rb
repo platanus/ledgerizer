@@ -15,7 +15,7 @@ module LedgerizerTenant
              class_name: "Ledgerizer::Entry",
              dependent: :destroy
 
-    has_many :lines,
+    has_many :lines, -> { sorted },
              as: :tenant,
              class_name: "Ledgerizer::Line",
              dependent: :destroy

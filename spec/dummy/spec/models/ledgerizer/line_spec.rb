@@ -18,6 +18,15 @@ module Ledgerizer
       it { is_expected.to monetize(:balance) }
     end
 
+    describe "#sorted" do
+      let!(:l1) { create(:ledgerizer_line, force_entry_time: "1984-06-04".to_datetime) }
+      let!(:l2) { create(:ledgerizer_line, force_entry_time: "1984-06-06".to_datetime) }
+      let!(:l3) { create(:ledgerizer_line, force_entry_time: "1984-06-04".to_datetime) }
+      let!(:l4) { create(:ledgerizer_line, force_entry_time: "1984-06-05".to_datetime) }
+
+      it { expect(described_class.sorted.ids).to eq([l2.id, l4.id, l3.id, l1.id]) }
+    end
+
     describe "#denormalize_attributes" do
       let(:line) { create(:ledgerizer_line) }
 

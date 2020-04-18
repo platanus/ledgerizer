@@ -61,7 +61,7 @@ module Ledgerizer
         query = filter_by_predicate(query, config)
       end
 
-      query.order(entry_time: :desc, id: :desc)
+      query.sorted
     end
 
     private

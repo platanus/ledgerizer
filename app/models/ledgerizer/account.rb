@@ -6,7 +6,7 @@ module Ledgerizer
 
     belongs_to :tenant, polymorphic: true
     belongs_to :accountable, polymorphic: true, optional: true
-    has_many :lines, dependent: :destroy
+    has_many :lines, -> { sorted }, dependent: :destroy
 
     enumerize :account_type, in: Ledgerizer::Definition::Account::TYPES,
                              predicates: { prefix: true }
