@@ -2,11 +2,10 @@ module LedgerizerAccountable
   extend ActiveSupport::Concern
 
   included do
-    has_many :accounts,
-             as: :accountable,
-             class_name: "Ledgerizer::Account",
-             dependent: :destroy
-
-    has_many :lines, -> { sorted }, through: :accounts, class_name: "Ledgerizer::Line"
+    if ancestors.include?(ActiveRecord::Base)
+      include AR::LedgerizerAccountable
+    else
+      include PORO::LedgerizerAccountable
+    end
   end
 end

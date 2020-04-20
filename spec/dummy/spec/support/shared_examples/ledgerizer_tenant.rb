@@ -1,9 +1,24 @@
-shared_examples "ledgerizer tenant" do |entity_name|
+shared_examples "ledgerizer active record tenant" do |entity_name|
   let(:entity) { create(entity_name) }
 
   it { expect(entity).to have_many(:accounts) }
   it { expect(entity).to have_many(:lines) }
   it { expect(entity).to have_many(:entries) }
+end
+
+shared_examples "ledgerizer PORO tenant" do |entity_name|
+  let(:entity) { create(entity_name) }
+
+  before do
+    create_list(:ledgerizer_line, 3, force_tenant: entity)
+    create_list(:ledgerizer_line, 2)
+  end
+
+  it { expect(entity.lines.count).to eq(3) }
+end
+
+shared_examples "ledgerizer tenant" do |entity_name|
+  let(:entity) { create(entity_name) }
 
   describe "#create_entry!" do
     let(:code) { :deposit }
@@ -29,7 +44,8 @@ shared_examples "ledgerizer tenant" do |entity_name|
           code: "deposit",
           document: document,
           entry_time: entry_time.to_datetime,
-          tenant: entity
+          tenant_id: entity.id,
+          tenant_type: entity.class.to_s
         }
       end
 
@@ -42,20 +58,6 @@ shared_examples "ledgerizer tenant" do |entity_name|
 
       it { expect { perform }.to raise_error(ActiveRecord::RecordInvalid) }
     end
-  end
-
-  describe "#to_table" do
-    let(:collection) { described_class.all }
-    let(:table_print_attrs) do
-      %w{
-        id
-        name
-      }
-    end
-
-    before { create_list(:ledgerizer_account, 3) }
-
-    it_behaves_like 'table print'
   end
 
   describe "#account_type_balance, #account_balance" do

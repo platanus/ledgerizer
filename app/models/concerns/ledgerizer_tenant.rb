@@ -4,22 +4,12 @@ module LedgerizerTenant
   included do
     include LedgerizerLinesRelated
     include Ledgerizer::Formatters
-    include LedgerizerTablePrint
 
-    has_many :accounts,
-             as: :tenant,
-             class_name: "Ledgerizer::Account",
-             dependent: :destroy
-
-    has_many :entries,
-             as: :tenant,
-             class_name: "Ledgerizer::Entry",
-             dependent: :destroy
-
-    has_many :lines, -> { sorted },
-             as: :tenant,
-             class_name: "Ledgerizer::Line",
-             dependent: :destroy
+    if ancestors.include?(ActiveRecord::Base)
+      include AR::LedgerizerTenant
+    else
+      include PORO::LedgerizerTenant
+    end
 
     def currency
       Ledgerizer.definition.get_tenant_currency(self)
@@ -32,7 +22,9 @@ module LedgerizerTenant
     end
 
     def create_entry!(executable_entry)
-      entries.create!(
+      Ledgerizer::Entry.where(
+        tenant_id: id, tenant_type: self.class.to_s
+      ).create!(
         code: executable_entry.code,
         document: executable_entry.document,
         entry_time: executable_entry.entry_time

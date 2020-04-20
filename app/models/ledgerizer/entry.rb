@@ -3,12 +3,12 @@ module Ledgerizer
     include LedgerizerLinesRelated
     include LedgerizerTablePrint
 
-    belongs_to :tenant, polymorphic: true
-    belongs_to :document, polymorphic: true
+    belongs_to :tenant, polymorphic: true, optional: true
+    belongs_to :document, polymorphic: true, optional: true
     has_many :lines, -> { sorted }, dependent: :destroy
     has_many :accounts, through: :lines
 
-    validates :code, :entry_time, presence: true
+    validates :code, :tenant_type, :document_type, :entry_time, presence: true
 
     delegate :currency, to: :tenant, prefix: false # TODO: denormalize
 

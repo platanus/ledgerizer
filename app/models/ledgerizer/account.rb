@@ -5,7 +5,7 @@ module Ledgerizer
     include LedgerizerLinesRelated
     include LedgerizerTablePrint
 
-    belongs_to :tenant, polymorphic: true
+    belongs_to :tenant, polymorphic: true, optional: true
     belongs_to :accountable, polymorphic: true, optional: true
     has_many :lines, -> { sorted }, dependent: :destroy
 
@@ -14,7 +14,7 @@ module Ledgerizer
 
     monetize :balance_cents
 
-    validates :name, :currency, :account_type, :balance_cents, presence: true
+    validates :name, :currency, :account_type, :tenant_type, :balance_cents, presence: true
     validates :currency, ledgerizer_currency: true
 
     before_save :load_format_currency

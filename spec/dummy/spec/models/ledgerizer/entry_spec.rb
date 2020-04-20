@@ -7,15 +7,17 @@ module Ledgerizer
     end
 
     describe "associations" do
-      it { is_expected.to belong_to(:tenant) }
-      it { is_expected.to belong_to(:document) }
+      it { is_expected.to belong_to(:tenant).optional }
+      it { is_expected.to belong_to(:document).optional }
       it { is_expected.to have_many(:lines).dependent(:destroy) }
       it { is_expected.to have_many(:accounts) }
     end
 
     describe "validations" do
       it { is_expected.to validate_presence_of(:code) }
+      it { is_expected.to validate_presence_of(:document_type) }
       it { is_expected.to validate_presence_of(:entry_time) }
+      it { is_expected.to validate_presence_of(:tenant_type) }
     end
 
     it_behaves_like "ledgerizer lines related", :ledgerizer_entry

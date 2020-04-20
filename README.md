@@ -214,7 +214,7 @@ Los métodos `ledger_lines` y `ledger_sum` aceptan los siguientes filtros:
 - `amount[_lt|_lteq|_gt|_gteq]`: Para filtrar por `amount` <, <=, > o >=. Debe ser una instancia de `Money` y si no se usa sufijo (_xxx) se buscará un monto igual.
 - `entry_time[_lt|_lteq|_gt|_gteq]`: Para filtrar por `entry_time` <, <=, > o >=. Debe ser una instancia de `DateTime` y si no se usa sufijo (_xxx) se buscará una fecha/hora igual.
 
-> Se debe tener en cuenta que algunos filtros no harán sentido en aglunos contextos y por esto serán ignorados. Por ejemplo: si ejecuto `entry.ledger_sum(documents: [Deposit.last])`, el filtro `documents` será ignorado ya que ese filtro saldrá de `entry`.
+> Se debe tener en cuenta que algunos filtros no harán sentido en algunos contextos y por esto serán ignorados. Por ejemplo: si ejecuto `entry.ledger_sum(documents: [Deposit.last])`, el filtro `documents` será ignorado ya que ese filtro saldrá de `entry`.
 
 #### Ejemplo de uso:
 

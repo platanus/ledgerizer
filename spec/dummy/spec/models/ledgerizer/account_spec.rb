@@ -7,7 +7,7 @@ module Ledgerizer
     end
 
     describe "associations" do
-      it { is_expected.to belong_to(:tenant) }
+      it { is_expected.to belong_to(:tenant).optional }
       it { is_expected.to belong_to(:accountable).optional }
       it { is_expected.to have_many(:lines).dependent(:destroy) }
     end
@@ -16,6 +16,7 @@ module Ledgerizer
       it { is_expected.to enumerize(:account_type).in(Ledgerizer::Definition::Account::TYPES) }
       it { is_expected.to validate_presence_of(:name) }
       it { is_expected.to validate_presence_of(:account_type) }
+      it { is_expected.to validate_presence_of(:tenant_type) }
       it { is_expected.to validate_presence_of(:currency) }
       it { is_expected.to validate_presence_of(:balance_cents) }
       it { is_expected.to monetize(:balance) }
