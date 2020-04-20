@@ -215,5 +215,26 @@ module Ledgerizer
         it { expect(perform).to eq(false) }
       end
     end
+
+    describe "#to_table" do
+      let(:collection) { described_class.all }
+      let(:table_print_attrs) do
+        %w{
+          id
+          account_type
+          currency
+          name
+          accountable_id
+          accountable_type
+          tenant_id
+          tenant_type
+          balance.format
+        }
+      end
+
+      before { create_list(:ledgerizer_account, 3) }
+
+      it_behaves_like 'table print'
+    end
   end
 end

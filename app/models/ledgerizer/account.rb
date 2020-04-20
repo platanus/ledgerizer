@@ -3,6 +3,7 @@ module Ledgerizer
     extend Enumerize
     include Ledgerizer::Formatters
     include LedgerizerLinesRelated
+    include LedgerizerTablePrint
 
     belongs_to :tenant, polymorphic: true
     belongs_to :accountable, polymorphic: true, optional: true

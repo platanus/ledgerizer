@@ -232,8 +232,62 @@ Los métodos `ledger_lines` y `ledger_sum` aceptan los siguientes filtros:
   tenant.ledger_lines(entry_code: :user_deposit, entry_time: '2019-01-10')
   ```
 
-### Ajuste de Entries
+#### Table print
 
+Puede resultar útil mostrar en la consola información de `accounts`, `entries` o `lines`. Ejemplos:
+
+```ruby
+Ledgerizer::Account.to_table # para mostrar todas las cuentas
+```
+
+```
+ID | ACCOUNT_TYPE | CURRENCY | NAME     | ACCOUNTABLE_ID | ACCOUNTABLE_TYPE | TENANT_ID | TENANT_TYPE | BALANCE.FORMAT
+---|--------------|----------|----------|----------------|------------------|-----------|-------------|---------------
+1  | asset        | CLP      | account1 | 1              | User             | 1         | Portfolio   | $161
+5  | liability    | CLP      | account2 | 4              | User             | 1         | Portfolio   | $225
+2  | liability    | CLP      | account2 | 6              | User             | 1         | Portfolio   | $204
+4  | asset        | CLP      | account1 | 2              | User             | 1         | Portfolio   | $230
+7  | liability    | CLP      | account2 | 5              | User             | 1         | Portfolio   | $193
+9  | asset        | CLP      | account1 | 3              | User             | 1         | Portfolio   | $231
+```
+
+```ruby
+User.first.accounts.to_table # Para mostrar las cuentas de un accountable
+```
+
+```
+ID | ACCOUNT_TYPE | CURRENCY | NAME     | ACCOUNTABLE_ID | ACCOUNTABLE_TYPE | TENANT_ID | TENANT_TYPE | BALANCE.FORMAT
+---|--------------|----------|----------|----------------|------------------|-----------|-------------|---------------
+1  | asset        | CLP      | account1 | 1              | User             | 1         | Portfolio   | $161
+```
+
+```ruby
+Ledgerizer::Account.first.lines.to_table # para mostrar las lines de una cuenta
+```
+
+```
+ID  | ACCOUNT_NAME | ACCOUNTABLE_ID | ACCOUNTABLE_TYPE | ACCOUNT_ID | DOCUMENT_ID | DOCUMENT_TYPE | ACCOUNT_TYPE | ENTRY_CODE | ENTRY_TIME              | ENTRY_ID | TENANT_ID | TENANT_TYPE | AMOUNT.FORMAT | BALANCE.FORMAT
+----|--------------|----------------|------------------|------------|-------------|---------------|--------------|------------|-------------------------|----------|-----------|-------------|---------------|---------------
+381 | account1     | 1              | User             | 1          | 252         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 192      | 1         | Portfolio   | $2            | $161
+378 | account1     | 1              | User             | 1          | 251         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 191      | 1         | Portfolio   | $2            | $159
+369 | account1     | 1              | User             | 1          | 246         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 186      | 1         | Portfolio   | $1            | $157
+357 | account1     | 1              | User             | 1          | 241         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 181      | 1         | Portfolio   | $2            | $156
+349 | account1     | 1              | User             | 1          | 237         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 177      | 1         | Portfolio   | $4            | $154
+297 | account1     | 1              | User             | 1          | 211         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 151      | 1         | Portfolio   | $5            | $150
+...
+```
+
+```ruby
+Ledgerizer::Entry.first.to_table # para mostrar una instancia como tabla.
+```
+
+```
+ID | ENTRY_TIME              | DOCUMENT_ID | DOCUMENT_TYPE | CODE | TENANT_ID | TENANT_TYPE
+---|-------------------------|-------------|---------------|------|-----------|------------
+1  | 2020-04-17 22:23:11     | 64          | Deposit       | test | 1         | Portfolio
+```
+
+### Ajuste de Entries
 
 Este mecanismo sirve para corregir errores en entries creadas con anterioridad.
 Toda entry que se ejecute con el mismo `document` y `datetime` más de una vez, será considerada un ajuste y debido a esto se reemplazarán las lines de la entry previamente guardada.
