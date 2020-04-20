@@ -11,6 +11,7 @@ class CreateLedgerizerLines < ActiveRecord::Migration[5.2]
       t.references :accountable, polymorphic: true
       t.string :account_name
       t.monetize :amount, amount: { null: false, default: 0 }
+      t.monetize :balance, amount: { null: false, default: 0 }
 
       t.timestamps
     end

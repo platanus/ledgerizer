@@ -10,4 +10,4 @@ module Ledgerizer
   end
 end
 
-Money.send(:include, Ledgerizer::MoneyExt)
+Money.include Ledgerizer::MoneyExt

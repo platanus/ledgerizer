@@ -38,13 +38,16 @@ module LedgerizerTenant
       )
     end
 
-    def find_or_create_account_from_executable_movement!(movement)
-      accounts.find_or_create_by!(
-        accountable: movement.accountable,
-        name: movement.account_name,
-        currency: format_to_upcase(movement.base_currency),
-        account_type: movement.account_type
-      )
+    def account_balance(account_name, currency)
+      sum = accounts.where(name: account_name, currency: format_to_upcase(currency))
+                    .sum(:balance_cents)
+      Money.new(sum, currency)
+    end
+
+    def account_type_balance(account_type, currency)
+      sum = accounts.where(account_type: account_type, currency: format_to_upcase(currency))
+                    .sum(:balance_cents)
+      Money.new(sum, currency)
     end
   end
 end

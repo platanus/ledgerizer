@@ -47,4 +47,12 @@ RSpec.configure do |config|
   config.include ActionDispatch::TestProcess
   config.include TestClassHelpers
   config.include MoneyHelpers
+
+  config.before do
+    # rubocop:disable RSpec/AnyInstance
+    allow_any_instance_of(Ledgerizer::Definition::Config).to receive(
+      :running_inside_transactional_fixtures
+    ).and_return(true)
+    # rubocop:enable RSpec/AnyInstance
+  end
 end

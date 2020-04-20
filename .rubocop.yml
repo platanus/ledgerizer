@@ -493,3 +493,5 @@ RSpec/FilePath:
   Enabled: false
 RSpec/DescribedClass:
   Enabled: false
+RSpec/MessageSpies:
+  Enabled: false

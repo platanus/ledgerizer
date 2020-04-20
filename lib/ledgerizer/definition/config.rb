@@ -4,6 +4,12 @@ module Ledgerizer
       include Ledgerizer::Validators
       include Ledgerizer::Formatters
 
+      attr_writer :running_inside_transactional_fixtures
+
+      def running_inside_transactional_fixtures
+        @running_inside_transactional_fixtures || false
+      end
+
       def add_tenant(model_name:, currency: nil)
         tenant = Ledgerizer::Definition::Tenant.new(
           model_name: model_name,
@@ -26,6 +32,12 @@ module Ledgerizer
         config = find_tenant(tenant)
         raise_config_error("tenant's config does not exist") unless config
         config.currency
+      end
+
+      def get_tenant_account_names(tenant)
+        config = find_tenant(tenant)
+        raise_config_error("tenant's config does not exist") unless config
+        config.account_names
       end
 
       private

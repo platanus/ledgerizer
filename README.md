@@ -183,22 +183,26 @@ Con esto podemos hacer:
 
 *Para tenant*
 
+- `tenant.account_balance(account_name, currency)`: devuelve el balance de una cuenta. Ejemplo: `tenant.account_balance(:bank, "CLP")`
+- `tenant.account_type_balance(account_type, currency)`: devuelve el balance de un tipo de cuenta. Ejemplo: `tenant.account_type_balance(:asset, "CLP")`. Los tipos pueden ser: `asset, expense, liability, income, equity`
 - `tenant.accounts`: devuelve todas las `Ledgerizer::Account` asociadas al tenant
 - `tenant.entries`: devuelve todas las `Ledgerizer::Entry` asociadas al tenant
 - `tenant.ledger_lines(filters)`: devuelve todas las `Ledgerizer::Line` asociadas al tenant
-- `tenant.ledger_balance(filters)`: devuelve la suma de todas las `Ledgerizer::Line` asociadas al tenant
+- `tenant.ledger_sum(filters)`: devuelve la suma de todas las `Ledgerizer::Line` asociadas al tenant
 
 *Para entry*
 
 - `entry.ledger_lines(filters)`: devuelve todas las `Ledgerizer::Line` asociadas a la entry
-- `entry.ledger_balance(filters)`: devuelve la suma de todas las `Ledgerizer::Line` asociadas a la entry
+- `entry.ledger_sum(filters)`: devuelve la suma de todas las `Ledgerizer::Line` asociadas a la entry
 
 *Para account*
 
+- `account.balance`: devuelve el balance de la cuenta desde caché
+- `account.balance_at(date)`: devuelve el balance de la cuenta desde caché hasta una fecha
 - `account.ledger_lines(filters)`: devuelve todas las `Ledgerizer::Line` asociadas al account
-- `account.ledger_balance(filters)`: devuelve la suma de todas las `Ledgerizer::Line` asociadas al account
+- `account.ledger_sum(filters)`: devuelve la suma de todas las `Ledgerizer::Line` asociadas al account
 
-Los métodos `ledger_lines` y `ledger_balance` aceptan los siguientes filtros:
+Los métodos `ledger_lines` y `ledger_sum` aceptan los siguientes filtros:
 
 - `entries`: Array de objetos `Ledgerizer::Entry`. También se puede usar `entry` para filtrar por un único objeto.
 - `entry_codes`: Array de `code`s definidos en el `tenant`. En el ejemplo: `:user_deposit` y `user_deposit_distribution`. También se puede usar `entry_code` para filtrar por un único código.
@@ -210,7 +214,7 @@ Los métodos `ledger_lines` y `ledger_balance` aceptan los siguientes filtros:
 - `amount[_lt|_lteq|_gt|_gteq]`: Para filtrar por `amount` <, <=, > o >=. Debe ser una instancia de `Money` y si no se usa sufijo (_xxx) se buscará un monto igual.
 - `entry_date[_lt|_lteq|_gt|_gteq]`: Para filtrar por `entry_date` <, <=, > o >=. Debe ser una instancia de `Date` y si no se usa sufijo (_xxx) se buscará una fecha igual.
 
-> Se debe tener en cuenta que algunos filtros no harán sentido en aglunos contextos y por esto serán ignorados. Por ejemplo: si ejecuto `entry.ledger_balance(documents: [Deposit.last])`, el filtro `documents` será ignorado ya que ese filtro saldrá de `entry`.
+> Se debe tener en cuenta que algunos filtros no harán sentido en aglunos contextos y por esto serán ignorados. Por ejemplo: si ejecuto `entry.ledger_sum(documents: [Deposit.last])`, el filtro `documents` será ignorado ya que ese filtro saldrá de `entry`.
 
 #### Ejemplo de uso:
 
@@ -218,7 +222,7 @@ Los métodos `ledger_lines` y `ledger_balance` aceptan los siguientes filtros:
 
   ```ruby
   tenant.accounts.where(account_type: :asset).each do |asset_account|
-    p "#{asset_account.name}: #{asset_account.ledger_balance(entry_date_lteq: '2019-01-10')}"
+    p "#{asset_account.name}: #{asset_account.ledger_sum(entry_date_lteq: '2019-01-10')}"
   end
   ```
 
@@ -258,7 +262,7 @@ Partiendo de aquí, veamos los siguientes casos de ajuste:
 
 > Para facilitar la explicación, en cada caso iré variando la definición del comando `DepositFixer` que será el encargado de aplicar los ajustes.
 
-### Caso 1: se ejecuta nuevamente una entry que aumenta los `amounts` de cada cuenta.
+#### Caso 1: se ejecuta nuevamente una entry que aumenta los `amounts` de cada cuenta.
 
 ```ruby
 class DepositFixer
@@ -282,7 +286,7 @@ Al ejecutar el `DepositFixer` obtendré una nueva entry con dos líneas:
 
 Como pueden ver, las líneas se crearon por la diferencia (5 CLP) en vez del total (15 CLP) porque 10 CLP ya habían sido registrados por el `DepositCreator` anteriormente.
 
-### Caso 2: se ejecuta nuevamente una entry que disminuye los `amounts` de cada cuenta.
+#### Caso 2: se ejecuta nuevamente una entry que disminuye los `amounts` de cada cuenta.
 
 ```ruby
 class DepositFixer
@@ -304,7 +308,7 @@ Al ejecutar el `DepositFixer` obtendré una nueva entry con dos líneas:
 
 - Una relacionada con la cuenta `funds_to_invest` por `amount: -8 CLP`
 
-### Caso 3: se ejecuta nuevamente una entry que no modifica nada:
+#### Caso 3: se ejecuta nuevamente una entry que no modifica nada:
 
 ```ruby
 class DepositFixer
@@ -321,7 +325,7 @@ end
 
 En este caso, no se creará ninguna entry porque no hubo modificación en los montos.
 
-### Caso 4: se ejecuta nuevamente una entry que cambia el `accountable` de una cuenta:
+#### Caso 4: se ejecuta nuevamente una entry que cambia el `accountable` de una cuenta:
 
 ```ruby
 class DepositFixer
@@ -344,7 +348,7 @@ Al ejecutar el `DepositFixer` obtendré una nueva entry con 2 líneas:
 
 Verán también que no se creó ninguna línea para `funds_to_invest` porque no sufrió modificaciones.
 
-### Caso 5: se ejecuta nuevamente una entry con fecha anterior a la fecha del movimiento original:
+#### Caso 5: se ejecuta nuevamente una entry con fecha anterior a la fecha del movimiento original:
 
 ```ruby
 class DepositFixer
@@ -370,6 +374,18 @@ bundle exec guard
 ```
 
 You need to put **all your tests** in the `/ledgerizer/spec/dummy/spec/` directory.
+
+### Jackhammer
+
+Inspirado en [double entry](https://github.com/envato/double_entry#jackhammer)...
+
+Se puede correr el siguiente comando:
+
+```bash
+bin/jack_hammer -p 5 -e 50
+```
+
+Para probar que al ejecutar varias entries, de manera concurrente, todas las líneas y balances se generan correctamente.
 
 ## Contributing
 

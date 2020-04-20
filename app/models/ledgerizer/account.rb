@@ -11,7 +11,9 @@ module Ledgerizer
     enumerize :account_type, in: Ledgerizer::Definition::Account::TYPES,
                              predicates: { prefix: true }
 
-    validates :name, :currency, :account_type, presence: true
+    monetize :balance_cents
+
+    validates :name, :currency, :account_type, :balance_cents, presence: true
     validates :currency, ledgerizer_currency: true
 
     before_save :load_format_currency
@@ -26,6 +28,29 @@ module Ledgerizer
       ]
     end
 
+    def balance_at(date = nil)
+      date ||= Date.current
+      lines.filtered(entry_date_lteq: date.to_date).first&.balance || Money.new(0, currency)
+    end
+
+    def check_integrity
+      prev_balance = Money.new(0, currency)
+
+      lines.order(:created_at).each do |line|
+        return false if line.balance != prev_balance + line.amount
+
+        prev_balance = line.balance
+      end
+
+      prev_balance == balance
+    end
+
+    def self.find_by_executable_account(executable_account, lock: false)
+      accounts = where(executable_account.to_hash)
+      accounts = accounts.lock(true) if lock
+      accounts.first
+    end
+
     private
 
     def load_format_currency
@@ -38,14 +63,16 @@ end
 #
 # Table name: ledgerizer_accounts
 #
-#  id               :integer          not null, primary key
+#  id               :bigint(8)        not null, primary key
 #  tenant_type      :string
-#  tenant_id        :integer
+#  tenant_id        :bigint(8)
 #  accountable_type :string
-#  accountable_id   :integer
+#  accountable_id   :bigint(8)
 #  name             :string
 #  currency         :string
 #  account_type     :string
+#  balance_cents    :bigint(8)        default(0), not null
+#  balance_currency :string           default("CLP"), not null
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #
@@ -53,4 +80,5 @@ end
 #
 #  index_ledgerizer_accounts_on_acc_type_and_acc_id        (accountable_type,accountable_id)
 #  index_ledgerizer_accounts_on_tenant_type_and_tenant_id  (tenant_type,tenant_id)
+#  unique_account_index                                    (accountable_type,accountable_id,name,account_type,currency,tenant_id,tenant_type) UNIQUE
 #
