@@ -44,6 +44,20 @@ shared_examples "ledgerizer tenant" do |entity_name|
     end
   end
 
+  describe "#to_table" do
+    let(:collection) { described_class.all }
+    let(:table_print_attrs) do
+      %w{
+        id
+        name
+      }
+    end
+
+    before { create_list(:ledgerizer_account, 3) }
+
+    it_behaves_like 'table print'
+  end
+
   describe "#account_type_balance, #account_balance" do
     let(:account_type) { :asset }
     let(:account_name) { :account1 }

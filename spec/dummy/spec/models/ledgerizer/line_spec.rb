@@ -89,5 +89,32 @@ module Ledgerizer
         end
       end
     end
+
+    describe "#to_table" do
+      let(:collection) { described_class.all }
+      let(:table_print_attrs) do
+        %w{
+          id
+          account_name
+          accountable_id
+          accountable_type
+          account_id
+          document_id
+          document_type
+          account_type
+          entry_code
+          entry_time
+          entry_id
+          tenant_id
+          tenant_type
+          amount.format
+          balance.format
+        }
+      end
+
+      before { create_list(:ledgerizer_line, 3) }
+
+      it_behaves_like 'table print'
+    end
   end
 end

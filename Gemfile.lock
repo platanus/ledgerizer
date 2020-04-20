@@ -6,6 +6,7 @@ PATH
       money-rails
       rails (>= 5.2.0)
       require_all
+      table_print
 
 GEM
   remote: https://rubygems.org/
@@ -205,6 +206,7 @@ GEM
       actionpack (>= 4.0)
       activesupport (>= 4.0)
       sprockets (>= 3.0.0)
+    table_print (1.5.6)
     term-ansicolor (1.7.1)
       tins (~> 1.0)
     thor (0.20.3)

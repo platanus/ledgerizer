@@ -4,6 +4,7 @@ module LedgerizerTenant
   included do
     include LedgerizerLinesRelated
     include Ledgerizer::Formatters
+    include LedgerizerTablePrint
 
     has_many :accounts,
              as: :tenant,

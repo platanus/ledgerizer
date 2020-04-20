@@ -1,6 +1,7 @@
 module Ledgerizer
   class Entry < ApplicationRecord
     include LedgerizerLinesRelated
+    include LedgerizerTablePrint
 
     belongs_to :tenant, polymorphic: true
     belongs_to :document, polymorphic: true

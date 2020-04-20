@@ -2,6 +2,7 @@ require "rails"
 require "enumerize"
 require "require_all"
 require "money-rails"
+require "table_print"
 
 require_rel "ledgerizer/extensions/*.rb"
 require_rel "ledgerizer/util/*.rb"

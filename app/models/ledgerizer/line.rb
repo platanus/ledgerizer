@@ -1,6 +1,7 @@
 module Ledgerizer
   class Line < ApplicationRecord
     extend Ledgerizer::Formatters
+    include LedgerizerTablePrint
 
     belongs_to :tenant, polymorphic: true, optional: true
     belongs_to :document, polymorphic: true, optional: true
