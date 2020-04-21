@@ -1,6 +1,6 @@
 require "spec_helper"
 
-RSpec.describe Ledgerizer::Definition::Dsl do
+describe Ledgerizer::Definition::Dsl do
   describe '#tenant' do
     context "with valid Active Record tenant" do
       let_definition_class do
@@ -28,7 +28,7 @@ RSpec.describe Ledgerizer::Definition::Dsl do
     end
 
     it "raises DSL error with non Active Record tenant" do
-      expect_error_in_definition_class(/must be an ActiveRecord model name/) do
+      expect_error_in_definition_class(/tenant name must be a snake_case/) do
         tenant('noartenant')
       end
     end
@@ -51,14 +51,14 @@ RSpec.describe Ledgerizer::Definition::Dsl do
     it "raises error with repeated entries" do
       expect_error_in_definition_class("the deposit entry already exists in tenant") do
         tenant('portfolio') do
-          entry(:deposit, document: 'portfolio')
-          entry(:deposit, document: 'portfolio')
+          entry(:deposit, document: 'deposit')
+          entry(:deposit, document: 'deposit')
         end
       end
     end
 
     it "raises error with invalid document" do
-      expect_error_in_definition_class(/must be an ActiveRecord model name/) do
+      expect_error_in_definition_class(/entry's document must be a snake_case/) do
         tenant('portfolio') do
           entry(:deposit, document: 'invalid')
         end
@@ -68,7 +68,7 @@ RSpec.describe Ledgerizer::Definition::Dsl do
     context "with valid entry" do
       let_definition_class do
         tenant('portfolio') do
-          entry(:deposit, document: 'user')
+          entry(:deposit, document: 'deposit')
         end
       end
 
@@ -76,7 +76,7 @@ RSpec.describe Ledgerizer::Definition::Dsl do
         {
           tenant_model_name: :portfolio,
           entry_code: :deposit,
-          document: :user
+          document: :deposit
         }
       end
 
@@ -86,8 +86,8 @@ RSpec.describe Ledgerizer::Definition::Dsl do
     context "with more than one entry" do
       let_definition_class do
         tenant('portfolio') do
-          entry(:deposit, document: 'user')
-          entry(:distribute, document: 'portfolio')
+          entry(:deposit, document: 'deposit')
+          entry(:distribute, document: 'withdrawal')
         end
       end
 
@@ -95,7 +95,7 @@ RSpec.describe Ledgerizer::Definition::Dsl do
         {
           tenant_model_name: :portfolio,
           entry_code: :deposit,
-          document: :user
+          document: :deposit
         }
       end
 
@@ -103,7 +103,7 @@ RSpec.describe Ledgerizer::Definition::Dsl do
         {
           tenant_model_name: :portfolio,
           entry_code: :distribute,
-          document: :portfolio
+          document: :withdrawal
         }
       end
 

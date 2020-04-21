@@ -18,7 +18,7 @@ module Ledgerizer
       def accountable_class
         return unless accountable
 
-        format_sym_to_model(accountable)
+        format_string_to_class(accountable)
       end
 
       def accountable_string_class

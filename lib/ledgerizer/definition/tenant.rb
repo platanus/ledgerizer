@@ -8,7 +8,7 @@ module Ledgerizer
 
       def initialize(model_name:, currency: nil)
         model_name = format_to_symbol_identifier(model_name)
-        validate_active_record_model_name!(model_name, "tenant name")
+        validate_ledgerized_class_name!(model_name, "tenant name", LedgerizerTenant)
         @model_name = model_name
         formatted_currency = format_currency(currency)
         validate_currency!(formatted_currency)

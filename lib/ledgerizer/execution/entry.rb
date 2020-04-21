@@ -86,15 +86,18 @@ module Ledgerizer
       end
 
       def validate_entry_document!(document)
-        validate_active_record_instance!(document, "document")
+        validate_ledgerized_instance!(document, "document", LedgerizerDocument)
 
-        if format_model_to_sym(document) != entry_definition.document
+        if format_ledgerizer_instance_to_sym(document) != entry_definition.document
           raise_error("invalid document #{document.class} for given #{entry_definition.code} entry")
         end
       end
 
       def get_movement_definition!(movement_type, account_name, accountable)
-        validate_active_record_instance!(accountable, "accountable") if accountable
+        if accountable
+          validate_ledgerized_instance!(accountable, "accountable", LedgerizerAccountable)
+        end
+
         movement_definition = entry_definition.find_movement(
           movement_type: movement_type,
           account_name: account_name,
@@ -114,13 +117,13 @@ module Ledgerizer
           entry_definition.find_movement(
             movement_type: movement_type,
             account_name: format_to_symbol_identifier(account.name),
-            accountable: format_model_to_sym(account.accountable)
+            accountable: format_ledgerizer_instance_to_sym(account.accountable)
           )
         end.compact.first
       end
 
       def get_tenant_definition!(config, tenant)
-        validate_active_record_instance!(tenant, "tenant")
+        validate_ledgerized_instance!(tenant, "tenant", LedgerizerTenant)
         tenant_definition = config.find_tenant(tenant)
         return tenant_definition if tenant_definition
 

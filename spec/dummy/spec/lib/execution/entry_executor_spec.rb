@@ -47,13 +47,13 @@ describe Ledgerizer::EntryExecutor do
     context "with non AR tenant" do
       let(:tenant_instance) { LedgerizerTest.new }
 
-      it { expect { executor }.to raise_error("tenant must be an ActiveRecord model") }
+      it { expect { executor }.to raise_error(/instance of a class including LedgerizerTenant/) }
     end
 
     context "with invalid AR tenant" do
       let(:tenant_instance) { create(:user) }
 
-      it { expect { executor }.to raise_error("can't find tenant for given User model") }
+      it { expect { executor }.to raise_error(/tenant must be an instance of a class including/) }
     end
 
     context "when entry code is not in tenant" do

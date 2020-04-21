@@ -1,46 +1,67 @@
 require "spec_helper"
 
 RSpec.describe Ledgerizer::Validators do
-  describe '#validate_active_record_model_name!' do
-    let(:model_name) { :portfolio }
-    let(:error_prefix) { 'name' }
+  describe '#validate_ledgerized_class_name!' do
+    let(:value) { :portfolio }
+    let(:error_prefix) { 'tenant' }
+    let(:ledgerizer_mixin) { LedgerizerTenant }
 
     let_test_class do
       include Ledgerizer::Validators
     end
 
     def perform
-      test_class.new.validate_active_record_model_name!(model_name, error_prefix)
-    end
-
-    def raise_invalid_model_error
-      expect { perform }.to raise_error(/must be an ActiveRecord model name/)
+      test_class.new.validate_ledgerized_class_name!(value, error_prefix, ledgerizer_mixin)
     end
 
     it { expect(perform).to eq(true) }
 
-    context "when string model name" do
-      let(:model_name) { "portfolio" }
+    context "with string value" do
+      let(:value) { "portfolio" }
 
-      it { raise_invalid_model_error }
+      it { expect(perform).to eq(true) }
     end
 
-    context "with camel model name" do
-      let(:model_name) { "Portfolio" }
+    context "with symbol value" do
+      let(:value) { :portfolio }
 
-      it { raise_invalid_model_error }
+      it { expect(perform).to eq(true) }
     end
 
-    context "when model name is the class" do
-      let(:model_name) { Portfolio }
+    context "with camel value" do
+      let(:value) { "Portfolio" }
 
-      it { raise_invalid_model_error }
+      it { expect(perform).to eq(true) }
+    end
+
+    context "when value is the class" do
+      let(:value) { Portfolio }
+
+      it { expect(perform).to eq(true) }
+    end
+
+    context "with value not matching ledgerizer mixin" do
+      let(:value) { "deposit" }
+
+      it { expect { perform }.to raise_error(/tenant must include LedgerizerTenant/) }
+    end
+
+    context "when value is not an AR model" do
+      let(:value) { "withdrawal" }
+
+      it { expect { perform }.to raise_error(/tenant must include LedgerizerTenant/) }
+
+      context "with matching ledgerizer_mixin" do
+        let(:ledgerizer_mixin) { LedgerizerDocument }
+
+        it { expect(perform).to eq(true) }
+      end
     end
 
     context "when name does not match AR model" do
-      let(:model_name) { "invalid" }
+      let(:value) { "invalid" }
 
-      it { raise_invalid_model_error }
+      it { expect { perform }.to raise_error(/must be a snake_case representation of a Ruby/) }
     end
   end
 

@@ -1,24 +1,24 @@
 require "spec_helper"
 
-RSpec.describe Ledgerizer::Execution::Dsl do
+describe Ledgerizer::Execution::Dsl do
   let_definition_class do
     tenant('portfolio', currency: :clp) do
       asset(:account1)
       liability(:account2)
       asset(:account3)
 
-      entry(:entry1, document: :user) do
+      entry(:entry1, document: :deposit) do
         debit(account: :account1, accountable: :user)
         credit(account: :account2, accountable: :user)
       end
 
-      entry(:entry2, document: :user) do
+      entry(:entry2, document: :deposit) do
         debit(account: :account1, accountable: :user)
         credit(account: :account2, accountable: :user)
         credit(account: :account3, accountable: :user)
       end
 
-      entry(:entry3, document: :user) do
+      entry(:entry3, document: :deposit) do
         debit(account: :account1, accountable: :user)
         credit(account: :account2)
       end
@@ -26,7 +26,7 @@ RSpec.describe Ledgerizer::Execution::Dsl do
   end
 
   let(:tenant) { create(:portfolio) }
-  let(:document) { create(:user) }
+  let(:document) { create(:deposit) }
   let(:datetime) { "1984-06-04".to_datetime }
 
   describe '#executor_xxx_entry' do
@@ -59,11 +59,11 @@ RSpec.describe Ledgerizer::Execution::Dsl do
         )
       end
 
-      it { expect { perform }.to raise_error("can't find tenant for given User model") }
+      it { expect { perform }.to raise_error(/instance of a class including LedgerizerTenant/) }
     end
 
     context "with invalid document" do
-      let(:document) { create(:portfolio) }
+      let(:document) { build(:withdrawal) }
 
       def perform
         LedgerizerTestExecution.new.execute_entry1_entry(
@@ -71,7 +71,7 @@ RSpec.describe Ledgerizer::Execution::Dsl do
         )
       end
 
-      it { expect { perform }.to raise_error("invalid document Portfolio for given entry1 entry") }
+      it { expect { perform }.to raise_error("invalid document Withdrawal for given entry1 entry") }
     end
 
     context "with invalid entry date" do

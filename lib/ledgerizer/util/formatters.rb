@@ -1,7 +1,7 @@
 module Ledgerizer
   module Formatters
     def format_to_symbol_identifier(value)
-      value.to_s.downcase.to_sym
+      value.to_s.underscore.to_sym
     end
 
     def format_to_upcase(value)
@@ -21,14 +21,16 @@ module Ledgerizer
       formatted_currency
     end
 
-    def format_model_to_sym(value)
-      return if value.blank?
+    def format_ledgerizer_instance_to_sym(value)
+      return value.model_name.singular.to_sym if value.is_a?(ActiveRecord::Base)
 
-      value.model_name.singular.to_sym
+      format_to_symbol_identifier(value.class)
     end
 
-    def format_sym_to_model(value)
+    def format_string_to_class(value)
       value.to_s.camelize.constantize
+    rescue NameError
+      nil
     end
   end
 end

@@ -1,10 +1,10 @@
 require "spec_helper"
 
-RSpec.describe Ledgerizer::Definition::Entry do
+describe Ledgerizer::Definition::Entry do
   subject(:entry) { build(:entry_definition, code: code, document: document) }
 
   let(:code) { :deposit }
-  let(:document) { :portfolio }
+  let(:document) { :deposit }
 
   it { expect(entry.code).to eq(code) }
   it { expect(entry.document).to eq(document) }
@@ -18,7 +18,7 @@ RSpec.describe Ledgerizer::Definition::Entry do
   context "with invalid document" do
     let(:document) { :invalid }
 
-    it { expect { entry }.to raise_error(/must be an ActiveRecord model name/) }
+    it { expect { entry }.to raise_error(/entry's document must be a snake_case representation/) }
   end
 
   describe "#add_movement" do
@@ -54,7 +54,7 @@ RSpec.describe Ledgerizer::Definition::Entry do
     context "with invalid accountable" do
       let(:accountable) { :invalid }
 
-      it { expect { perform }.to raise_error(/must be an ActiveRecord model name/) }
+      it { expect { perform }.to raise_error(/accountable must be a snake_case/) }
     end
   end
 end

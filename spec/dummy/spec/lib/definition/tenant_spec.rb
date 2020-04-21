@@ -1,6 +1,6 @@
 require "spec_helper"
 
-RSpec.describe Ledgerizer::Definition::Tenant do
+describe Ledgerizer::Definition::Tenant do
   subject(:tenant) { build(:tenant_definition, model_name: model_name, currency: currency) }
 
   let(:model_name) { "portfolio" }
@@ -64,14 +64,14 @@ RSpec.describe Ledgerizer::Definition::Tenant do
 
   describe "#add_entry" do
     let(:code) { :deposit }
-    let(:document) { :portfolio }
+    let(:document) { :deposit }
 
     def perform
       tenant.add_entry(code: code, document: document)
     end
 
     it { expect(perform.code).to eq(code) }
-    it { expect(perform.document).to eq(:portfolio) }
+    it { expect(perform.document).to eq(:deposit) }
 
     context "with repeated account" do
       before { perform }
@@ -82,16 +82,16 @@ RSpec.describe Ledgerizer::Definition::Tenant do
     context "with invalid document" do
       let(:document) { :invalid }
 
-      it { expect { perform }.to raise_error(/must be an ActiveRecord model name/) }
+      it { expect { perform }.to raise_error(/entry's document must be a snake_case/) }
     end
   end
 
   describe "#add_movement" do
-    let(:entry_code) { :deposit }
+    let(:entry_code) { :withdrawal }
     let(:account_name) { :cash }
     let(:movement_type) { :debit }
     let(:accountable) { 'user' }
-    let!(:entry) { tenant.add_entry(code: :deposit, document: 'user') }
+    let!(:entry) { tenant.add_entry(code: :withdrawal, document: 'withdrawal') }
     let!(:account) { tenant.add_account(name: :cash, type: :asset) }
 
     def perform

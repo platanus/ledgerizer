@@ -43,11 +43,11 @@ RSpec.describe Ledgerizer::Formatters do
     it { expect(perform).to eq("LEAN") }
   end
 
-  describe '#format_sym_to_model' do
+  describe '#format_string_to_class' do
     let(:value) { :user }
 
     def perform
-      test_class.new.format_sym_to_model(value)
+      test_class.new.format_string_to_class(value)
     end
 
     it { expect(perform).to eq(User) }
@@ -95,13 +95,19 @@ RSpec.describe Ledgerizer::Formatters do
     end
   end
 
-  describe '#format_model_to_sym' do
-    let(:model) { create(:portfolio) }
+  describe '#format_ledgerizer_instance_to_sym' do
+    let(:value) { create(:portfolio) }
 
     def perform
-      test_class.new.format_model_to_sym(model)
+      test_class.new.format_ledgerizer_instance_to_sym(value)
     end
 
     it { expect(perform).to eq(:portfolio) }
+
+    context "with non AR value" do
+      let(:value) { build(:client) }
+
+      it { expect(perform).to eq(:client) }
+    end
   end
 end
