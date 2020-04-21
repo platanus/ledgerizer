@@ -100,37 +100,66 @@ module Ledgerizer
     end
 
     describe "#balance_at" do
-      let(:date) { nil }
+      let(:datetime) { nil }
       let(:account) { create(:ledgerizer_account) }
 
       def perform
-        account.balance_at(date)
+        account.balance_at(datetime)
       end
 
       before do
-        create(:ledgerizer_line, account: account, force_entry_date: "1984-06-04", balance: clp(10))
-        create(:ledgerizer_line, account: account, force_entry_date: "1984-06-05", balance: clp(15))
-        create(:ledgerizer_line, account: account, force_entry_date: "1984-06-05", balance: clp(20))
-        create(:ledgerizer_line, account: account, force_entry_date: "1984-06-05", balance: clp(25))
-        create(:ledgerizer_line, account: account, force_entry_date: "1984-06-06", balance: clp(30))
+        create(
+          :ledgerizer_line,
+          account: account,
+          force_entry_time: "1984-06-04".to_datetime,
+          balance: clp(10)
+        )
+
+        create(
+          :ledgerizer_line,
+          account: account,
+          force_entry_time: "1984-06-05".to_datetime + 1.minute,
+          balance: clp(15)
+        )
+
+        create(
+          :ledgerizer_line,
+          account: account,
+          force_entry_time: "1984-06-05".to_datetime + 2.minutes,
+          balance: clp(20)
+        )
+
+        create(
+          :ledgerizer_line,
+          account: account,
+          force_entry_time: "1984-06-05".to_datetime + 3.minutes,
+          balance: clp(25)
+        )
+
+        create(
+          :ledgerizer_line,
+          account: account,
+          force_entry_time: "1984-06-06".to_datetime,
+          balance: clp(30)
+        )
       end
 
       it { expect(perform).to eq(clp(30)) }
 
-      context "with specific date" do
-        let(:date) { "1984-06-05".to_date }
+      context "with specific datetime" do
+        let(:datetime) { "1984-06-05".to_datetime + 3.minutes }
 
         it { expect(perform).to eq(clp(25)) }
       end
 
-      context "with super old date" do
-        let(:date) { "1974-06-05".to_date }
+      context "with super old datetime" do
+        let(:datetime) { "1974-06-05".to_datetime }
 
         it { expect(perform).to eq(clp(0)) }
       end
 
-      context "with super new date" do
-        let(:date) { "2084-06-05".to_date }
+      context "with super new datetime" do
+        let(:datetime) { "2084-06-05".to_datetime }
 
         it { expect(perform).to eq(clp(30)) }
       end
@@ -185,6 +214,27 @@ module Ledgerizer
 
         it { expect(perform).to eq(false) }
       end
+    end
+
+    describe "#to_table" do
+      let(:collection) { described_class.all }
+      let(:table_print_attrs) do
+        %w{
+          id
+          account_type
+          currency
+          name
+          accountable_id
+          accountable_type
+          tenant_id
+          tenant_type
+          balance.format
+        }
+      end
+
+      before { create_list(:ledgerizer_account, 3) }
+
+      it_behaves_like 'table print'
     end
   end
 end

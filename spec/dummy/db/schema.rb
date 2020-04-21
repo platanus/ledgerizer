@@ -44,10 +44,9 @@ ActiveRecord::Schema.define(version: 2019_09_26_151926) do
     t.string "code"
     t.string "document_type"
     t.bigint "document_id"
-    t.date "entry_date"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "entry_time"
     t.index ["document_type", "document_id"], name: "index_ledgerizer_entries_on_document_type_and_document_id"
+    t.index ["tenant_id", "tenant_type", "document_id", "document_type", "code"], name: "unique_entry_index", unique: true
     t.index ["tenant_type", "tenant_id"], name: "index_ledgerizer_entries_on_tenant_type_and_tenant_id"
   end
 
@@ -55,7 +54,7 @@ ActiveRecord::Schema.define(version: 2019_09_26_151926) do
     t.string "tenant_type"
     t.bigint "tenant_id"
     t.bigint "entry_id"
-    t.date "entry_date"
+    t.datetime "entry_time"
     t.string "entry_code"
     t.string "account_type"
     t.string "document_type"
@@ -68,8 +67,6 @@ ActiveRecord::Schema.define(version: 2019_09_26_151926) do
     t.string "amount_currency", default: "CLP", null: false
     t.bigint "balance_cents", default: 0, null: false
     t.string "balance_currency", default: "CLP", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_ledgerizer_lines_on_account_id"
     t.index ["accountable_type", "accountable_id"], name: "index_ledgerizer_lines_on_accountable_type_and_accountable_id"
     t.index ["document_type", "document_id"], name: "index_ledgerizer_lines_on_document_type_and_document_id"

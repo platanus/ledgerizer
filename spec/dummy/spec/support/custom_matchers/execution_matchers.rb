@@ -1,15 +1,15 @@
-RSpec::Matchers.define :have_ledger_entry do |entry_code:, entry_date:, document:|
+RSpec::Matchers.define :have_ledger_entry do |entry_code:, entry_time:, document:|
   match do |tenant|
     !!Ledgerizer::Entry.find_by(
       tenant: tenant,
       code: entry_code,
       document: document,
-      entry_date: entry_date
+      entry_time: entry_time
     )
   end
 
   description do
-    "include #{entry_code} entry with with date #{entry_date} and #{document.class} document"
+    "include #{entry_code} entry with with date #{entry_time} and #{document.class} document"
   end
 
   failure_message do

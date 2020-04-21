@@ -8,14 +8,14 @@ shared_examples "ledgerizer tenant" do |entity_name|
   describe "#create_entry!" do
     let(:code) { :deposit }
     let(:document) { create(:user) }
-    let(:entry_date) { "1984-06-06" }
+    let(:entry_time) { "1984-06-06" }
 
     let(:executable_entry) do
       instance_double(
         "Ledgerizer::Execution::Entry",
         code: code,
         document: document,
-        entry_date: entry_date
+        entry_time: entry_time
       )
     end
 
@@ -28,7 +28,7 @@ shared_examples "ledgerizer tenant" do |entity_name|
         {
           code: "deposit",
           document: document,
-          entry_date: entry_date.to_date,
+          entry_time: entry_time.to_datetime,
           tenant: entity
         }
       end
@@ -42,6 +42,20 @@ shared_examples "ledgerizer tenant" do |entity_name|
 
       it { expect { perform }.to raise_error(ActiveRecord::RecordInvalid) }
     end
+  end
+
+  describe "#to_table" do
+    let(:collection) { described_class.all }
+    let(:table_print_attrs) do
+      %w{
+        id
+        name
+      }
+    end
+
+    before { create_list(:ledgerizer_account, 3) }
+
+    it_behaves_like 'table print'
   end
 
   describe "#account_type_balance, #account_balance" do

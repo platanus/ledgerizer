@@ -147,7 +147,7 @@ describe Ledgerizer::Locking do
     let(:tenant_instance) { create(:portfolio) }
     let(:document_instance) { create(:deposit) }
     let(:entry_code) { :entry1 }
-    let(:entry_date) { "1984-06-04" }
+    let(:entry_time) { "1984-06-04" }
     let(:ledgerizer_config) { LedgerizerTestDefinition.definition }
 
     let(:executor) do
@@ -156,7 +156,7 @@ describe Ledgerizer::Locking do
         tenant: tenant_instance,
         document: document_instance,
         entry_code: entry_code,
-        entry_date: entry_date
+        entry_time: entry_time
       )
     end
 

@@ -4,6 +4,7 @@ module LedgerizerTenant
   included do
     include LedgerizerLinesRelated
     include Ledgerizer::Formatters
+    include LedgerizerTablePrint
 
     has_many :accounts,
              as: :tenant,
@@ -15,7 +16,7 @@ module LedgerizerTenant
              class_name: "Ledgerizer::Entry",
              dependent: :destroy
 
-    has_many :lines,
+    has_many :lines, -> { sorted },
              as: :tenant,
              class_name: "Ledgerizer::Line",
              dependent: :destroy
@@ -34,7 +35,7 @@ module LedgerizerTenant
       entries.create!(
         code: executable_entry.code,
         document: executable_entry.document,
-        entry_date: executable_entry.entry_date
+        entry_time: executable_entry.entry_time
       )
     end
 

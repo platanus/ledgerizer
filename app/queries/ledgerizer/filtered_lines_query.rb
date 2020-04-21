@@ -21,11 +21,11 @@ module Ledgerizer
       { name: :entry_codes, filter_type: :collection },
       { name: :account_types, filter_type: :collection },
 
-      { name: :entry_date, filter_type: :predicate },
-      { name: :entry_date_lt, filter_type: :predicate },
-      { name: :entry_date_lteq, filter_type: :predicate },
-      { name: :entry_date_gt, filter_type: :predicate },
-      { name: :entry_date_gteq, filter_type: :predicate },
+      { name: :entry_time, filter_type: :predicate },
+      { name: :entry_time_lt, filter_type: :predicate },
+      { name: :entry_time_lteq, filter_type: :predicate },
+      { name: :entry_time_gt, filter_type: :predicate },
+      { name: :entry_time_gteq, filter_type: :predicate },
 
       { name: :amount, filter_type: :predicate, data_type: :money },
       { name: :amount_lt, filter_type: :predicate, data_type: :money },
@@ -61,7 +61,7 @@ module Ledgerizer
         query = filter_by_predicate(query, config)
       end
 
-      query.order("created_at DESC")
+      query.sorted
     end
 
     private

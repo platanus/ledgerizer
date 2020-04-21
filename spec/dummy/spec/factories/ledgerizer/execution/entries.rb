@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :executable_entry, class: "Ledgerizer::Execution::Entry" do
     document { create(:user) }
-    entry_date { "1984-06-04".to_date }
+    sequence(:entry_time) { |n| DateTime.current + n.seconds }
     tenant { create(:portfolio) }
     entry_code { :deposit }
 

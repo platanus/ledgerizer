@@ -3,7 +3,7 @@ class CreateLedgerizerLines < ActiveRecord::Migration[5.2]
     create_table :ledgerizer_lines do |t|
       t.references :tenant, polymorphic: true
       t.references :entry, foreign_key: { to_table: :ledgerizer_entries }
-      t.date :entry_date
+      t.datetime :entry_time
       t.string :entry_code
       t.string :account_type
       t.references :document, polymorphic: true
@@ -12,8 +12,6 @@ class CreateLedgerizerLines < ActiveRecord::Migration[5.2]
       t.string :account_name
       t.monetize :amount, amount: { null: false, default: 0 }
       t.monetize :balance, amount: { null: false, default: 0 }
-
-      t.timestamps
     end
   end
 end

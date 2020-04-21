@@ -12,7 +12,7 @@ FactoryBot.define do
       force_account_name { nil }
       force_account_type { nil }
       force_entry_code { nil }
-      force_entry_date { nil }
+      force_entry_time { nil }
     end
 
     after :create do |line, evaluator|
@@ -22,7 +22,7 @@ FactoryBot.define do
       set_denormalized_attribute(line, :account_name, evaluator.force_account_name)
       set_denormalized_attribute(line, :account_type, evaluator.force_account_type)
       set_denormalized_attribute(line, :entry_code, evaluator.force_entry_code)
-      set_denormalized_attribute(line, :entry_date, evaluator.force_entry_date)
+      set_denormalized_attribute(line, :entry_time, evaluator.force_entry_time)
     end
   end
 end

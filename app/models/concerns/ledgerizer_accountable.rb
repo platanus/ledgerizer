@@ -7,6 +7,6 @@ module LedgerizerAccountable
              class_name: "Ledgerizer::Account",
              dependent: :destroy
 
-    has_many :lines, through: :accounts, class_name: "Ledgerizer::Line"
+    has_many :lines, -> { sorted }, through: :accounts, class_name: "Ledgerizer::Line"
   end
 end

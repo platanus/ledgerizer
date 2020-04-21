@@ -3,6 +3,6 @@ FactoryBot.define do
     association :tenant, factory: :portfolio
     association :document, factory: :portfolio
     code { :deposit }
-    entry_date { "1984-06-06" }
+    sequence(:entry_time) { |n| DateTime.current + n.seconds }
   end
 end

@@ -7,6 +7,6 @@ module LedgerizerDocument
              class_name: "Ledgerizer::Entry",
              dependent: :destroy
 
-    has_many :lines, through: :entries, class_name: "Ledgerizer::Line"
+    has_many :lines, -> { sorted }, through: :entries, class_name: "Ledgerizer::Line"
   end
 end

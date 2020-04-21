@@ -18,13 +18,22 @@ module Ledgerizer
       it { is_expected.to monetize(:balance) }
     end
 
+    describe "#sorted" do
+      let!(:l1) { create(:ledgerizer_line, force_entry_time: "1984-06-04".to_datetime) }
+      let!(:l2) { create(:ledgerizer_line, force_entry_time: "1984-06-06".to_datetime) }
+      let!(:l3) { create(:ledgerizer_line, force_entry_time: "1984-06-04".to_datetime) }
+      let!(:l4) { create(:ledgerizer_line, force_entry_time: "1984-06-05".to_datetime) }
+
+      it { expect(described_class.sorted.ids).to eq([l2.id, l4.id, l3.id, l1.id]) }
+    end
+
     describe "#denormalize_attributes" do
       let(:line) { create(:ledgerizer_line) }
 
       it { expect(line.tenant).to eq(line.entry.tenant) }
       it { expect(line.document).to eq(line.entry.document) }
       it { expect(line.entry_code).to eq(line.entry.code) }
-      it { expect(line.entry_date).to eq(line.entry.entry_date) }
+      it { expect(line.entry_time).to eq(line.entry.entry_time) }
       it { expect(line.accountable).to eq(line.account.accountable) }
       it { expect(line.account_name).to eq(line.account.name) }
       it { expect(line.account_type).to eq(line.account.account_type) }
@@ -79,6 +88,33 @@ module Ledgerizer
           it { expect(perform).to eq(usd(0)) }
         end
       end
+    end
+
+    describe "#to_table" do
+      let(:collection) { described_class.all }
+      let(:table_print_attrs) do
+        %w{
+          id
+          account_name
+          accountable_id
+          accountable_type
+          account_id
+          document_id
+          document_type
+          account_type
+          entry_code
+          entry_time
+          entry_id
+          tenant_id
+          tenant_type
+          amount.format
+          balance.format
+        }
+      end
+
+      before { create_list(:ledgerizer_line, 3) }
+
+      it_behaves_like 'table print'
     end
   end
 end

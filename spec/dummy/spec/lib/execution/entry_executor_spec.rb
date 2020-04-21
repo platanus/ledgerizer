@@ -6,7 +6,7 @@ describe Ledgerizer::EntryExecutor do
   let(:document_instance) { create(:deposit) }
   let(:accountable_instance) { create(:user) }
   let(:entry_code) { :entry1 }
-  let(:entry_date) { "1984-06-04" }
+  let(:entry_time) { "1984-06-04".to_datetime }
   let(:ledgerizer_config) { LedgerizerTestDefinition.definition }
 
   let(:executor) do
@@ -15,7 +15,7 @@ describe Ledgerizer::EntryExecutor do
       tenant: tenant_instance,
       document: document_instance,
       entry_code: entry_code,
-      entry_date: entry_date
+      entry_time: entry_time
     )
   end
 
@@ -33,6 +33,11 @@ describe Ledgerizer::EntryExecutor do
       entry(:entry2, document: :deposit) do
         debit(account: :account1, accountable: :user)
         credit(account: :account2, accountable: :user)
+        credit(account: :account3, accountable: :user)
+      end
+
+      entry(:entry3, document: :deposit) do
+        debit(account: :account1, accountable: :user)
         credit(account: :account3, accountable: :user)
       end
     end
@@ -107,7 +112,7 @@ describe Ledgerizer::EntryExecutor do
       let(:expected_entry) do
         {
           entry_code: entry_code,
-          entry_date: entry_date,
+          entry_time: entry_time,
           document: document_instance
         }
       end
@@ -159,7 +164,7 @@ describe Ledgerizer::EntryExecutor do
       let(:expected_entry) do
         {
           entry_code: entry_code,
-          entry_date: entry_date,
+          entry_time: entry_time,
           document: document_instance
         }
       end
@@ -223,30 +228,22 @@ describe Ledgerizer::EntryExecutor do
     end
 
     context "with adjustments" do
+      let(:another_entry_code) { entry_code }
+      let(:another_entry_time) { entry_time }
       let(:another_executor) do
         described_class.new(
           config: ledgerizer_config,
           tenant: tenant_instance,
           document: document_instance,
-          entry_code: entry_code,
-          entry_date: adjustment_entry_date
+          entry_code: another_entry_code,
+          entry_time: another_entry_time
         )
       end
 
-      let(:adjustment_entry_date) { "1984-06-05" }
-
-      let(:expected_new_entry) do
+      let(:expected_entry) do
         {
           entry_code: entry_code,
-          entry_date: adjustment_entry_date,
-          document: document_instance
-        }
-      end
-
-      let(:expected_old_entry) do
-        {
-          entry_code: entry_code,
-          entry_date: entry_date,
+          entry_time: entry_time,
           document: document_instance
         }
       end
@@ -288,6 +285,64 @@ describe Ledgerizer::EntryExecutor do
         perform
       end
 
+      context "with another entry changing the same accounts" do
+        let(:another_entry_code) { :entry3 }
+        let(:another_entry_time) { entry_time - 5.days }
+
+        let(:expected_edited_old_m1) do
+          {
+            account_name: :account1,
+            accountable: accountable_instance,
+            amount: clp(10),
+            balance: clp(15)
+          }
+        end
+
+        let(:expected_new_m1) do
+          {
+            account_name: :account1,
+            accountable: accountable_instance,
+            amount: clp(5),
+            balance: clp(5)
+          }
+        end
+
+        let(:expected_new_m2) do
+          {
+            account_name: :account3,
+            accountable: accountable_instance,
+            amount: -clp(5),
+            balance: -clp(5)
+          }
+        end
+
+        before do
+          another_executor.add_new_movement(
+            movement_type: :debit,
+            account_name: :account1,
+            accountable: accountable_instance,
+            amount: clp(5)
+          )
+
+          another_executor.add_new_movement(
+            movement_type: :credit,
+            account_name: :account3,
+            accountable: accountable_instance,
+            amount: clp(5)
+          )
+
+          perform_adjustment
+        end
+
+        it { expect(tenant_instance.entries.count).to eq(2) }
+        it { expect(tenant_instance.lines.count).to eq(4) }
+        it { expect(tenant_instance).to have_ledger_entry(expected_entry) }
+        it { expect(tenant_instance.entries.first).to have_ledger_line(expected_edited_old_m1) }
+        it { expect(tenant_instance.entries.first).to have_ledger_line(expected_old_m2) }
+        it { expect(tenant_instance.entries.last).to have_ledger_line(expected_new_m1) }
+        it { expect(tenant_instance.entries.last).to have_ledger_line(expected_new_m2) }
+      end
+
       context "with same movements" do
         before do
           another_executor.add_new_movement(
@@ -309,31 +364,9 @@ describe Ledgerizer::EntryExecutor do
 
         it { expect(tenant_instance.entries.count).to eq(1) }
         it { expect(tenant_instance.lines.count).to eq(2) }
-        it { expect(tenant_instance).to have_ledger_entry(expected_old_entry) }
+        it { expect(tenant_instance).to have_ledger_entry(expected_entry) }
         it { expect(tenant_instance.entries.last).to have_ledger_line(expected_old_m1) }
         it { expect(tenant_instance.entries.last).to have_ledger_line(expected_old_m2) }
-      end
-
-      context "when old entry date is greater than adjustment date" do
-        let(:adjustment_entry_date) { "1984-06-03" }
-
-        before do
-          another_executor.add_new_movement(
-            movement_type: :debit,
-            account_name: :account1,
-            accountable: accountable_instance,
-            amount: clp(11)
-          )
-
-          another_executor.add_new_movement(
-            movement_type: :credit,
-            account_name: :account2,
-            accountable: accountable_instance,
-            amount: clp(11)
-          )
-        end
-
-        it { expect { perform_adjustment }.to raise_error(/than old entry date \(1984-06-04\)/) }
       end
 
       context "with new movements increasing old amounts" do
@@ -341,7 +374,7 @@ describe Ledgerizer::EntryExecutor do
           {
             account_name: :account1,
             accountable: accountable_instance,
-            amount: clp(5),
+            amount: clp(15),
             balance: clp(15)
           }
         end
@@ -350,7 +383,7 @@ describe Ledgerizer::EntryExecutor do
           {
             account_name: :account2,
             accountable: accountable_instance,
-            amount: clp(5),
+            amount: clp(15),
             balance: clp(15)
           }
         end
@@ -373,12 +406,9 @@ describe Ledgerizer::EntryExecutor do
           perform_adjustment
         end
 
-        it { expect(tenant_instance.entries.count).to eq(2) }
-        it { expect(tenant_instance.lines.count).to eq(4) }
-        it { expect(tenant_instance).to have_ledger_entry(expected_old_entry) }
-        it { expect(tenant_instance).to have_ledger_entry(expected_new_entry) }
-        it { expect(tenant_instance.entries.first).to have_ledger_line(expected_old_m1) }
-        it { expect(tenant_instance.entries.first).to have_ledger_line(expected_old_m2) }
+        it { expect(tenant_instance.entries.count).to eq(1) }
+        it { expect(tenant_instance.lines.count).to eq(2) }
+        it { expect(tenant_instance).to have_ledger_entry(expected_entry) }
         it { expect(tenant_instance.entries.last).to have_ledger_line(expected_new_m1) }
         it { expect(tenant_instance.entries.last).to have_ledger_line(expected_new_m2) }
       end
@@ -388,7 +418,7 @@ describe Ledgerizer::EntryExecutor do
           {
             account_name: :account1,
             accountable: accountable_instance,
-            amount: -clp(5),
+            amount: clp(5),
             balance: clp(5)
           }
         end
@@ -397,7 +427,7 @@ describe Ledgerizer::EntryExecutor do
           {
             account_name: :account2,
             accountable: accountable_instance,
-            amount: -clp(5),
+            amount: clp(5),
             balance: clp(5)
           }
         end
@@ -420,12 +450,9 @@ describe Ledgerizer::EntryExecutor do
           perform_adjustment
         end
 
-        it { expect(tenant_instance.entries.count).to eq(2) }
-        it { expect(tenant_instance.lines.count).to eq(4) }
-        it { expect(tenant_instance).to have_ledger_entry(expected_old_entry) }
-        it { expect(tenant_instance).to have_ledger_entry(expected_new_entry) }
-        it { expect(tenant_instance.entries.first).to have_ledger_line(expected_old_m1) }
-        it { expect(tenant_instance.entries.first).to have_ledger_line(expected_old_m2) }
+        it { expect(tenant_instance.entries.count).to eq(1) }
+        it { expect(tenant_instance.lines.count).to eq(2) }
+        it { expect(tenant_instance).to have_ledger_entry(expected_entry) }
         it { expect(tenant_instance.entries.last).to have_ledger_line(expected_new_m1) }
         it { expect(tenant_instance.entries.last).to have_ledger_line(expected_new_m2) }
       end
@@ -434,15 +461,6 @@ describe Ledgerizer::EntryExecutor do
         let(:another_accountable) { create(:user) }
 
         let(:expected_new_m1) do
-          {
-            account_name: :account1,
-            accountable: accountable_instance,
-            amount: -clp(10),
-            balance: clp(0)
-          }
-        end
-
-        let(:expected_new_m2) do
           {
             account_name: :account1,
             accountable: another_accountable,
@@ -469,14 +487,11 @@ describe Ledgerizer::EntryExecutor do
           perform_adjustment
         end
 
-        it { expect(tenant_instance.entries.count).to eq(2) }
-        it { expect(tenant_instance.lines.count).to eq(4) }
-        it { expect(tenant_instance).to have_ledger_entry(expected_old_entry) }
-        it { expect(tenant_instance).to have_ledger_entry(expected_new_entry) }
-        it { expect(tenant_instance.entries.first).to have_ledger_line(expected_old_m1) }
-        it { expect(tenant_instance.entries.first).to have_ledger_line(expected_old_m2) }
+        it { expect(tenant_instance.entries.count).to eq(1) }
+        it { expect(tenant_instance.lines.count).to eq(2) }
+        it { expect(tenant_instance).to have_ledger_entry(expected_entry) }
+        it { expect(tenant_instance.entries.last).to have_ledger_line(expected_old_m2) }
         it { expect(tenant_instance.entries.last).to have_ledger_line(expected_new_m1) }
-        it { expect(tenant_instance.entries.last).to have_ledger_line(expected_new_m2) }
       end
     end
   end

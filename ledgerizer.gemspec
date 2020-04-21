@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
   s.add_dependency "enumerize"
   s.add_dependency "money-rails"
   s.add_dependency "require_all"
+  s.add_dependency "table_print"
 
   s.add_development_dependency "annotate"
   s.add_development_dependency "coveralls"

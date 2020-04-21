@@ -34,11 +34,11 @@ module Ledgerizer
       raise_error("value needs to be greater than 0")
     end
 
-    def validate_date!(value)
-      value.to_date
+    def validate_datetime!(value)
+      value.to_datetime
       true
     rescue ArgumentError
-      raise_error("invalid date given")
+      raise_error("invalid datetime given")
     end
   end
 end

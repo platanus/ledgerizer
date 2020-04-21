@@ -1,12 +1,14 @@
 module Ledgerizer
   class Entry < ApplicationRecord
     include LedgerizerLinesRelated
+    include LedgerizerTablePrint
 
     belongs_to :tenant, polymorphic: true
     belongs_to :document, polymorphic: true
-    has_many :lines, dependent: :destroy
+    has_many :lines, -> { sorted }, dependent: :destroy
+    has_many :accounts, through: :lines
 
-    validates :code, :entry_date, presence: true
+    validates :code, :entry_time, presence: true
 
     delegate :currency, to: :tenant, prefix: false # TODO: denormalize
 
@@ -15,7 +17,7 @@ module Ledgerizer
         :tenant, :tenants,
         :entry, :entries,
         :entry_code, :entry_codes,
-        :entry_date, :entry_dates,
+        :entry_time, :entry_times,
         :document, :documents
       ]
     end
@@ -32,12 +34,11 @@ end
 #  code          :string
 #  document_type :string
 #  document_id   :bigint(8)
-#  entry_date    :date
-#  created_at    :datetime         not null
-#  updated_at    :datetime         not null
+#  entry_time    :datetime
 #
 # Indexes
 #
 #  index_ledgerizer_entries_on_document_type_and_document_id  (document_type,document_id)
 #  index_ledgerizer_entries_on_tenant_type_and_tenant_id      (tenant_type,tenant_id)
+#  unique_entry_index                                         (tenant_id,tenant_type,document_id,document_type,code) UNIQUE
 #

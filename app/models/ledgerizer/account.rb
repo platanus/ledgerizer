@@ -3,10 +3,11 @@ module Ledgerizer
     extend Enumerize
     include Ledgerizer::Formatters
     include LedgerizerLinesRelated
+    include LedgerizerTablePrint
 
     belongs_to :tenant, polymorphic: true
     belongs_to :accountable, polymorphic: true, optional: true
-    has_many :lines, dependent: :destroy
+    has_many :lines, -> { sorted }, dependent: :destroy
 
     enumerize :account_type, in: Ledgerizer::Definition::Account::TYPES,
                              predicates: { prefix: true }
@@ -28,15 +29,15 @@ module Ledgerizer
       ]
     end
 
-    def balance_at(date = nil)
-      date ||= Date.current
-      lines.filtered(entry_date_lteq: date.to_date).first&.balance || Money.new(0, currency)
+    def balance_at(datetime = nil)
+      line = lines.filtered(entry_time_lteq: datetime&.to_datetime).first
+      line&.balance || Money.new(0, currency)
     end
 
     def check_integrity
       prev_balance = Money.new(0, currency)
 
-      lines.order(:created_at).each do |line|
+      lines.filtered.reverse.each do |line|
         return false if line.balance != prev_balance + line.amount
 
         prev_balance = line.balance
