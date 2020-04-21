@@ -22,6 +22,8 @@ module Ledgerizer
     end
 
     def format_model_to_sym(value)
+      return if value.blank?
+
       value.model_name.singular.to_sym
     end
 
