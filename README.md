@@ -62,13 +62,14 @@ end
 #### Métodos del DSL
 
 1. `tenant`: un negocio puede llevar la contabilidad de distintas entidades. Los `tenant` representan esas entidades.
-el nombre de un tenant, debe ser el nombre de un modelo de `ActiveRecord`.
+El nombre de un tenant, debe ser el nombre de un modelo de `ActiveRecord` (o clase de Ruby) que incluye el módulo `LedgerizerTenant`.
 
 2. `asset`: define una cuenta de este tipo. De forma similar se definen cuentas para representar: `liability`, `equity`, `income` y `expense`.
 
-3. `entry`: representa un movimiento contable entre 2 o más cuentas. Cada entrada está asociada a un `document` del negocio. Este `document` debe ser un modelo `ActiveRecord`
+3. `entry`: representa un movimiento contable entre 2 o más cuentas. Cada entrada está asociada a un `document` del negocio. Este `document` debe ser un modelo `ActiveRecord` (o clase de Ruby) que incluye el módulo `LedgerizerDocument`.
 
-4. `debit/credit`: se usan dentro de una `entry` y definen hacia qué dirección se mueve el capital. Además asocian una cuenta a un modelo de `ActiveRecord` (a través de `accountable`)
+4. `debit/credit`: se usan dentro de una `entry` y definen hacia qué dirección se mueve el capital. Además, asocian un modelo de `ActiveRecord` (o clase de Ruby) que incluye el módulo `LedgerizerAccountable` a una cuenta a través de el atributo `accountable`.
+ > `accountable` puede ser `nil` si se desea que la cuenta no quede asociada a una entidad específica.
 
 #### Ejemplo:
 
@@ -79,12 +80,12 @@ Ledgerizer.setup do |conf|
     conf.liability :funds_to_invest
     conf.liability :to_invest_in_fund
 
-    conf.entry :user_deposit, document: :user_deposit do
+    conf.entry :user_deposit, document: :deposit do
       conf.debit account: :bank, accountable: :bank
       conf.credit account: :funds_to_invest, accountable: :user
     end
 
-    conf.entry :user_deposit_distribution, document: :user_deposit do
+    conf.entry :user_deposit_distribution, document: :deposit do
       conf.debit account: :funds_to_invest, accountable: :user
       conf.credit account: :to_invest_in_fund, accountable: :user
     end
@@ -92,19 +93,53 @@ Ledgerizer.setup do |conf|
 end
 ```
 
+#### Ledgerizar modelos y clases
+
+Parte de la definición consiste en incluir los módulos de `Ledgerizer` en los modelos/clases que corresponda.
+
+- Todos los modelos/clases definidos como `tenant`, deben incluir: `LedgerizerTenant`
+- Todos los modelos/clases definidos como `document`, deben incluir: `LedgerizerDocument`
+- Todos los modelos/clases definidos como `accountable`, deben incluir: `LedgerizerAccountable`
+
+> Se debe tener en cuenta que un modelo/clase no puede ser usado con dos roles distintos. Por ejemplo: si `User` es un `accountable`, no podrá ser usado como `document`.
+
+```ruby
+class Portfolio
+  include LedgerizerTenant
+end
+
+class Bank
+  include LedgerizerAccountable
+
+  def id
+    666 # no es obligatorio usar un id. Si no se agrega este método, las referencias al tenant se guardarán con tenant_id == nil en las tablas
+  end
+end
+
+class User < ApplicationRecord
+  include LedgerizerAccountable
+end
+
+class Deposit < ApplicationRecord
+  include LedgerizerDocument
+end
+```
+
+> Como pueden ver en el ejemplo, usé clases de `ActiveRecord` para `User` y `Deposit` pero para `Bank` y `Portfolio` clases normales de Ruby. El uso de una cosa u otra dependerá de la necesidad de la aplicación.
+
 ### Ejecución
 
 Una vez definidas las entries, podremos crear movimientos en la DB.
 Para hacer esto, debemos incluir el DSL de ejecución así:
 
 ```ruby
-# Suponemos que existen los modelos de ActiveRecord Portfolio, UserDeposit, User y Bank.
+# Suponemos que existen los modelos de ActiveRecord UserDeposit, User y Bank y una clase Ruby (Portfolio) que usaremos de tenant .
 
 class DepositCreator
   include Ledgerizer::Execution::Dsl
 
   def perform
-    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, datetime: "1984-06-04") do
+    execute_user_deposit_entry(tenant: Portfolio.new, document: UserDeposit.first, datetime: "1984-06-04") do
       debit(account: :bank, accountable: Bank.first, amount: Money.from_amount(10, 'CLP'))
       credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(10, 'CLP'))
     end
@@ -116,12 +151,12 @@ La ejecución de `DepositCreator.new.perform` creará:
 
 1. Dos `Ledgerizer::Account`
 
-  - Una con `name: 'bank'`, `tenant: Portfolio.first`, `accountable: Bank.first`, `account_type: 'asset'` y `currency: 'CLP'`
+  - Una con `name: 'bank'`, `tenant: Portfolio.new`, `accountable: Bank.first`, `account_type: 'asset'` y `currency: 'CLP'`
 
-  - Otra con `name: 'funds_to_invest'`, `tenant: Portfolio.first`, `accountable: User.first`, `account_type: 'liability' y `currency: 'CLP'`
+  - Otra con `name: 'funds_to_invest'`, `tenant: Portfolio.new`, `accountable: User.first`, `account_type: 'liability' y `currency: 'CLP'`
 
 
-2. Una `Ledgerizer::Entry` con: `code: 'user_deposit'`, `tenant: Portfolio.first`, `document: UserDeposit.first` y `entry_time: '1984-06-04'`
+2. Una `Ledgerizer::Entry` con: `code: 'user_deposit'`, `tenant: Portfolio.new`, `document: UserDeposit.first` y `entry_time: '1984-06-04'`
 
 
 3. Dos `Ledgerizer::Line`. Una por cada movimiento de la entry.
@@ -140,7 +175,7 @@ La ejecución de `DepositCreator.new.perform` creará:
     include Ledgerizer::Execution::Dsl
 
     def perform
-      execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, datetime: "1984-06-04") do
+      execute_user_deposit_entry(tenant: Portfolio.new, document: UserDeposit.first, datetime: "1984-06-04") do
         debit(account: :bank, accountable: Bank.first, amount: Money.from_amount(10, 'CLP'))
         credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(6, 'CLP'))
         credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(3, 'CLP'))
@@ -154,27 +189,10 @@ La ejecución de `DepositCreator.new.perform` creará:
 
 ### Consultas (lines) y balances
 
-Antes de realizar consultas debemos agregar los concerns necesarios a cada modelo según lo que represente en la definición:
-
-```ruby
-class Portfolio < ApplicationRecord
-  include LedgerizerTenant
-end
-
-class User < ApplicationRecord
-  include LedgerizerAccountable
-end
-
-class Deposit < ApplicationRecord
-  include LedgerizerDocument
-end
-
-```
-
 Siguiendo el ejemplo, supongamos que luego de ejecutar algunas entries, tenemos:
 
 ```ruby
-tenant = Portfolio.first
+tenant = Portfolio.new
 entry = Deposit.first.entries.first
 account = User.first.accounts.first
 ```
@@ -207,14 +225,12 @@ Los métodos `ledger_lines` y `ledger_sum` aceptan los siguientes filtros:
 - `entries`: Array de objetos `Ledgerizer::Entry`. También se puede usar `entry` para filtrar por un único objeto.
 - `entry_codes`: Array de `code`s definidos en el `tenant`. En el ejemplo: `:user_deposit` y `user_deposit_distribution`. También se puede usar `entry_code` para filtrar por un único código.
 - `accounts`: Array de objetos `Ledgerizer::Account`. También se puede usar `account` para filtrar por una única cuenta.
-- `accountables`: Array de objetos `ActiveRecord` que son utilizados como `accountable` en `Ledgerizer::Account`s. En el ejemplo: `Bank.first` o `User.first`. También se puede usar `accountable` para filtrar por un único documento.
 - `account_names`: Array de `name`s de cuentas definidos en el `tenant`. En el ejemplo: `:funds_to_invest` y `bank`. También se puede usar `account_name` para filtrar por un único nombre de cuenta.
 - `account_types`: Array de tipos de cuenta. Puede ser: `asset`, `expense`, `liability`, `income` y `equity`. También se puede usar `account_type` para filtrar por un único tipo de cuenta.
-- `documents`: Array de objetos `ActiveRecord` que son utilizados como `document` en `Ledgerizer::Entry`s. En el ejemplo: `UserDeposit.first`. También se puede usar `document` para filtrar por un único documento.
 - `amount[_lt|_lteq|_gt|_gteq]`: Para filtrar por `amount` <, <=, > o >=. Debe ser una instancia de `Money` y si no se usa sufijo (_xxx) se buscará un monto igual.
 - `entry_time[_lt|_lteq|_gt|_gteq]`: Para filtrar por `entry_time` <, <=, > o >=. Debe ser una instancia de `DateTime` y si no se usa sufijo (_xxx) se buscará una fecha/hora igual.
 
-> Se debe tener en cuenta que algunos filtros no harán sentido en algunos contextos y por esto serán ignorados. Por ejemplo: si ejecuto `entry.ledger_sum(documents: [Deposit.last])`, el filtro `documents` será ignorado ya que ese filtro saldrá de `entry`.
+> Se debe tener en cuenta que algunos filtros no harán sentido en algunos contextos y por esto serán ignorados. Por ejemplo: si ejecuto `entry.ledger_sum(document: Deposit.last)`, el filtro `document` será ignorado ya que ese filtro saldrá de `entry`.
 
 #### Ejemplo de uso:
 
@@ -243,12 +259,12 @@ Ledgerizer::Account.to_table # para mostrar todas las cuentas
 ```
 ID | ACCOUNT_TYPE | CURRENCY | NAME     | ACCOUNTABLE_ID | ACCOUNTABLE_TYPE | TENANT_ID | TENANT_TYPE | BALANCE.FORMAT
 ---|--------------|----------|----------|----------------|------------------|-----------|-------------|---------------
-1  | asset        | CLP      | account1 | 1              | User             | 1         | Portfolio   | $161
-5  | liability    | CLP      | account2 | 4              | User             | 1         | Portfolio   | $225
-2  | liability    | CLP      | account2 | 6              | User             | 1         | Portfolio   | $204
-4  | asset        | CLP      | account1 | 2              | User             | 1         | Portfolio   | $230
-7  | liability    | CLP      | account2 | 5              | User             | 1         | Portfolio   | $193
-9  | asset        | CLP      | account1 | 3              | User             | 1         | Portfolio   | $231
+1  | asset        | CLP      | account1 | 1              | User             | nil       | Portfolio   | $161
+5  | liability    | CLP      | account2 | 4              | User             | nil       | Portfolio   | $225
+2  | liability    | CLP      | account2 | 6              | User             | nil       | Portfolio   | $204
+4  | asset        | CLP      | account1 | 2              | User             | nil       | Portfolio   | $230
+7  | liability    | CLP      | account2 | 5              | User             | nil       | Portfolio   | $193
+9  | asset        | CLP      | account1 | 3              | User             | nil       | Portfolio   | $231
 ```
 
 ```ruby
@@ -258,7 +274,7 @@ User.first.accounts.to_table # Para mostrar las cuentas de un accountable
 ```
 ID | ACCOUNT_TYPE | CURRENCY | NAME     | ACCOUNTABLE_ID | ACCOUNTABLE_TYPE | TENANT_ID | TENANT_TYPE | BALANCE.FORMAT
 ---|--------------|----------|----------|----------------|------------------|-----------|-------------|---------------
-1  | asset        | CLP      | account1 | 1              | User             | 1         | Portfolio   | $161
+1  | asset        | CLP      | account1 | 1              | User             | nil       | Portfolio   | $161
 ```
 
 ```ruby
@@ -268,12 +284,12 @@ Ledgerizer::Account.first.lines.to_table # para mostrar las lines de una cuenta
 ```
 ID  | ACCOUNT_NAME | ACCOUNTABLE_ID | ACCOUNTABLE_TYPE | ACCOUNT_ID | DOCUMENT_ID | DOCUMENT_TYPE | ACCOUNT_TYPE | ENTRY_CODE | ENTRY_TIME              | ENTRY_ID | TENANT_ID | TENANT_TYPE | AMOUNT.FORMAT | BALANCE.FORMAT
 ----|--------------|----------------|------------------|------------|-------------|---------------|--------------|------------|-------------------------|----------|-----------|-------------|---------------|---------------
-381 | account1     | 1              | User             | 1          | 252         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 192      | 1         | Portfolio   | $2            | $161
-378 | account1     | 1              | User             | 1          | 251         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 191      | 1         | Portfolio   | $2            | $159
-369 | account1     | 1              | User             | 1          | 246         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 186      | 1         | Portfolio   | $1            | $157
-357 | account1     | 1              | User             | 1          | 241         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 181      | 1         | Portfolio   | $2            | $156
-349 | account1     | 1              | User             | 1          | 237         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 177      | 1         | Portfolio   | $4            | $154
-297 | account1     | 1              | User             | 1          | 211         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 151      | 1         | Portfolio   | $5            | $150
+381 | account1     | 1              | User             | 1          | 252         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 192      | nil       | Portfolio   | $2            | $161
+378 | account1     | 1              | User             | 1          | 251         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 191      | nil       | Portfolio   | $2            | $159
+369 | account1     | 1              | User             | 1          | 246         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 186      | nil       | Portfolio   | $1            | $157
+357 | account1     | 1              | User             | 1          | 241         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 181      | nil       | Portfolio   | $2            | $156
+349 | account1     | 1              | User             | 1          | 237         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 177      | nil       | Portfolio   | $4            | $154
+297 | account1     | 1              | User             | 1          | 211         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 151      | nil       | Portfolio   | $5            | $150
 ...
 ```
 
@@ -299,7 +315,7 @@ class DepositCreator
   include Ledgerizer::Execution::Dsl
 
   def perform
-    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, datetime: "1984-06-04") do
+    execute_user_deposit_entry(tenant: Portfolio.new, document: UserDeposit.first, datetime: "1984-06-04") do
       debit(account: :bank, accountable: Bank.first, amount: Money.from_amount(10, 'CLP'))
       credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(10, 'CLP'))
     end
@@ -320,7 +336,7 @@ class DepositFixer
   include Ledgerizer::Execution::Dsl
 
   def perform
-    execute_user_deposit_entry(tenant: Portfolio.first, document: UserDeposit.first, datetime: "1984-06-04") do
+    execute_user_deposit_entry(tenant: Portfolio.new, document: UserDeposit.first, datetime: "1984-06-04") do
       debit(account: :bank, accountable: Bank.first, amount: Money.from_amount(15, 'CLP'))
       credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(15, 'CLP'))
     end

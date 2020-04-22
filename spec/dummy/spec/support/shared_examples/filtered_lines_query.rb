@@ -73,6 +73,54 @@ shared_examples "filtered lines by syms collection" do |line_filter_attr, filter
   end
 end
 
+shared_examples "filtered lines by attribute" do |attr_value, line_filter_attr, filter_attr|
+  def perform
+    described_class.new(relation: nil, filters: filters).all.count
+  end
+
+  before do
+    create_list(:ledgerizer_line, 5, line_filter_attr => attr_value)
+    create_list(:ledgerizer_line, 3)
+  end
+
+  it { expect(perform).to eq(8) }
+
+  context "with one item filter" do
+    let(:filters) do
+      {
+        filter_attr => attr_value
+      }
+    end
+
+    it { expect(perform).to eq(5) }
+  end
+end
+
+shared_examples "filtered lines by polym_attr" do |factory, line_filter_attr, filter_attr|
+  def perform
+    described_class.new(relation: nil, filters: filters).all.count
+  end
+
+  let(:item1) { create(factory) }
+
+  before do
+    create_list(:ledgerizer_line, 5, line_filter_attr => create(factory))
+    create_list(:ledgerizer_line, 3)
+  end
+
+  it { expect(perform).to eq(8) }
+
+  context "with one item filter" do
+    let(:filters) do
+      {
+        filter_attr => item1
+      }
+    end
+
+    it { expect(perform).to eq(5) }
+  end
+end
+
 shared_examples "filtered lines by predicated attribute" do
   |line_filter_attr, filter_attr, initial_value|
   let(:values) do

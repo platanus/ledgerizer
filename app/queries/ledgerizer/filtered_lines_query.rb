@@ -3,20 +3,18 @@ module Ledgerizer
     include Ledgerizer::Errors
 
     FILTERS_CONFIG = [
-      { name: :tenant, filter_type: :attribute },
       { name: :entry, filter_type: :attribute },
-      { name: :document, filter_type: :attribute },
       { name: :account, filter_type: :attribute },
-      { name: :accountable, filter_type: :attribute },
       { name: :account_name, filter_type: :attribute },
       { name: :entry_code, filter_type: :attribute },
       { name: :account_type, filter_type: :attribute },
 
-      { name: :tenants, filter_type: :collection },
+      { name: :tenant, filter_type: :polym_attr },
+      { name: :document, filter_type: :polym_attr },
+      { name: :accountable, filter_type: :polym_attr },
+
       { name: :entries, filter_type: :collection },
-      { name: :documents, filter_type: :collection },
       { name: :accounts, filter_type: :collection },
-      { name: :accountables, filter_type: :collection },
       { name: :account_names, filter_type: :collection },
       { name: :entry_codes, filter_type: :collection },
       { name: :account_types, filter_type: :collection },
@@ -47,21 +45,12 @@ module Ledgerizer
     end
 
     def all
-      query = relation
-
-      filters_config_by_attribute(:filter_type, :collection).each do |config|
-        query = filter_by_collection(query, config)
-      end
-
-      filters_config_by_attribute(:filter_type, :attribute).each do |config|
-        query = filter_by_attribute(query, config)
-      end
-
-      filters_config_by_attribute(:filter_type, :predicate).each do |config|
-        query = filter_by_predicate(query, config)
-      end
-
-      query.sorted
+      q = relation
+      filters_config_by_type(:collection).each { |conf| q = filter_by_collection(q, conf) }
+      filters_config_by_type(:polym_attr).each { |conf| q = filter_by_polym_attr(q, conf) }
+      filters_config_by_type(:attribute).each { |conf| q = filter_by_attribute(q, conf) }
+      filters_config_by_type(:predicate).each { |conf| q = filter_by_predicate(q, conf) }
+      q.sorted
     end
 
     private
@@ -80,11 +69,8 @@ module Ledgerizer
       hash.with_indifferent_access
     end
 
-    def filters_config_by_attribute(attribute, value)
-      result = FILTERS_CONFIG.select { |config| config[attribute] == value }
-      result.first if attribute == :name
-
-      result
+    def filters_config_by_type(value)
+      FILTERS_CONFIG.select { |config| config[:filter_type] == value }
     end
 
     def valid_filters
@@ -103,6 +89,14 @@ module Ledgerizer
       return query if filter_value.blank?
 
       query.where(config[:name] => filter_value)
+    end
+
+    def filter_by_polym_attr(query, config)
+      filter_value = filters[config[:name]]
+      return query if filter_value.blank?
+
+      query.where("#{config[:name]}_id" => filter_value.id)
+      query.where("#{config[:name]}_type" => filter_value.class.to_s)
     end
 
     def filter_by_predicate(query, config)

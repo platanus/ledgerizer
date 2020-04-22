@@ -53,6 +53,23 @@ shared_examples "ledgerizer tenant" do |entity_name|
       it { expect(perform).to have_attributes(expected_attributes) }
     end
 
+    context "when document is not an AR model" do
+      let(:document) { build(:withdrawal) }
+
+      let(:expected_attributes) do
+        {
+          code: "deposit",
+          document: document,
+          entry_time: entry_time.to_datetime,
+          tenant_id: entity.id,
+          tenant_type: entity.class.to_s
+        }
+      end
+
+      it { expect { perform }.to change { entity.entries.count }.from(0).to(1) }
+      it { expect(perform).to have_attributes(expected_attributes) }
+    end
+
     context "with invalid attributes" do
       let(:code) { nil }
 
