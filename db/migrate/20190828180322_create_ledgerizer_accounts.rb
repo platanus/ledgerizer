@@ -22,6 +22,12 @@ class CreateLedgerizerAccounts < ActiveRecord::Migration[5.2]
         :tenant_id,
         :tenant_type
       ],
+      length: {
+        accountable_type: 50,
+        name: 60,
+        account_type: 30,
+        tenant_type: 50
+      },
       unique: true,
       name: 'unique_account_index'
     )
