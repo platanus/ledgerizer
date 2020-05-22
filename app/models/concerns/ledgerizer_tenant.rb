@@ -35,16 +35,6 @@ module LedgerizerTenant
       ]
     end
 
-    def create_entry!(executable_entry)
-      Ledgerizer::Entry.where(
-        tenant_id: id, tenant_type: self.class.to_s
-      ).create!(
-        code: executable_entry.code,
-        document: executable_entry.document,
-        entry_time: executable_entry.entry_time
-      )
-    end
-
     def account_balance(account_name, currency)
       sum = accounts.where(name: account_name, currency: format_to_upcase(currency))
                     .sum(:balance_cents)
