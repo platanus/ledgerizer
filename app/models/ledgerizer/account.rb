@@ -9,7 +9,7 @@ module Ledgerizer
     polymorphic_attr :tenant
     polymorphic_attr :accountable
 
-    has_many :lines, -> { sorted }, dependent: :destroy
+    has_many :lines, -> { sorted }, dependent: :destroy, inverse_of: :account
 
     enumerize :account_type, in: Ledgerizer::Definition::Account::TYPES,
                              predicates: { prefix: true }

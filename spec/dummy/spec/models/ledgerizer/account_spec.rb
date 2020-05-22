@@ -7,7 +7,7 @@ module Ledgerizer
     end
 
     describe "associations" do
-      it { is_expected.to have_many(:lines).dependent(:destroy) }
+      it { is_expected.to have_many(:lines).dependent(:destroy).inverse_of(:account) }
     end
 
     describe "validations" do

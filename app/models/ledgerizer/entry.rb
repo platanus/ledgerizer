@@ -7,7 +7,7 @@ module Ledgerizer
     polymorphic_attr :tenant
     polymorphic_attr :document
 
-    has_many :lines, -> { sorted }, dependent: :destroy
+    has_many :lines, -> { sorted }, dependent: :destroy, inverse_of: :entry
     has_many :accounts, through: :lines
 
     validates :code, :tenant_type, :tenant_id, :document_type, :document_id,
