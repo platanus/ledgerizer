@@ -1,9 +1,11 @@
 RSpec::Matchers.define :have_ledger_entry do |entry_code:, entry_time:, document:|
   match do |tenant|
     !!Ledgerizer::Entry.find_by(
-      tenant: tenant,
+      tenant_id: tenant.id,
+      tenant_type: tenant.class.to_s,
       code: entry_code,
-      document: document,
+      document_id: document.id,
+      document_type: document.class.to_s,
       entry_time: entry_time
     )
   end
@@ -26,9 +28,11 @@ RSpec::Matchers.define :have_ledger_line do |
   match do |entry|
     currency = amount.currency.to_s
     account = Ledgerizer::Account.find_by(
-      tenant: entry.tenant,
+      tenant_id: entry.tenant.id,
+      tenant_type: entry.tenant.class.to_s,
       name: acc,
-      accountable: accountable,
+      accountable_id: accountable&.id,
+      accountable_type: accountable.blank? ? nil : accountable.class.to_s,
       currency: currency
     )
 

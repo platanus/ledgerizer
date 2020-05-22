@@ -2,13 +2,16 @@ module Ledgerizer
   class Entry < ApplicationRecord
     include LedgerizerLinesRelated
     include LedgerizerTablePrint
+    include PolymorphicAttrs
 
-    belongs_to :tenant, polymorphic: true, optional: true
-    belongs_to :document, polymorphic: true, optional: true
+    polymorphic_attr :tenant
+    polymorphic_attr :document
+
     has_many :lines, -> { sorted }, dependent: :destroy
     has_many :accounts, through: :lines
 
-    validates :code, :tenant_type, :document_type, :entry_time, presence: true
+    validates :code, :tenant_type, :tenant_id, :document_type, :document_id,
+      :entry_time, presence: true
 
     delegate :currency, to: :tenant, prefix: false # TODO: denormalize
 

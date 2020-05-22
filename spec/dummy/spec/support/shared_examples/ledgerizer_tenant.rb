@@ -1,24 +1,14 @@
-shared_examples "ledgerizer active record tenant" do |entity_name|
-  let(:entity) { create(entity_name) }
-
-  it { expect(entity).to have_many(:accounts) }
-  it { expect(entity).to have_many(:lines) }
-  it { expect(entity).to have_many(:entries) }
-end
-
-shared_examples "ledgerizer PORO tenant" do |entity_name|
-  let(:entity) { create(entity_name) }
-
-  before do
-    create_list(:ledgerizer_line, 3, force_tenant: entity)
-    create_list(:ledgerizer_line, 2)
-  end
-
-  it { expect(entity.lines.count).to eq(3) }
-end
-
 shared_examples "ledgerizer tenant" do |entity_name|
   let(:entity) { create(entity_name) }
+
+  describe "#lines" do
+    before do
+      create_list(:ledgerizer_line, 3, force_tenant: entity)
+      create_list(:ledgerizer_line, 2)
+    end
+
+    it { expect(entity.lines.count).to eq(3) }
+  end
 
   describe "#create_entry!" do
     let(:code) { :deposit }
@@ -59,7 +49,8 @@ shared_examples "ledgerizer tenant" do |entity_name|
       let(:expected_attributes) do
         {
           code: "deposit",
-          document: document,
+          document_id: document.id,
+          document_type: document.class.to_s,
           entry_time: entry_time.to_datetime,
           tenant_id: entity.id,
           tenant_type: entity.class.to_s

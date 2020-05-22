@@ -4,9 +4,11 @@ module Ledgerizer
     include Ledgerizer::Formatters
     include LedgerizerLinesRelated
     include LedgerizerTablePrint
+    include PolymorphicAttrs
 
-    belongs_to :tenant, polymorphic: true, optional: true
-    belongs_to :accountable, polymorphic: true, optional: true
+    polymorphic_attr :tenant
+    polymorphic_attr :accountable
+
     has_many :lines, -> { sorted }, dependent: :destroy
 
     enumerize :account_type, in: Ledgerizer::Definition::Account::TYPES,
@@ -14,7 +16,8 @@ module Ledgerizer
 
     monetize :balance_cents
 
-    validates :name, :currency, :account_type, :tenant_type, :balance_cents, presence: true
+    validates :name, :currency, :account_type,
+      :tenant_type, :tenant_id, :balance_cents, presence: true
     validates :currency, ledgerizer_currency: true
 
     before_save :load_format_currency
@@ -37,7 +40,7 @@ module Ledgerizer
     def check_integrity
       prev_balance = Money.new(0, currency)
 
-      lines.filtered.reverse.each do |line|
+      lines.filtered.reverse_each do |line|
         return false if line.balance != prev_balance + line.amount
 
         prev_balance = line.balance

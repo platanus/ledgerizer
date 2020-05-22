@@ -2,10 +2,12 @@ module Ledgerizer
   class Line < ApplicationRecord
     extend Ledgerizer::Formatters
     include LedgerizerTablePrint
+    include PolymorphicAttrs
 
-    belongs_to :tenant, polymorphic: true, optional: true
-    belongs_to :document, polymorphic: true, optional: true
-    belongs_to :accountable, polymorphic: true, optional: true
+    polymorphic_attr :tenant
+    polymorphic_attr :document
+    polymorphic_attr :accountable
+
     belongs_to :account
     belongs_to :entry
 
@@ -31,11 +33,14 @@ module Ledgerizer
     private
 
     def denormalize_attributes
-      self.tenant = entry.tenant
-      self.document = entry.document
+      self.tenant_id = entry.tenant_id
+      self.tenant_type = entry.tenant_type
+      self.document_id = entry.document_id
+      self.document_type = entry.document_type
       self.entry_code = entry.code
       self.entry_time = entry.entry_time
-      self.accountable = account.accountable
+      self.accountable_id = account.accountable_id
+      self.accountable_type = account.accountable_type
       self.account_name = account.name
       self.account_type = account.account_type
     end
