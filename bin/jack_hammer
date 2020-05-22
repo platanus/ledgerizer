@@ -40,6 +40,7 @@ require "#{support_dir}/test_class_helpers.rb"
 # Preload to avoid circular dependency error
 Deposit
 Ledgerizer::Entry
+Ledgerizer::Line
 Ledgerizer::FilteredLinesQuery
 
 class LedgerizerTest
