@@ -13,7 +13,11 @@ describe Ledgerizer::Execution::Account do
   end
 
   let(:tenant_instance) { create(:portfolio) }
+  let(:tenant_id) { tenant_instance.id }
+  let(:tenant_type) { tenant_instance.class.to_s }
   let(:accountable_instance) { create(:user) }
+  let(:accountable_id) { accountable_instance.id }
+  let(:accountable_type) { accountable_instance.class.to_s }
   let(:account_name) { :cash }
   let(:account_type) { :asset }
   let(:currency) { "CLP" }
@@ -21,10 +25,10 @@ describe Ledgerizer::Execution::Account do
   describe "#to_array" do
     let(:expected) do
       [
-        "Portfolio",
-        tenant_instance.id,
-        "User",
-        accountable_instance.id,
+        tenant_type,
+        tenant_id.to_s,
+        accountable_type,
+        accountable_id.to_s,
         "asset",
         "cash",
         "CLP"
@@ -53,8 +57,10 @@ describe Ledgerizer::Execution::Account do
   describe "#to_hash" do
     let(:expected) do
       {
-        tenant: tenant_instance,
-        accountable: accountable_instance,
+        tenant_id: tenant_id,
+        tenant_type: tenant_type,
+        accountable_id: accountable_id,
+        accountable_type: accountable_type,
         account_type: account_type,
         name: account_name,
         currency: currency
@@ -116,8 +122,10 @@ describe Ledgerizer::Execution::Account do
   describe "#balance" do
     let(:params) do
       {
-        tenant: tenant_instance,
-        accountable: accountable_instance,
+        tenant_id: tenant_id,
+        tenant_type: tenant_type,
+        accountable_id: accountable_id,
+        accountable_type: accountable_type,
         account_type: account_type,
         account_name: account_name
       }

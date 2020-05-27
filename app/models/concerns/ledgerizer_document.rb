@@ -2,11 +2,14 @@ module LedgerizerDocument
   extend ActiveSupport::Concern
 
   included do
-    has_many :entries,
-             as: :document,
-             class_name: "Ledgerizer::Entry",
-             dependent: :destroy
+    include LedgerizableEntity
 
-    has_many :lines, -> { sorted }, through: :entries, class_name: "Ledgerizer::Line"
+    def entries
+      Ledgerizer::Entry.where(document_id: to_id_attr, document_type: to_type_attr)
+    end
+
+    def lines
+      Ledgerizer::Line.where(entry_id: entries.select(:id)).sorted
+    end
   end
 end

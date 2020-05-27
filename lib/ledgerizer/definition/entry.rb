@@ -3,21 +3,24 @@ module Ledgerizer
     class Entry
       include Ledgerizer::Validators
       include Ledgerizer::Formatters
+      include Ledgerizer::Common
 
       attr_reader :code, :document
 
       def initialize(code:, document:)
         @code = format_to_symbol_identifier(code)
-        document_model_name = format_to_symbol_identifier(document)
-        validate_active_record_model_name!(document_model_name, "entry's document")
-        @document = document_model_name
+        document_class_name = format_to_symbol_identifier(document)
+        validate_ledgerized_class_name!(
+          document_class_name, "entry's document", LedgerizerDocument
+        )
+        @document = document_class_name
       end
 
       def find_movement(movement_type:, account_name:, accountable:)
         movements.find do |movement|
           movement.account_name == account_name &&
             movement.movement_type == movement_type &&
-            movement.accountable == infer_model_name(accountable)
+            movement.accountable == infer_ledgerized_class_name(accountable)
         end
       end
 
@@ -40,21 +43,17 @@ module Ledgerizer
       private
 
       def find_ar_accountable(movement_type, account_name, accountable)
-        ar_accountable = nil
+        accountable_class_name = nil
 
         if !accountable.blank?
-          ar_accountable = format_to_symbol_identifier(accountable)
-          validate_active_record_model_name!(ar_accountable, "accountable")
+          accountable_class_name = format_to_symbol_identifier(accountable)
+          validate_ledgerized_class_name!(
+            accountable_class_name, "accountable", LedgerizerAccountable
+          )
         end
 
-        validate_unique_account!(movement_type, account_name, ar_accountable)
-        ar_accountable
-      end
-
-      def infer_model_name(value)
-        return format_model_to_sym(value) if value.is_a?(ActiveRecord::Base)
-
-        value
+        validate_unique_account!(movement_type, account_name, accountable_class_name)
+        accountable_class_name
       end
 
       def validate_unique_account!(movement_type, account_name, accountable)

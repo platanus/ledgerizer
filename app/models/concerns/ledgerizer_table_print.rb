@@ -28,12 +28,10 @@ module LedgerizerTablePrint
 
     def load_attribute(result, attribute)
       if attribute.ends_with?("_currency") || %w{created_at updated_at id}.include?(attribute)
-        nil
+        result
       else
         result << attribute
       end
-
-      result
     end
   end
 end

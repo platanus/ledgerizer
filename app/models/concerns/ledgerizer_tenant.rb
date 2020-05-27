@@ -2,24 +2,28 @@ module LedgerizerTenant
   extend ActiveSupport::Concern
 
   included do
+    include LedgerizableEntity
     include LedgerizerLinesRelated
     include Ledgerizer::Formatters
-    include LedgerizerTablePrint
 
-    has_many :accounts,
-             as: :tenant,
-             class_name: "Ledgerizer::Account",
-             dependent: :destroy
+    def accounts
+      Ledgerizer::Account.where(tenant_where_params)
+    end
 
-    has_many :entries,
-             as: :tenant,
-             class_name: "Ledgerizer::Entry",
-             dependent: :destroy
+    def entries
+      Ledgerizer::Entry.where(tenant_where_params)
+    end
 
-    has_many :lines, -> { sorted },
-             as: :tenant,
-             class_name: "Ledgerizer::Line",
-             dependent: :destroy
+    def lines
+      Ledgerizer::Line.where(tenant_where_params).sorted
+    end
+
+    def tenant_where_params
+      {
+        tenant_id: to_id_attr,
+        tenant_type: to_type_attr
+      }
+    end
 
     def currency
       Ledgerizer.definition.get_tenant_currency(self)
@@ -29,14 +33,6 @@ module LedgerizerTenant
       [
         :tenant, :tenants
       ]
-    end
-
-    def create_entry!(executable_entry)
-      entries.create!(
-        code: executable_entry.code,
-        document: executable_entry.document,
-        entry_time: executable_entry.entry_time
-      )
     end
 
     def account_balance(account_name, currency)

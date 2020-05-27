@@ -48,25 +48,25 @@ describe Ledgerizer::Execution::Entry do
   context "with invalid tenant type" do
     let(:tenant_instance) { "tenant" }
 
-    it { expect { execution_entry }.to raise_error("tenant must be an ActiveRecord model") }
+    it { expect { execution_entry }.to raise_error(/of a class including LedgerizerTenant/) }
   end
 
-  context "with invalid AR tenant" do
+  context "with invalid tenant" do
     let(:tenant_instance) { create(:user) }
 
-    it { expect { execution_entry }.to raise_error("can't find tenant for given User model") }
+    it { expect { execution_entry }.to raise_error(/tenant must be an instance of a class/) }
   end
 
-  context "with non AR document" do
+  context "with non class document" do
     let(:document_instance) { LedgerizerTest.new }
 
-    it { expect { execution_entry }.to raise_error("document must be an ActiveRecord model") }
+    it { expect { execution_entry }.to raise_error(/document must be an instance of a class/) }
   end
 
-  context "with invalid AR document" do
+  context "with invalid document" do
     let(:document_instance) { create(:portfolio) }
 
-    it { expect { execution_entry }.to raise_error(/invalid document Portfolio for given deposit/) }
+    it { expect { execution_entry }.to raise_error(/of a class including LedgerizerDocument/) }
   end
 
   context "with not valid entry code for given tenant" do
@@ -118,16 +118,16 @@ describe Ledgerizer::Execution::Entry do
 
     it { expect { perform }.to change { execution_entry.new_movements.count }.from(0).to(1) }
 
-    context "with non AR document" do
+    context "with non class accountable" do
       let(:accountable_instance) { LedgerizerTest.new }
 
-      it { expect { perform }.to raise_error("accountable must be an ActiveRecord model") }
+      it { expect { perform }.to raise_error(/nstance of a class including LedgerizerAccountable/) }
     end
 
-    context "with invalid AR document" do
-      let(:accountable_instance) { create(:portfolio) }
+    context "with invalid accountable" do
+      let(:accountable_instance) { create(:client) }
 
-      it { expect { perform }.to raise_error(/accountable Portfolio for given deposit/) }
+      it { expect { perform }.to raise_error(/accountable Client for given deposit entry in debi/) }
     end
 
     context "with no definition for matching given movement type" do
@@ -151,10 +151,10 @@ describe Ledgerizer::Execution::Entry do
     end
 
     context "with no definition matching given accountable" do
-      let(:accountable_instance) { create(:portfolio) }
+      let(:accountable_instance) { create(:client) }
 
       let(:error_msg) do
-        'invalid movement account1 with accountable Portfolio for given deposit entry in debits'
+        'invalid movement account1 with accountable Client for given deposit entry in debits'
       end
 
       it { expect { perform }.to raise_error(error_msg) }

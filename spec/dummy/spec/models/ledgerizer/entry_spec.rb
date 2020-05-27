@@ -1,21 +1,23 @@
 require 'rails_helper'
 
 module Ledgerizer
-  RSpec.describe Entry, type: :model do
+  describe Entry, type: :model do
     it "has a valid factory" do
       expect(build(:ledgerizer_entry)).to be_valid
     end
 
     describe "associations" do
-      it { is_expected.to belong_to(:tenant) }
-      it { is_expected.to belong_to(:document) }
-      it { is_expected.to have_many(:lines).dependent(:destroy) }
+      it { is_expected.to have_many(:lines).dependent(:destroy).inverse_of(:entry) }
       it { is_expected.to have_many(:accounts) }
     end
 
     describe "validations" do
       it { is_expected.to validate_presence_of(:code) }
+      it { is_expected.to validate_presence_of(:document_type) }
+      it { is_expected.to validate_presence_of(:document_id) }
       it { is_expected.to validate_presence_of(:entry_time) }
+      it { is_expected.to validate_presence_of(:tenant_type) }
+      it { is_expected.to validate_presence_of(:tenant_id) }
     end
 
     it_behaves_like "ledgerizer lines related", :ledgerizer_entry
@@ -38,5 +40,8 @@ module Ledgerizer
 
       it_behaves_like 'table print'
     end
+
+    it_behaves_like "polymorphic attr", :ledgerizer_entry, :document, :deposit, :withdrawal
+    it_behaves_like "polymorphic attr", :ledgerizer_entry, :tenant, :portfolio, :company
   end
 end

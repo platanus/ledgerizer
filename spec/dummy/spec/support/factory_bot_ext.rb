@@ -7,7 +7,7 @@ module FactoryBot
 
       instance.update_columns(
         "#{attribute}_id" => polymorphic_instance.id,
-        "#{attribute}_type" => polymorphic_instance.model_name.name
+        "#{attribute}_type" => polymorphic_instance.class.to_s
       )
     end
 

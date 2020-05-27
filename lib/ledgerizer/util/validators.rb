@@ -3,10 +3,16 @@ module Ledgerizer
     include Ledgerizer::Formatters
     include Ledgerizer::Errors
 
-    def validate_active_record_model_name!(model_name, error_prefix)
-      return true if ActiveRecord::Base.model_names.include?(model_name)
+    def validate_ledgerized_class_name!(value, error_prefix, ledgerizer_mixin)
+      klass = format_string_to_class(value)
 
-      raise_error("#{error_prefix} must be an ActiveRecord model name")
+      if klass.blank?
+        raise_error("#{error_prefix} must be a snake_case representation of a Ruby class")
+      end
+
+      return true if klass.ancestors.include?(ledgerizer_mixin)
+
+      raise_error("#{error_prefix} must include #{ledgerizer_mixin}")
     end
 
     def validate_currency!(currency)
@@ -15,10 +21,10 @@ module Ledgerizer
       raise_error("invalid currency '#{currency}' given")
     end
 
-    def validate_active_record_instance!(model_instance, error_prefix)
-      return true if model_instance.is_a?(ActiveRecord::Base)
+    def validate_ledgerized_instance!(value, error_prefix, ledgerizer_mixin)
+      return true if value.class.ancestors.include?(ledgerizer_mixin)
 
-      raise_error("#{error_prefix} must be an ActiveRecord model")
+      raise_error("#{error_prefix} must be an instance of a class including #{ledgerizer_mixin}")
     end
 
     def validate_money!(value)

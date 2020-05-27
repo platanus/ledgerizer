@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :ledgerizer_account, class: 'Ledgerizer::Account' do
-    association :tenant, factory: :portfolio
-    association :accountable, factory: :user
+    tenant { create(:portfolio) }
+    accountable { create(:user) }
     name { :cash }
     account_type { :asset }
     currency { 'CLP' }

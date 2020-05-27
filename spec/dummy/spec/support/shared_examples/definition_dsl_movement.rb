@@ -17,7 +17,7 @@ shared_examples 'definition dsl movement' do |type|
     it "raises error with no defined account" do
       expect_error_in_definition_class("the cash account does not exist in tenant") do
         tenant('portfolio') do
-          entry(:deposit, document: 'portfolio') do
+          entry(:deposit, document: 'deposit') do
             send(type, account: :cash, accountable: nil)
           end
         end
@@ -25,11 +25,11 @@ shared_examples 'definition dsl movement' do |type|
     end
 
     it "raises error with invalid accountable" do
-      expect_error_in_definition_class("accountable must be an ActiveRecord model name") do
+      expect_error_in_definition_class(/accountable must be a snake_case/) do
         tenant('portfolio') do
           asset(:cash)
 
-          entry(:deposit, document: 'portfolio') do
+          entry(:deposit, document: 'deposit') do
             send(type, account: :cash, accountable: 'invalid')
           end
         end
@@ -41,7 +41,7 @@ shared_examples 'definition dsl movement' do |type|
         tenant('portfolio') do
           asset(:cash)
 
-          entry(:deposit, document: :portfolio) do
+          entry(:deposit, document: :deposit) do
             send(type, account: :cash, accountable: :user)
           end
         end
@@ -65,7 +65,7 @@ shared_examples 'definition dsl movement' do |type|
         tenant('portfolio') do
           asset(:cash)
 
-          entry(:deposit, document: :portfolio) do
+          entry(:deposit, document: :deposit) do
             send(type, account: :cash)
           end
         end
@@ -90,7 +90,7 @@ shared_examples 'definition dsl movement' do |type|
           asset(:cash)
           asset(:bank)
 
-          entry(:deposit, document: :portfolio) do
+          entry(:deposit, document: :deposit) do
             send(type, account: :cash, accountable: :user)
             send(type, account: :bank, accountable: :user)
           end
@@ -127,12 +127,12 @@ shared_examples 'definition dsl movement' do |type|
           asset(:cash)
           asset(:bank)
 
-          entry(:deposit, document: :portfolio) do
+          entry(:deposit, document: :deposit) do
             send(type, account: :cash, accountable: :user)
             send(type, account: :bank, accountable: :user)
           end
 
-          entry(:distribute, document: :portfolio) do
+          entry(:distribute, document: :deposit) do
             send(type, account: :cash, accountable: :user)
           end
         end

@@ -1,61 +1,13 @@
 shared_examples "ledgerizer tenant" do |entity_name|
   let(:entity) { create(entity_name) }
 
-  it { expect(entity).to have_many(:accounts) }
-  it { expect(entity).to have_many(:lines) }
-  it { expect(entity).to have_many(:entries) }
-
-  describe "#create_entry!" do
-    let(:code) { :deposit }
-    let(:document) { create(:user) }
-    let(:entry_time) { "1984-06-06" }
-
-    let(:executable_entry) do
-      instance_double(
-        "Ledgerizer::Execution::Entry",
-        code: code,
-        document: document,
-        entry_time: entry_time
-      )
+  describe "#lines" do
+    before do
+      create_list(:ledgerizer_line, 3, force_tenant: entity)
+      create_list(:ledgerizer_line, 2)
     end
 
-    def perform
-      entity.create_entry!(executable_entry)
-    end
-
-    context "with valid entry" do
-      let(:expected_attributes) do
-        {
-          code: "deposit",
-          document: document,
-          entry_time: entry_time.to_datetime,
-          tenant: entity
-        }
-      end
-
-      it { expect { perform }.to change { entity.entries.count }.from(0).to(1) }
-      it { expect(perform).to have_attributes(expected_attributes) }
-    end
-
-    context "with invalid attributes" do
-      let(:code) { nil }
-
-      it { expect { perform }.to raise_error(ActiveRecord::RecordInvalid) }
-    end
-  end
-
-  describe "#to_table" do
-    let(:collection) { described_class.all }
-    let(:table_print_attrs) do
-      %w{
-        id
-        name
-      }
-    end
-
-    before { create_list(:ledgerizer_account, 3) }
-
-    it_behaves_like 'table print'
+    it { expect(entity.lines.count).to eq(3) }
   end
 
   describe "#account_type_balance, #account_balance" do

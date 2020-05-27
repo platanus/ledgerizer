@@ -3,6 +3,7 @@ module Ledgerizer
     class Config
       include Ledgerizer::Validators
       include Ledgerizer::Formatters
+      include Ledgerizer::Common
 
       attr_writer :running_inside_transactional_fixtures
 
@@ -21,7 +22,7 @@ module Ledgerizer
       end
 
       def find_tenant(value)
-        tenants.find { |tenant| tenant.model_name == infer_model_name(value) }
+        tenants.find { |tenant| tenant.model_name == infer_ledgerized_class_name(value) }
       end
 
       def include_account?(account_name)
@@ -48,12 +49,6 @@ module Ledgerizer
 
       def accounts_names
         tenants.map(&:accounts_names).flatten.uniq
-      end
-
-      def infer_model_name(value)
-        return format_model_to_sym(value) if value.is_a?(ActiveRecord::Base)
-
-        value
       end
 
       def validate_unique_tenant!(model_name)
