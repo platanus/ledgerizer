@@ -1,11 +1,4 @@
-shared_examples "ledgerizer active record document" do |entity_name|
-  let(:entity) { create(entity_name) }
-
-  it { expect(entity).to have_many(:entries) }
-  it { expect(entity).to have_many(:lines) }
-end
-
-shared_examples "ledgerizer PORO document" do |entity_name|
+shared_examples "ledgerizer document" do |entity_name|
   let(:entity) { create(entity_name) }
 
   let(:entry1) { create(:ledgerizer_entry, document: entity) }

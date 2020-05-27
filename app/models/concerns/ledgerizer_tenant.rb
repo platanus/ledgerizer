@@ -2,13 +2,27 @@ module LedgerizerTenant
   extend ActiveSupport::Concern
 
   included do
+    include LedgerizableEntity
     include LedgerizerLinesRelated
     include Ledgerizer::Formatters
 
-    if ancestors.include?(ActiveRecord::Base)
-      include AR::LedgerizerTenant
-    else
-      include PORO::LedgerizerTenant
+    def accounts
+      Ledgerizer::Account.where(tenant_where_params)
+    end
+
+    def entries
+      Ledgerizer::Entry.where(tenant_where_params)
+    end
+
+    def lines
+      Ledgerizer::Line.where(tenant_where_params).sorted
+    end
+
+    def tenant_where_params
+      {
+        tenant_id: to_id_attr,
+        tenant_type: to_type_attr
+      }
     end
 
     def currency
@@ -19,16 +33,6 @@ module LedgerizerTenant
       [
         :tenant, :tenants
       ]
-    end
-
-    def create_entry!(executable_entry)
-      Ledgerizer::Entry.where(
-        tenant_id: id, tenant_type: self.class.to_s
-      ).create!(
-        code: executable_entry.code,
-        document: executable_entry.document,
-        entry_time: executable_entry.entry_time
-      )
     end
 
     def account_balance(account_name, currency)

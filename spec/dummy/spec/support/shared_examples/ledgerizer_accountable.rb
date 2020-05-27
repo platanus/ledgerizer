@@ -1,13 +1,5 @@
-shared_examples "ledgerizer active record accountable" do |entity_name|
+shared_examples "ledgerizer accountable" do |entity_name|
   let(:entity) { create(entity_name) }
-
-  it { expect(entity).to have_many(:accounts) }
-  it { expect(entity).to have_many(:lines) }
-end
-
-shared_examples "ledgerizer PORO accountable" do |entity_name|
-  let(:entity) { create(entity_name) }
-
   let(:account1) { create(:ledgerizer_account, accountable: entity) }
 
   before do

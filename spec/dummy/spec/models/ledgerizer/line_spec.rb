@@ -116,5 +116,9 @@ module Ledgerizer
 
       it_behaves_like 'table print'
     end
+
+    it_behaves_like "polymorphic attr", :ledgerizer_line, :accountable, :user, :client
+    it_behaves_like "polymorphic attr", :ledgerizer_line, :document, :deposit, :withdrawal
+    it_behaves_like "polymorphic attr", :ledgerizer_line, :tenant, :portfolio, :company
   end
 end

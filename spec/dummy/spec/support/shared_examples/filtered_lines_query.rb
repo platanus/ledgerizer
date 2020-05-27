@@ -105,7 +105,7 @@ shared_examples "filtered lines by polym_attr" do |factory, line_filter_attr, fi
 
   before do
     create_list(:ledgerizer_line, 5, line_filter_attr => create(factory))
-    create_list(:ledgerizer_line, 3)
+    create_list(:ledgerizer_line, 3, line_filter_attr => create(:portfolio))
   end
 
   it { expect(perform).to eq(8) }

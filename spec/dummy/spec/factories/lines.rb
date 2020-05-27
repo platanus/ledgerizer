@@ -1,6 +1,5 @@
 FactoryBot.define do
   factory :ledgerizer_line, class: 'Ledgerizer::Line' do
-    association :tenant, factory: :portfolio
     association :entry, factory: :ledgerizer_entry
     association :account, factory: :ledgerizer_account
 

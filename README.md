@@ -106,13 +106,17 @@ Parte de la definición consiste en incluir los módulos de `Ledgerizer` en los 
 ```ruby
 class Portfolio
   include LedgerizerTenant
+
+  def id
+    999 # Es obligatorio usar un id.
+  end
 end
 
 class Bank
   include LedgerizerAccountable
 
   def id
-    666 # no es obligatorio usar un id. Si no se agrega este método, las referencias al tenant se guardarán con tenant_id == nil en las tablas
+    666 # Es obligatorio usar un id.
   end
 end
 
@@ -259,12 +263,12 @@ Ledgerizer::Account.to_table # para mostrar todas las cuentas
 ```
 ID | ACCOUNT_TYPE | CURRENCY | NAME     | ACCOUNTABLE_ID | ACCOUNTABLE_TYPE | TENANT_ID | TENANT_TYPE | BALANCE.FORMAT
 ---|--------------|----------|----------|----------------|------------------|-----------|-------------|---------------
-1  | asset        | CLP      | account1 | 1              | User             | nil       | Portfolio   | $161
-5  | liability    | CLP      | account2 | 4              | User             | nil       | Portfolio   | $225
-2  | liability    | CLP      | account2 | 6              | User             | nil       | Portfolio   | $204
-4  | asset        | CLP      | account1 | 2              | User             | nil       | Portfolio   | $230
-7  | liability    | CLP      | account2 | 5              | User             | nil       | Portfolio   | $193
-9  | asset        | CLP      | account1 | 3              | User             | nil       | Portfolio   | $231
+1  | asset        | CLP      | account1 | 1              | User             | 999       | Portfolio   | $161
+5  | liability    | CLP      | account2 | 4              | User             | 999       | Portfolio   | $225
+2  | liability    | CLP      | account2 | 6              | User             | 999       | Portfolio   | $204
+4  | asset        | CLP      | account1 | 2              | User             | 999       | Portfolio   | $230
+7  | liability    | CLP      | account2 | 5              | User             | 999       | Portfolio   | $193
+9  | asset        | CLP      | account1 | 3              | User             | 999       | Portfolio   | $231
 ```
 
 ```ruby
@@ -274,7 +278,7 @@ User.first.accounts.to_table # Para mostrar las cuentas de un accountable
 ```
 ID | ACCOUNT_TYPE | CURRENCY | NAME     | ACCOUNTABLE_ID | ACCOUNTABLE_TYPE | TENANT_ID | TENANT_TYPE | BALANCE.FORMAT
 ---|--------------|----------|----------|----------------|------------------|-----------|-------------|---------------
-1  | asset        | CLP      | account1 | 1              | User             | nil       | Portfolio   | $161
+1  | asset        | CLP      | account1 | 1              | User             | 999       | Portfolio   | $161
 ```
 
 ```ruby
@@ -284,12 +288,12 @@ Ledgerizer::Account.first.lines.to_table # para mostrar las lines de una cuenta
 ```
 ID  | ACCOUNT_NAME | ACCOUNTABLE_ID | ACCOUNTABLE_TYPE | ACCOUNT_ID | DOCUMENT_ID | DOCUMENT_TYPE | ACCOUNT_TYPE | ENTRY_CODE | ENTRY_TIME              | ENTRY_ID | TENANT_ID | TENANT_TYPE | AMOUNT.FORMAT | BALANCE.FORMAT
 ----|--------------|----------------|------------------|------------|-------------|---------------|--------------|------------|-------------------------|----------|-----------|-------------|---------------|---------------
-381 | account1     | 1              | User             | 1          | 252         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 192      | nil       | Portfolio   | $2            | $161
-378 | account1     | 1              | User             | 1          | 251         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 191      | nil       | Portfolio   | $2            | $159
-369 | account1     | 1              | User             | 1          | 246         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 186      | nil       | Portfolio   | $1            | $157
-357 | account1     | 1              | User             | 1          | 241         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 181      | nil       | Portfolio   | $2            | $156
-349 | account1     | 1              | User             | 1          | 237         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 177      | nil       | Portfolio   | $4            | $154
-297 | account1     | 1              | User             | 1          | 211         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 151      | nil       | Portfolio   | $5            | $150
+381 | account1     | 1              | User             | 1          | 252         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 192      | 999       | Portfolio   | $2            | $161
+378 | account1     | 1              | User             | 1          | 251         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 191      | 999       | Portfolio   | $2            | $159
+369 | account1     | 1              | User             | 1          | 246         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 186      | 999       | Portfolio   | $1            | $157
+357 | account1     | 1              | User             | 1          | 241         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 181      | 999       | Portfolio   | $2            | $156
+349 | account1     | 1              | User             | 1          | 237         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 177      | 999       | Portfolio   | $4            | $154
+297 | account1     | 1              | User             | 1          | 211         | Deposit       | asset        | test       | 2020-04-17 22:23:11     | 151      | 999       | Portfolio   | $5            | $150
 ...
 ```
 
