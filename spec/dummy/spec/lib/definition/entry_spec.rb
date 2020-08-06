@@ -27,7 +27,7 @@ describe Ledgerizer::Definition::Entry do
     let(:movement_type) { :debit }
 
     let(:account) do
-      Ledgerizer::Definition::Account.new(name: :cash, type: :asset, base_currency: :usd)
+      Ledgerizer::Definition::Account.new(name: :cash, type: :asset, currency: :usd)
     end
 
     def perform

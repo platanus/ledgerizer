@@ -6,7 +6,7 @@ RSpec.describe Ledgerizer::Definition::Account do
       :account_definition,
       name: account_name,
       type: account_type,
-      base_currency: base_currency,
+      currency: currency,
       contra: contra
     )
   end
@@ -14,12 +14,12 @@ RSpec.describe Ledgerizer::Definition::Account do
   let(:account_name) { :cash }
   let(:account_type) { :asset }
   let(:contra) { true }
-  let(:base_currency) { "USD" }
+  let(:currency) { "USD" }
 
   it { expect(account.name).to eq(account_name) }
   it { expect(account.type).to eq(account_type) }
   it { expect(account.contra).to eq(true) }
-  it { expect(account.base_currency).to eq(:usd) }
+  it { expect(account.currency).to eq(:usd) }
   it { expect(account.credit?).to eq(false) }
   it { expect(account.debit?).to eq(true) }
 
