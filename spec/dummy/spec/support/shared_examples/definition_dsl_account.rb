@@ -7,7 +7,7 @@ shared_examples 'definition dsl account' do |acc_type|
     end
 
     it "raises error with repeated accounts" do
-      expect_error_in_definition_class("the account1 account already exists in tenant") do
+      expect_error_in_definition_class(/the account1 account with clp currency already exist/) do
         tenant('portfolio') do
           send(acc_type, :account1)
           send(acc_type, :account1)
@@ -27,7 +27,8 @@ shared_examples 'definition dsl account' do |acc_type|
           tenanat_model_name: :portfolio,
           account_name: :account1,
           account_type: acc_type,
-          contra: false
+          contra: false,
+          account_currency: :clp
         }
       end
 
@@ -46,7 +47,8 @@ shared_examples 'definition dsl account' do |acc_type|
           tenanat_model_name: :portfolio,
           account_name: :account1,
           account_type: acc_type,
-          contra: true
+          contra: true,
+          account_currency: :clp
         }
       end
 
@@ -65,7 +67,8 @@ shared_examples 'definition dsl account' do |acc_type|
           tenanat_model_name: :portfolio,
           account_name: :account1,
           account_type: acc_type,
-          contra: false
+          contra: false,
+          account_currency: :clp
         }
       end
 
@@ -85,7 +88,8 @@ shared_examples 'definition dsl account' do |acc_type|
           tenanat_model_name: :portfolio,
           account_name: :account1,
           account_type: acc_type,
-          contra: false
+          contra: false,
+          account_currency: :clp
         }
       end
 
@@ -94,7 +98,8 @@ shared_examples 'definition dsl account' do |acc_type|
           tenanat_model_name: :portfolio,
           account_name: :account2,
           account_type: acc_type,
-          contra: true
+          contra: true,
+          account_currency: :clp
         }
       end
 

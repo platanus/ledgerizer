@@ -19,7 +19,9 @@ module Ledgerizer
       end
 
       def add_new_movement(movement_type:, account_name:, accountable:, amount:)
-        movement_definition = get_movement_definition!(movement_type, account_name, accountable)
+        movement_definition = get_movement_definition!(
+          movement_type, account_name, accountable, amount
+        )
         movement = Ledgerizer::Execution::Movement.new(
           movement_definition: movement_definition,
           accountable: accountable,
@@ -104,7 +106,7 @@ module Ledgerizer
         end
       end
 
-      def get_movement_definition!(movement_type, account_name, accountable)
+      def get_movement_definition!(movement_type, account_name, accountable, amount)
         if accountable
           validate_ledgerized_instance!(accountable, "accountable", LedgerizerAccountable)
         end
@@ -112,6 +114,7 @@ module Ledgerizer
         movement_definition = entry_definition.find_movement(
           movement_type: movement_type,
           account_name: account_name,
+          account_currency: extract_currency_from_amount(amount),
           accountable: accountable
         )
         return movement_definition if movement_definition
@@ -123,11 +126,18 @@ module Ledgerizer
         )
       end
 
+      def extract_currency_from_amount(amount)
+        validate_money!(amount)
+
+        format_currency(amount.currency.to_s, strategy: :symbol)
+      end
+
       def get_movement_definition_from_account(account)
         %i{debit credit}.map do |movement_type|
           entry_definition.find_movement(
             movement_type: movement_type,
             account_name: format_to_symbol_identifier(account.name),
+            account_currency: format_currency(account.currency, strategy: :symbol),
             accountable: format_to_symbol_identifier(account.accountable_type)
           )
         end.compact.first

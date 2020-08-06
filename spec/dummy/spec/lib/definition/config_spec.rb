@@ -58,23 +58,4 @@ RSpec.describe Ledgerizer::Definition::Config do
       it { expect { perform }.to raise_error("tenant's config does not exist") }
     end
   end
-
-  describe "#include_account?" do
-    let(:tenant) { config.add_tenant(model_name: :portfolio) }
-    let(:account_name) { :account1 }
-
-    def perform
-      config.include_account?(account_name)
-    end
-
-    before { tenant.add_account(name: :account1, type: :asset) }
-
-    it { expect(perform).to eq(true) }
-
-    context "with invalid account" do
-      let(:account_name) { :invalid }
-
-      it { expect(perform).to eq(false) }
-    end
-  end
 end

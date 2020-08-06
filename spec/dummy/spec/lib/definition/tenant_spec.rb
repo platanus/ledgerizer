@@ -61,7 +61,7 @@ describe Ledgerizer::Definition::Tenant do
     context "with repeated account" do
       before { perform }
 
-      it { expect { perform }.to raise_error("the cash account already exists in tenant") }
+      it { expect { perform }.to raise_error(/cash account with clp currency already exists/) }
     end
 
     context "with different account currency" do
@@ -102,9 +102,9 @@ describe Ledgerizer::Definition::Tenant do
     let(:movement_type) { :debit }
     let(:accountable) { 'user' }
     let!(:entry) { tenant.add_entry(code: :withdrawal, document: 'withdrawal') }
-    let!(:account) { tenant.add_account(name: :cash, type: :asset) }
+    let!(:account) { tenant.add_account(name: :cash, type: :asset, currency: :clp) }
 
-    def perform
+    def movements
       tenant.add_movement(
         movement_type: movement_type,
         entry_code: entry_code,
@@ -113,20 +113,35 @@ describe Ledgerizer::Definition::Tenant do
       )
     end
 
-    it { expect { perform }.to change { entry.movements.count }.from(0).to(1) }
-    it { expect(perform.account_name).to eq(:cash) }
-    it { expect(perform.accountable).to eq(:user) }
+    it { expect { movements }.to change { entry.movements.count }.from(0).to(1) }
+    it { expect(movements.first.account_name).to eq(:cash) }
+    it { expect(movements.first.account_currency).to eq(:clp) }
+    it { expect(movements.first.accountable).to eq(:user) }
+
+    context "with another account with same config but different currency" do
+      let!(:another_account) { tenant.add_account(name: :cash, type: :asset, currency: :usd) }
+
+      it { expect { movements }.to change { entry.movements.count }.from(0).to(2) }
+
+      it { expect(movements.first.account_name).to eq(:cash) }
+      it { expect(movements.first.account_currency).to eq(:clp) }
+      it { expect(movements.first.accountable).to eq(:user) }
+
+      it { expect(movements.last.account_name).to eq(:cash) }
+      it { expect(movements.last.account_currency).to eq(:usd) }
+      it { expect(movements.last.accountable).to eq(:user) }
+    end
 
     context "when provided entry code does not match existent entry" do
       let(:entry_code) { :register }
 
-      it { expect { perform }.to raise_error('the register entry does not exist in tenant') }
+      it { expect { movements }.to raise_error('the register entry does not exist in tenant') }
     end
 
     context "when provided account name does not match existent entry" do
       let(:account_name) { :bank }
 
-      it { expect { perform }.to raise_error('the bank account does not exist in tenant') }
+      it { expect { movements }.to raise_error('the bank account does not exist in tenant') }
     end
   end
 end

@@ -159,6 +159,16 @@ describe Ledgerizer::Execution::Entry do
 
       it { expect { perform }.to raise_error(error_msg) }
     end
+
+    context "with invalid amount" do
+      let(:amount) { 666 }
+
+      let(:error_msg) do
+        'invalid money'
+      end
+
+      it { expect { perform }.to raise_error(error_msg) }
+    end
   end
 
   describe "#related_accounts" do

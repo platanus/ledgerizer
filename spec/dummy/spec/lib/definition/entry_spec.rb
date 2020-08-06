@@ -27,7 +27,7 @@ describe Ledgerizer::Definition::Entry do
     let(:movement_type) { :debit }
 
     let(:account) do
-      Ledgerizer::Definition::Account.new(name: :cash, type: :asset, currency: :usd)
+      build(:account_definition, name: :cash, type: :asset, currency: :usd)
     end
 
     def perform
@@ -36,19 +36,30 @@ describe Ledgerizer::Definition::Entry do
       )
     end
 
-    def account_entries_count
-      entry.movements
-    end
-
     it { expect { perform }.to change { entry.movements.count }.from(0).to(1) }
     it { expect(perform.account_name).to eq(:cash) }
     it { expect(perform.accountable).to eq(:user) }
+    it { expect(perform.account_currency).to eq(:usd) }
     it { expect(perform.movement_type).to eq(movement_type) }
 
-    context "with existent movement type" do
+    context "with added movement" do
       before { perform }
 
-      it { expect { perform }.to raise_error(/cash with accountable user already/) }
+      it { expect { perform }.to raise_error(/cash, usd currency and accountable user already/) }
+
+      context "with same account but different currency" do
+        let(:another_account) do
+          build(:account_definition, name: account.name, type: account.type, currency: :clp)
+        end
+
+        it do
+          expect do
+            entry.add_movement(
+              movement_type: movement_type, account: another_account, accountable: accountable
+            )
+          end.to change { entry.movements.count }.from(1).to(2)
+        end
+      end
     end
 
     context "with invalid accountable" do

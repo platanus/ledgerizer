@@ -16,16 +16,17 @@ module Ledgerizer
         @document = document_class_name
       end
 
-      def find_movement(movement_type:, account_name:, accountable:)
+      def find_movement(movement_type:, account_name:, account_currency:, accountable:)
         movements.find do |movement|
           movement.account_name == account_name &&
+            movement.account_currency == account_currency &&
             movement.movement_type == movement_type &&
             movement.accountable == infer_ledgerized_class_name(accountable)
         end
       end
 
       def add_movement(movement_type:, account:, accountable:)
-        ar_accountable = find_ar_accountable(movement_type, account.name, accountable)
+        ar_accountable = find_ar_accountable(movement_type, account, accountable)
 
         Ledgerizer::Definition::Movement.new(
           account: account,
@@ -42,28 +43,31 @@ module Ledgerizer
 
       private
 
-      def find_ar_accountable(movement_type, account_name, accountable)
+      def find_ar_accountable(movement_type, account, accountable)
         accountable_class_name = nil
 
-        if !accountable.blank?
+        if accountable.present?
           accountable_class_name = format_to_symbol_identifier(accountable)
           validate_ledgerized_class_name!(
             accountable_class_name, "accountable", LedgerizerAccountable
           )
         end
 
-        validate_unique_account!(movement_type, account_name, accountable_class_name)
+        validate_unique_account!(movement_type, account, accountable_class_name)
         accountable_class_name
       end
 
-      def validate_unique_account!(movement_type, account_name, accountable)
+      def validate_unique_account!(movement_type, account, accountable)
         if find_movement(
           movement_type: movement_type,
-          account_name: account_name,
+          account_name: account.name,
+          account_currency: account.currency,
           accountable: accountable
         )
           raise_config_error(
-            "movement #{account_name} with accountable #{accountable} already exists in tenant"
+            <<~MSG
+              movement with account #{account.name}, #{account.currency} currency and accountable #{accountable} already exists in tenant
+            MSG
           )
         end
       end
