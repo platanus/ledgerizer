@@ -41,12 +41,14 @@ describe Ledgerizer::Definition::Tenant do
   describe "#add_account" do
     let(:account_name) { :cash }
     let(:account_type) { :asset }
+    let(:account_currency) { nil }
     let(:contra) { true }
 
     def perform
       tenant.add_account(
         name: account_name,
         type: account_type,
+        currency: account_currency,
         contra: contra
       )
     end
@@ -54,11 +56,19 @@ describe Ledgerizer::Definition::Tenant do
     it { expect(perform.name).to eq(account_name) }
     it { expect(perform.type).to eq(account_type) }
     it { expect(perform.contra).to eq(contra) }
+    it { expect(perform.currency).to eq(tenant.currency) }
 
     context "with repeated account" do
       before { perform }
 
       it { expect { perform }.to raise_error("the cash account already exists in tenant") }
+    end
+
+    context "with different account currency" do
+      let(:account_currency) { "USD" }
+
+      it { expect(perform.currency).to eq(:usd) }
+      it { expect(perform.currency).not_to eq(tenant.currency) }
     end
   end
 
