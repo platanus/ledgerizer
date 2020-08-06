@@ -4,7 +4,7 @@ module Ledgerizer
       include Ledgerizer::Validators
       include Ledgerizer::Formatters
 
-      attr_reader :model_name
+      attr_reader :model_name, :currency
 
       def initialize(model_name:, currency: nil)
         model_name = format_to_symbol_identifier(model_name)
@@ -13,10 +13,6 @@ module Ledgerizer
         formatted_currency = format_currency(currency)
         validate_currency!(formatted_currency)
         @currency = formatted_currency
-      end
-
-      def currency
-        @currency || :usd
       end
 
       def add_account(name:, type:, contra: false)

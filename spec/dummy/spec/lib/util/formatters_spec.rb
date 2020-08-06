@@ -79,7 +79,7 @@ RSpec.describe Ledgerizer::Formatters do
     context "with blank value" do
       let(:currency) { "" }
 
-      it { expect(perform).to eq(:usd) }
+      it { expect(perform).to eq(:clp) }
 
       context "with no default value" do
         let(:use_default) { false }
@@ -91,7 +91,7 @@ RSpec.describe Ledgerizer::Formatters do
     context "with nil value" do
       let(:currency) { nil }
 
-      it { expect(perform).to eq(:usd) }
+      it { expect(perform).to eq(:clp) }
     end
   end
 

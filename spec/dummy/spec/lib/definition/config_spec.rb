@@ -50,7 +50,7 @@ RSpec.describe Ledgerizer::Definition::Config do
 
     before { config.add_tenant(model_name: :portfolio) }
 
-    it { expect(perform).to eq(:usd) }
+    it { expect(perform).to eq(:clp) }
 
     context "with invalid tenant" do
       let(:value) { :invalid }

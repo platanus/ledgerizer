@@ -23,12 +23,12 @@ describe Ledgerizer::Definition::Tenant do
   end
 
   describe "#currency" do
-    it { expect(tenant.currency).to eq(:usd) }
+    it { expect(tenant.currency).to eq(:clp) }
 
     context "with different currency" do
-      let(:currency) { :clp }
+      let(:currency) { :usd }
 
-      it { expect(tenant.currency).to eq(:clp) }
+      it { expect(tenant.currency).to eq(:usd) }
     end
 
     context "with invalid currency" do

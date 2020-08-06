@@ -16,7 +16,10 @@ module Ledgerizer
                              format_to_upcase(currency)
                            end
 
-      return :usd if use_default && formatted_currency.blank?
+      if use_default && formatted_currency.blank?
+        default_currency = MoneyRails.default_currency.to_s
+        return format_currency(default_currency, strategy: strategy, use_default: false)
+      end
 
       formatted_currency
     end
