@@ -107,29 +107,34 @@ module Ledgerizer
       end
 
       def get_movement_definition!(movement_type, account_name, accountable, amount)
-        if accountable
-          validate_ledgerized_instance!(accountable, "accountable", LedgerizerAccountable)
-        end
-
+        validate_accountable(accountable)
+        account_currency = extract_currency_from_amount(amount)
         movement_definition = entry_definition.find_movement(
-          movement_type: movement_type,
-          account_name: account_name,
-          account_currency: extract_currency_from_amount(amount),
-          accountable: accountable
+          account_name: account_name, account_currency: account_currency,
+          movement_type: movement_type, accountable: accountable
         )
         return movement_definition if movement_definition
 
-        raise_error(
-          "invalid movement #{account_name} with accountable " +
-            "#{accountable.class} for given #{entry_definition.code} " +
-            "entry in #{movement_type.to_s.pluralize}"
+        raise_invalid_movement_error(
+          movement_type: movement_type,
+          entry_definition: entry_definition,
+          account_name: account_name,
+          account_currency: account_currency,
+          accountable: accountable
         )
       end
 
       def extract_currency_from_amount(amount)
         validate_money!(amount)
-
         format_currency(amount.currency.to_s, strategy: :symbol)
+      end
+
+      def validate_accountable(accountable)
+        if accountable
+          validate_ledgerized_instance!(
+            accountable, "accountable", LedgerizerAccountable
+          )
+        end
       end
 
       def get_movement_definition_from_account(account)
@@ -157,6 +162,16 @@ module Ledgerizer
         return entry_definition if entry_definition
 
         raise_error("invalid entry code #{entry_code} for given tenant")
+      end
+
+      def raise_invalid_movement_error(
+        movement_type:, entry_definition:, account_name:, account_currency:, accountable:
+      )
+        raise_error(
+          "invalid movement with account: #{account_name}, accountable: " +
+            "#{accountable.class} and currency: #{account_currency} for given " +
+            "#{entry_definition.code} entry in #{movement_type.to_s.pluralize}"
+        )
       end
     end
   end
