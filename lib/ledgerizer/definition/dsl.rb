@@ -26,20 +26,20 @@ module Ledgerizer
         end
 
         def add_accounts(account_name, account_type, currencies, contra)
-          available_currencies(currencies).each do |currency|
-            add_account(account_name, account_type, currency, contra)
+          in_context(account_type) do
+            available_currencies(currencies).each do |currency|
+              add_account(account_name, account_type, currency, contra)
+            end
           end
         end
 
         def add_account(account_name, account_type, currency, contra)
-          in_context(account_type) do
-            @current_account = @current_tenant.add_account(
-              name: account_name,
-              type: account_type,
-              contra: contra,
-              currency: currency
-            )
-          end
+          @current_account = @current_tenant.add_account(
+            name: account_name,
+            type: account_type,
+            contra: contra,
+            account_currency: currency
+          )
         ensure
           @current_account = nil
         end
@@ -94,7 +94,7 @@ module Ledgerizer
 
         def available_currencies(currencies)
           currencies ||= []
-          currencies << (@current_tenant&.currency || :usd)
+          currencies << @current_tenant.currency
 
           currencies.map do |currency|
             format_currency(currency.to_s, strategy: :symbol)

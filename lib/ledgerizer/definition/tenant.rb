@@ -15,11 +15,11 @@ module Ledgerizer
         @currency = formatted_currency
       end
 
-      def add_account(name:, type:, currency: nil, contra: false)
-        account_currency = get_account_currency(currency)
-        validate_unique_account!(name, account_currency)
+      def add_account(name:, type:, account_currency: nil, contra: false)
+        inferred_currency = account_or_tenant_currency(account_currency)
+        validate_unique_account!(name, inferred_currency)
         Ledgerizer::Definition::Account.new(
-          name: name, type: type, contra: contra, currency: account_currency
+          name: name, type: type, contra: contra, currency: inferred_currency
         ).tap do |account|
           accounts << account
         end
@@ -75,7 +75,7 @@ module Ledgerizer
         accounts.select { |account| account.name == name }
       end
 
-      def get_account_currency(account_currency)
+      def account_or_tenant_currency(account_currency)
         return currency if account_currency.blank?
 
         formatted_currency = format_currency(
@@ -85,14 +85,6 @@ module Ledgerizer
         )
         validate_currency!(formatted_currency)
         formatted_currency
-      end
-
-      def validate_existent_account!(account_name, account_currency)
-        if !find_account(account_name, account_currency)
-          raise_config_error(
-            "the #{account_name} account with #{account_currency} currency does not exist in tenant"
-          )
-        end
       end
 
       def validate_existent_entry!(code)

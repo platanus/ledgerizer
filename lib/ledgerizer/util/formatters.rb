@@ -9,16 +9,11 @@ module Ledgerizer
     end
 
     def format_currency(currency, strategy: :symbol, use_default: true)
-      formatted_currency = case strategy
-                           when :symbol
-                             format_to_symbol_identifier(currency)
-                           else
-                             format_to_upcase(currency)
-                           end
+      formatted_currency = format_currency_by_strategy(currency, strategy)
 
       if use_default && formatted_currency.blank?
         default_currency = MoneyRails.default_currency.to_s
-        return format_currency(default_currency, strategy: strategy, use_default: false)
+        formatted_currency = format_currency_by_strategy(default_currency, strategy)
       end
 
       formatted_currency
@@ -34,6 +29,15 @@ module Ledgerizer
       value.to_s.camelize.constantize
     rescue NameError
       nil
+    end
+
+    def format_currency_by_strategy(currency, strategy)
+      case strategy
+      when :symbol
+        format_to_symbol_identifier(currency)
+      else
+        format_to_upcase(currency)
+      end
     end
   end
 end

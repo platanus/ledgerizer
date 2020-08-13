@@ -48,7 +48,7 @@ describe Ledgerizer::Definition::Tenant do
       tenant.add_account(
         name: account_name,
         type: account_type,
-        currency: account_currency,
+        account_currency: account_currency,
         contra: contra
       )
     end
@@ -102,7 +102,7 @@ describe Ledgerizer::Definition::Tenant do
     let(:movement_type) { :debit }
     let(:accountable) { 'user' }
     let!(:entry) { tenant.add_entry(code: :withdrawal, document: 'withdrawal') }
-    let!(:account) { tenant.add_account(name: :cash, type: :asset, currency: :clp) }
+    let!(:account) { tenant.add_account(name: :cash, type: :asset, account_currency: :clp) }
 
     def movements
       tenant.add_movement(
@@ -119,7 +119,9 @@ describe Ledgerizer::Definition::Tenant do
     it { expect(movements.first.accountable).to eq(:user) }
 
     context "with another account with same config but different currency" do
-      let!(:another_account) { tenant.add_account(name: :cash, type: :asset, currency: :usd) }
+      let!(:another_account) do
+        tenant.add_account(name: :cash, type: :asset, account_currency: :usd)
+      end
 
       it { expect { movements }.to change { entry.movements.count }.from(0).to(2) }
 
