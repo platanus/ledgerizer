@@ -26,6 +26,8 @@ module Ledgerizer
 
     def self.amounts_sum(currency)
       formatted_currency = format_currency(currency, strategy: :upcase, use_default: false)
+      return 0 if formatted_currency.blank?
+
       total = where(amount_currency: formatted_currency).sum(:amount_cents)
       Money.new(total, formatted_currency)
     end

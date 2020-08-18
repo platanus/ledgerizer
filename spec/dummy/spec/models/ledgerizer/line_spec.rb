@@ -74,7 +74,7 @@ module Ledgerizer
       context "with invalid currency" do
         let(:currency) { nil }
 
-        it { expect { perform }.to raise_error(Money::Currency::UnknownCurrency) }
+        it { expect(perform).to eq(0) }
       end
 
       context "with lines" do

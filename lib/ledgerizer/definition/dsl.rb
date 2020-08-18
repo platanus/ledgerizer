@@ -20,8 +20,8 @@ module Ledgerizer
         end
 
         Ledgerizer::Definition::Account::TYPES.each do |account_type|
-          define_method(account_type) do |account_name, currencies: nil, contra: false|
-            add_accounts(account_name, account_type, currencies, contra)
+          define_method(account_type) do |account_name, currencies: [], contra: false|
+            add_accounts(account_name, account_type, currencies.dup, contra)
           end
         end
 

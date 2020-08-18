@@ -1,10 +1,14 @@
 module Ledgerizer
   module Formatters
     def format_to_symbol_identifier(value)
+      return if value.blank?
+
       value.to_s.underscore.to_sym
     end
 
     def format_to_upcase(value)
+      return if value.blank?
+
       value.to_s.upcase
     end
 
