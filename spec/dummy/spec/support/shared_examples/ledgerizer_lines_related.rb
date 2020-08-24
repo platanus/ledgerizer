@@ -48,8 +48,10 @@ shared_examples "ledgerizer lines related" do |entity_name|
     it "calls Line#amounts_sum method with valid params" do
       ledger_sum
 
+      expect(lines).to have_received(:filtered)
+        .with(expected_filters)
+
       expect(filtered_lines).to have_received(:amounts_sum)
-        .with(entity.currency)
     end
   end
 end
