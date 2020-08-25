@@ -7,9 +7,9 @@ module Ledgerizer
       attr_reader :accountable, :movement_definition
       attr_accessor :amount, :account_identifier
 
-      delegate :credit?, :debit?, :contra, :base_currency,
-               :movement_type, :account_name, :account_type,
-               to: :movement_definition, prefix: false
+      delegate :credit?, :debit?, :contra, :account_currency,
+        :movement_type, :account_name, :account_type,
+        to: :movement_definition, prefix: false
 
       def initialize(movement_definition:, accountable:, amount:, allow_negative_amount: false)
         @allow_negative_amount = allow_negative_amount
@@ -52,7 +52,7 @@ module Ledgerizer
       end
 
       def validate_account_currency!(currency)
-        if base_currency != format_to_symbol_identifier(currency)
+        if account_currency != format_to_symbol_identifier(currency)
           raise_error("#{currency} is not the account's currency")
         end
       end

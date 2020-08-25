@@ -2,7 +2,7 @@ FactoryBot.define do
   factory :account_definition, class: "Ledgerizer::Definition::Account" do
     name { :bank }
     type { :asset }
-    base_currency { :clp }
+    currency { :clp }
     contra { false }
 
     skip_create

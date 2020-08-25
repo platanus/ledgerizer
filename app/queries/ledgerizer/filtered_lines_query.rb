@@ -8,6 +8,7 @@ module Ledgerizer
       { name: :account_name, filter_type: :attribute },
       { name: :entry_code, filter_type: :attribute },
       { name: :account_type, filter_type: :attribute },
+      { name: :amount_currency, filter_type: :attribute },
 
       { name: :tenant, filter_type: :polym_attr },
       { name: :document, filter_type: :polym_attr },

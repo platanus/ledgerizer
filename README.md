@@ -360,6 +360,60 @@ y se agregarán 2 nuevas:
 
 - Una relacionada con la cuenta `funds_to_invest` por `amount: 15 CLP`
 
+### Multi-Currency
+
+Las cuentas de ledgerizer se pueden definir para trabajar con más de un tipo de moneda. Si tengo la siguiente definición:
+
+```ruby
+Ledgerizer.setup do |conf|
+  conf.tenant(:portfolio, currency: :clp) do
+    conf.asset :bank, currencies: [:usd]
+    conf.liability :funds_to_invest, currencies: [:usd]
+
+    conf.entry :user_deposit, document: :deposit do
+      conf.debit account: :bank, accountable: :bank
+      conf.credit account: :funds_to_invest, accountable: :user
+    end
+  end
+end
+```
+se podrá ejecutar la entry `user_deposit` para dos tipos de moneda: la base definida en el tenant (CLP) y la definida en `currencies: []` (en este caso USD). Por ejemplo:
+
+```ruby
+class DepositCreator
+  include Ledgerizer::Execution::Dsl
+
+  def perform
+    execute_user_deposit_entry(tenant: Portfolio.new, document: UserDeposit.first, datetime: "1984-06-04") do
+      debit(account: :bank, accountable: Bank.first, amount: Money.from_amount(10, 'USD'))
+      credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(10, 'USD'))
+    end
+  end
+end
+```
+y
+
+```ruby
+class DepositCreator
+  include Ledgerizer::Execution::Dsl
+
+  def perform
+    execute_user_deposit_entry(tenant: Portfolio.new, document: UserDeposit.first, datetime: "1984-06-04") do
+      debit(account: :bank, accountable: Bank.first, amount: Money.from_amount(1000, 'CLP'))
+      credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(1000, 'CLP'))
+    end
+  end
+end
+```
+
+serían dos entradas válidas.
+
+Tener en cuenta:
+
+- Por cada currency, existirá una cuenta. Es decir que si ejecutamos las dos anteriores, tendremos 4 cuentas: 2 en CLP y 2 en USD.
+- Siempre las cuentas se crean en la moneda base definida en el tenant. Es decir que si omites la opción `currencies`, se asumirá que esa cuenta tiene la misma moneda que el tenant.
+- Si no se define la opción `currency` en el tenant, se usará la que viene por defecto en la gema Money (`Money.default_currency`). Es decir, siempre existirá una moneda base.
+
 ## Testing
 
 To run the specs you need to execute, **in the root path of the gem**, the following command:

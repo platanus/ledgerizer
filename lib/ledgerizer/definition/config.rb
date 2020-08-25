@@ -25,30 +25,16 @@ module Ledgerizer
         tenants.find { |tenant| tenant.model_name == infer_ledgerized_class_name(value) }
       end
 
-      def include_account?(account_name)
-        accounts_names.include?(account_name.to_s.to_sym)
-      end
-
       def get_tenant_currency(tenant)
         config = find_tenant(tenant)
         raise_config_error("tenant's config does not exist") unless config
         config.currency
       end
 
-      def get_tenant_account_names(tenant)
-        config = find_tenant(tenant)
-        raise_config_error("tenant's config does not exist") unless config
-        config.account_names
-      end
-
       private
 
       def tenants
         @tenants ||= []
-      end
-
-      def accounts_names
-        tenants.map(&:accounts_names).flatten.uniq
       end
 
       def validate_unique_tenant!(model_name)

@@ -9,7 +9,7 @@ RSpec.describe Ledgerizer::Definition::Movement do
       account_def: {
         name: :cash,
         type: :asset,
-        base_currency: "USD",
+        currency: "USD",
         contra: "1"
       }
     )
@@ -19,7 +19,7 @@ RSpec.describe Ledgerizer::Definition::Movement do
   it { expect(movement.accountable).to eq(:user) }
   it { expect(movement.accountable_class).to eq(User) }
   it { expect(movement.movement_type).to eq(:debit) }
-  it { expect(movement.base_currency).to eq(:usd) }
+  it { expect(movement.account_currency).to eq(:usd) }
   it { expect(movement.contra).to eq(true) }
   it { expect(movement.debit?).to eq(true) }
   it { expect(movement.credit?).to eq(false) }
