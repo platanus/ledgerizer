@@ -127,14 +127,20 @@ describe Ledgerizer::Execution::Entry do
     context "with invalid accountable" do
       let(:accountable_instance) { create(:client) }
 
-      it { expect { perform }.to raise_error(/accountable Client for given deposit entry in debi/) }
+      let(:error_msg) do
+        'invalid movement with account: account1, accountable: ' +
+          'Client and currency: clp for given deposit entry in debits'
+      end
+
+      it { expect { perform }.to raise_error(error_msg) }
     end
 
     context "with no definition for matching given movement type" do
       let(:movement_type) { :credit }
 
       let(:error_msg) do
-        'invalid movement account1 with accountable User for given deposit entry in credits'
+        'invalid movement with account: account1, accountable: ' +
+          'User and currency: clp for given deposit entry in credits'
       end
 
       it { expect { perform }.to raise_error(error_msg) }
@@ -144,7 +150,8 @@ describe Ledgerizer::Execution::Entry do
       let(:account_name) { :account2 }
 
       let(:error_msg) do
-        'invalid movement account2 with accountable User for given deposit entry in debits'
+        'invalid movement with account: account2, accountable: ' +
+          'User and currency: clp for given deposit entry in debits'
       end
 
       it { expect { perform }.to raise_error(error_msg) }
@@ -154,7 +161,18 @@ describe Ledgerizer::Execution::Entry do
       let(:accountable_instance) { create(:client) }
 
       let(:error_msg) do
-        'invalid movement account1 with accountable Client for given deposit entry in debits'
+        'invalid movement with account: account1, accountable: ' +
+          'Client and currency: clp for given deposit entry in debits'
+      end
+
+      it { expect { perform }.to raise_error(error_msg) }
+    end
+
+    context "with invalid amount" do
+      let(:amount) { 666 }
+
+      let(:error_msg) do
+        'invalid money'
       end
 
       it { expect { perform }.to raise_error(error_msg) }

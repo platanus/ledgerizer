@@ -52,7 +52,8 @@ shared_examples 'definition dsl movement' do |type|
           tenant_class: :portfolio,
           entry_code: :deposit,
           movement_type: type,
-          account: :cash,
+          account_name: :cash,
+          account_currency: :clp,
           accountable: :user
         }
       end
@@ -76,7 +77,8 @@ shared_examples 'definition dsl movement' do |type|
           tenant_class: :portfolio,
           entry_code: :deposit,
           movement_type: type,
-          account: :cash,
+          account_name: :cash,
+          account_currency: :clp,
           accountable: nil
         }
       end
@@ -102,7 +104,8 @@ shared_examples 'definition dsl movement' do |type|
           tenant_class: :portfolio,
           entry_code: :deposit,
           movement_type: type,
-          account: :cash,
+          account_name: :cash,
+          account_currency: :clp,
           accountable: :user
         }
       end
@@ -112,7 +115,8 @@ shared_examples 'definition dsl movement' do |type|
           tenant_class: :portfolio,
           entry_code: :deposit,
           movement_type: type,
-          account: :bank,
+          account_name: :bank,
+          account_currency: :clp,
           accountable: :user
         }
       end
@@ -143,7 +147,8 @@ shared_examples 'definition dsl movement' do |type|
           tenant_class: :portfolio,
           entry_code: :deposit,
           movement_type: type,
-          account: :cash,
+          account_name: :cash,
+          account_currency: :clp,
           accountable: :user
         }
       end
@@ -153,7 +158,8 @@ shared_examples 'definition dsl movement' do |type|
           tenant_class: :portfolio,
           entry_code: :deposit,
           movement_type: type,
-          account: :bank,
+          account_name: :bank,
+          account_currency: :clp,
           accountable: :user
         }
       end
@@ -163,7 +169,8 @@ shared_examples 'definition dsl movement' do |type|
           tenant_class: :portfolio,
           entry_code: :distribute,
           movement_type: type,
-          account: :cash,
+          account_name: :cash,
+          account_currency: :clp,
           accountable: :user
         }
       end

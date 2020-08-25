@@ -37,6 +37,7 @@ module Ledgerizer
       it { expect(line.accountable).to eq(line.account.accountable) }
       it { expect(line.account_name).to eq(line.account.name) }
       it { expect(line.account_type).to eq(line.account.account_type) }
+      it { expect(line.account_mirror_currency).to eq(line.account.mirror_currency) }
     end
 
     describe "#filtered" do
@@ -74,7 +75,7 @@ module Ledgerizer
       context "with invalid currency" do
         let(:currency) { nil }
 
-        it { expect { perform }.to raise_error(Money::Currency::UnknownCurrency) }
+        it { expect(perform).to eq(0) }
       end
 
       context "with lines" do
@@ -95,18 +96,19 @@ module Ledgerizer
       let(:table_print_attrs) do
         %w{
           id
-          account_name
           accountable_id
           accountable_type
-          account_id
           document_id
           document_type
+          tenant_id
+          tenant_type
+          account_mirror_currency
+          account_name
           account_type
+          account_id
           entry_code
           entry_time
           entry_id
-          tenant_id
-          tenant_type
           amount.format
           balance.format
         }

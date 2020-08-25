@@ -21,6 +21,7 @@ module Ledgerizer
       it { is_expected.to monetize(:balance) }
 
       it_behaves_like 'currency', :ledgerizer_account
+      it_behaves_like 'currency', :ledgerizer_account, :mirror_currency
     end
 
     it_behaves_like "ledgerizer lines related", :ledgerizer_account
@@ -221,6 +222,7 @@ module Ledgerizer
       let(:table_print_attrs) do
         %w{
           id
+          mirror_currency
           account_type
           currency
           name

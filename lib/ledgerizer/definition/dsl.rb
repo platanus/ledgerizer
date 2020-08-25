@@ -5,6 +5,7 @@ module Ledgerizer
 
       class_methods do
         include Ledgerizer::DslBase
+        include Ledgerizer::Formatters
 
         def tenant(model_name, currency: nil, &block)
           in_context do
@@ -19,19 +20,26 @@ module Ledgerizer
         end
 
         Ledgerizer::Definition::Account::TYPES.each do |account_type|
-          define_method(account_type) do |account_name, contra: false|
-            account(account_name, account_type, contra)
+          define_method(account_type) do |account_name, currencies: [], contra: false|
+            add_accounts(account_name, account_type, currencies.dup, contra)
           end
         end
 
-        def account(account_name, account_type, contra)
+        def add_accounts(account_name, account_type, currencies, contra)
           in_context(account_type) do
-            @current_account = @current_tenant.add_account(
-              name: account_name,
-              type: account_type,
-              contra: contra
-            )
+            available_currencies(currencies).each do |currency|
+              add_account(account_name, account_type, currency, contra)
+            end
           end
+        end
+
+        def add_account(account_name, account_type, currency, contra)
+          @current_account = @current_tenant.add_account(
+            name: account_name,
+            type: account_type,
+            contra: contra,
+            account_currency: currency
+          )
         ensure
           @current_account = nil
         end
@@ -82,6 +90,15 @@ module Ledgerizer
             debit: [:tenant, :entry],
             credit: [:tenant, :entry]
           }
+        end
+
+        def available_currencies(currencies)
+          currencies ||= []
+          currencies << @current_tenant.currency
+
+          currencies.map do |currency|
+            format_currency(currency.to_s, strategy: :symbol)
+          end.uniq
         end
 
         def definition

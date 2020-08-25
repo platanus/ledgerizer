@@ -8,7 +8,8 @@ module LedgerizerLinesRelated
     end
 
     def ledger_sum(filters = {})
-      ledger_lines(filters).amounts_sum(currency)
+      currency_filter = filters[:amount_currency] || currency
+      ledger_lines(filters).amounts_sum(currency_filter)
     end
 
     def forbidden_line_filters

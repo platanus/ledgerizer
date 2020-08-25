@@ -1,6 +1,8 @@
 module Ledgerizer
   module Execution
     class Account
+      include Ledgerizer::Formatters
+
       def initialize(
         tenant_id:,
         tenant_type:,
@@ -16,7 +18,7 @@ module Ledgerizer
         @accountable_type = accountable_type
         @account_type = account_type
         @account_name = account_name
-        @currency = currency
+        @currency = format_currency(currency, strategy: :upcase, use_default: false)
       end
 
       def ==(other)

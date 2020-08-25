@@ -31,6 +31,18 @@ RSpec.describe Ledgerizer::Formatters do
 
       it { expect(perform).to eq(:portfolio) }
     end
+
+    context "with blank value" do
+      let(:value) { "" }
+
+      it { expect(perform).to be_nil }
+    end
+
+    context "with nil value" do
+      let(:value) { nil }
+
+      it { expect(perform).to be_nil }
+    end
   end
 
   describe '#format_to_upcase' do
@@ -41,6 +53,18 @@ RSpec.describe Ledgerizer::Formatters do
     end
 
     it { expect(perform).to eq("LEAN") }
+
+    context "with blank value" do
+      let(:value) { "" }
+
+      it { expect(perform).to be_nil }
+    end
+
+    context "with nil value" do
+      let(:value) { nil }
+
+      it { expect(perform).to be_nil }
+    end
   end
 
   describe '#format_string_to_class' do
@@ -79,19 +103,19 @@ RSpec.describe Ledgerizer::Formatters do
     context "with blank value" do
       let(:currency) { "" }
 
-      it { expect(perform).to eq(:usd) }
+      it { expect(perform).to eq(:clp) }
 
       context "with no default value" do
         let(:use_default) { false }
 
-        it { expect(perform).to eq(:"") }
+        it { expect(perform).to eq(nil) }
       end
     end
 
     context "with nil value" do
       let(:currency) { nil }
 
-      it { expect(perform).to eq(:usd) }
+      it { expect(perform).to eq(:clp) }
     end
   end
 

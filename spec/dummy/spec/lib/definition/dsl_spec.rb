@@ -8,15 +8,15 @@ describe Ledgerizer::Definition::Dsl do
       end
 
       it { expect(LedgerizerTestDefinition).to have_ledger_tenant_definition(:portfolio) }
-      it { expect(LedgerizerTestDefinition).to have_ledger_tenant_currency(:portfolio, :usd) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_tenant_currency(:portfolio, :clp) }
     end
 
     context "with different currency" do
       let_definition_class do
-        tenant('portfolio', currency: :clp)
+        tenant('portfolio', currency: :usd)
       end
 
-      it { expect(LedgerizerTestDefinition).to have_ledger_tenant_currency(:portfolio, :clp) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_tenant_currency(:portfolio, :usd) }
     end
 
     it "raises DSL error with nested tenants" do

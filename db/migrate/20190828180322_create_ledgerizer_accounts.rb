@@ -6,10 +6,13 @@ class CreateLedgerizerAccounts < ActiveRecord::Migration[5.2]
       t.string :name
       t.string :currency
       t.string :account_type
+      t.string :mirror_currency
       t.monetize :balance, amount: { null: false, default: 0 }
 
       t.timestamps
     end
+
+    change_column :ledgerizer_accounts, :balance_cents, :integer, limit: 8
 
     add_index(
       :ledgerizer_accounts,
@@ -17,15 +20,15 @@ class CreateLedgerizerAccounts < ActiveRecord::Migration[5.2]
         :accountable_type,
         :accountable_id,
         :name,
-        :account_type,
+        :mirror_currency,
         :currency,
         :tenant_id,
         :tenant_type
       ],
       length: {
         accountable_type: 50,
+        mirror_currency: 10,
         name: 60,
-        account_type: 30,
         tenant_type: 50
       },
       unique: true,

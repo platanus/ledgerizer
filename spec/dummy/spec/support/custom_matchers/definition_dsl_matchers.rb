@@ -4,8 +4,8 @@ module Ledgerizer
       dsl_holder&.definition&.find_tenant(tenant_class)
     end
 
-    def self.tenant_account_definition(dsl_holder, tenant_class, account_name)
-      tenant_definition(dsl_holder, tenant_class)&.find_account(account_name)
+    def self.tenant_account_definition(dsl_holder, tenant_class, account_name, currency)
+      tenant_definition(dsl_holder, tenant_class)&.send(:find_account, account_name, currency)
     end
 
     def self.tenant_entry_definition(dsl_holder, tenant_class, entry_code)
@@ -13,11 +13,12 @@ module Ledgerizer
     end
 
     def self.tenant_entry_movement_definition(
-      dsl_holder, tenant_class, entry_code, movement_type, account, accountable
+      dsl_holder, tenant_class, entry_code, movement_type, account_name, account_currency, accountable
     )
       tenant_entry_definition(dsl_holder, tenant_class, entry_code)&.find_movement(
         movement_type: movement_type,
-        account_name: account,
+        account_name: account_name,
+        account_currency: account_currency,
         accountable: accountable
       )
     end
@@ -53,14 +54,15 @@ RSpec::Matchers.define :have_ledger_tenant_currency do |model_name, expected_cur
 end
 
 RSpec::Matchers.define :have_ledger_account_definition do
-  |tenanat_model_name:, account_name:, account_type:, contra: false|
+  |tenanat_model_name:, account_name:, account_type:, account_currency:, contra: false|
   match do |dsl_holder|
     account = Ledgerizer::TestHelpers.tenant_account_definition(
-      dsl_holder, tenanat_model_name, account_name
+      dsl_holder, tenanat_model_name, account_name, account_currency
     )
     account && account.type == account_type &&
       account.name == account_name &&
-      account.contra == contra
+      account.contra == contra &&
+      account.currency == account_currency
   end
 
   description do
@@ -90,14 +92,15 @@ RSpec::Matchers.define :have_ledger_entry_definition do |tenant_model_name:, ent
 end
 
 RSpec::Matchers.define :have_ledger_movement_definition do
-  |tenant_class:, entry_code:, movement_type:, account:, accountable:|
+  |tenant_class:, entry_code:, movement_type:, account_name:, account_currency:, accountable:|
   match do |dsl_holder|
     movement = Ledgerizer::TestHelpers.tenant_entry_movement_definition(
       dsl_holder,
       tenant_class,
       entry_code,
       movement_type,
-      account,
+      account_name,
+      account_currency,
       accountable
     )
 

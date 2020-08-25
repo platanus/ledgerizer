@@ -26,6 +26,8 @@ module Ledgerizer
 
     def self.amounts_sum(currency)
       formatted_currency = format_currency(currency, strategy: :upcase, use_default: false)
+      return 0 if formatted_currency.blank?
+
       total = where(amount_currency: formatted_currency).sum(:amount_cents)
       Money.new(total, formatted_currency)
     end
@@ -43,6 +45,7 @@ module Ledgerizer
       self.accountable_type = account.accountable_type
       self.account_name = account.name
       self.account_type = account.account_type
+      self.account_mirror_currency = account.mirror_currency
     end
   end
 end
@@ -51,23 +54,24 @@ end
 #
 # Table name: ledgerizer_lines
 #
-#  id               :bigint(8)        not null, primary key
-#  tenant_type      :string
-#  tenant_id        :bigint(8)
-#  entry_id         :bigint(8)
-#  entry_time       :datetime
-#  entry_code       :string
-#  account_type     :string
-#  document_type    :string
-#  document_id      :bigint(8)
-#  account_id       :bigint(8)
-#  accountable_type :string
-#  accountable_id   :bigint(8)
-#  account_name     :string
-#  amount_cents     :bigint(8)        default(0), not null
-#  amount_currency  :string           default("CLP"), not null
-#  balance_cents    :bigint(8)        default(0), not null
-#  balance_currency :string           default("CLP"), not null
+#  id                      :bigint(8)        not null, primary key
+#  entry_id                :bigint(8)
+#  entry_time              :datetime
+#  entry_code              :string
+#  account_id              :bigint(8)
+#  account_type            :string
+#  account_name            :string
+#  account_mirror_currency :string
+#  tenant_type             :string
+#  tenant_id               :bigint(8)
+#  document_type           :string
+#  document_id             :bigint(8)
+#  accountable_type        :string
+#  accountable_id          :bigint(8)
+#  amount_cents            :bigint(8)        default(0), not null
+#  amount_currency         :string           default("CLP"), not null
+#  balance_cents           :bigint(8)        default(0), not null
+#  balance_currency        :string           default("CLP"), not null
 #
 # Indexes
 #
