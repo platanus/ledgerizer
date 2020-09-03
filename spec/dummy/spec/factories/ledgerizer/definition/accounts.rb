@@ -3,6 +3,7 @@ FactoryBot.define do
     name { :bank }
     type { :asset }
     currency { :clp }
+    mirror_currency { nil }
     contra { false }
 
     skip_create
