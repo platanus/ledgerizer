@@ -10,6 +10,7 @@ RSpec.describe Ledgerizer::Definition::Movement do
         name: :cash,
         type: :asset,
         currency: "USD",
+        mirror_currency: "CLP",
         contra: "1"
       }
     )
@@ -23,4 +24,5 @@ RSpec.describe Ledgerizer::Definition::Movement do
   it { expect(movement.contra).to eq(true) }
   it { expect(movement.debit?).to eq(true) }
   it { expect(movement.credit?).to eq(false) }
+  it { expect(movement.mirror_currency).to eq(:clp) }
 end

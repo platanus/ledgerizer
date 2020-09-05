@@ -34,4 +34,15 @@ RSpec.describe Money do
       it { expect(perform).to eq(false) }
     end
   end
+
+  describe '#convert_to' do
+    let(:amount) { usd(2) }
+    let(:conversion_amount) { clp(600) }
+
+    def perform
+      amount.convert_to(conversion_amount)
+    end
+
+    it { expect(perform).to eq(clp(1200)) }
+  end
 end

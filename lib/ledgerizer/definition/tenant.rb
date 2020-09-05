@@ -17,12 +17,16 @@ module Ledgerizer
 
       def add_account(name:, type:, account_currency: nil, contra: false)
         inferred_currency = account_or_tenant_currency(account_currency)
-        validate_unique_account!(name, inferred_currency)
-        Ledgerizer::Definition::Account.new(
-          name: name, type: type, contra: contra, currency: inferred_currency
-        ).tap do |account|
-          accounts << account
-        end
+        account_config = {
+          name: name,
+          type: type,
+          contra: contra,
+          currency: inferred_currency,
+          mirror_currency: nil
+        }
+        new_account = add_main_account(account_config)
+        add_mirror_account(account_config) if inferred_currency != currency
+        new_account
       end
 
       def add_entry(code:, document:)
@@ -57,6 +61,24 @@ module Ledgerizer
 
       private
 
+      def add_mirror_account(main_account_config)
+        mirror_account_config = main_account_config.dup
+        mirror_account_config[:mirror_currency] = main_account_config[:currency]
+        mirror_account_config[:currency] = currency
+        add_account_to_collection(mirror_account_config)
+      end
+
+      def add_main_account(account_config)
+        add_account_to_collection(account_config)
+      end
+
+      def add_account_to_collection(account_config)
+        Ledgerizer::Definition::Account.new(account_config).tap do |account|
+          validate_unique_account!(account)
+          accounts << account
+        end
+      end
+
       def accounts
         @accounts ||= []
       end
@@ -65,9 +87,11 @@ module Ledgerizer
         @entries ||= []
       end
 
-      def find_account(account_name, account_currency)
-        accounts.find do |account|
-          account.name == account_name && account.currency == account_currency
+      def find_account(account_name, account_currency, mirror_currency)
+        accounts.find do |tenant_account|
+          tenant_account.name == account_name &&
+            tenant_account.currency == account_currency &&
+            tenant_account.mirror_currency == mirror_currency
         end
       end
 
@@ -91,10 +115,11 @@ module Ledgerizer
         raise_config_error("the #{code} entry does not exist in tenant") unless find_entry(code)
       end
 
-      def validate_unique_account!(account_name, account_currency)
-        if find_account(account_name, account_currency)
+      def validate_unique_account!(account)
+        if find_account(account.name, account.currency, account.mirror_currency)
           raise_config_error(
-            "the #{account_name} account with #{account_currency} currency already exists in tenant"
+            "the #{account.name} account with #{account.currency} currency \
+and #{account.mirror_currency.presence || 'no'} mirror currency already exists in tenant"
           )
         end
       end

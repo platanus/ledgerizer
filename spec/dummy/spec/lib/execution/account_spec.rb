@@ -8,7 +8,8 @@ describe Ledgerizer::Execution::Account do
       accountable: accountable_instance,
       account_name: account_name,
       account_type: account_type,
-      currency: currency
+      currency: currency,
+      mirror_currency: mirror_currency
     )
   end
 
@@ -21,6 +22,7 @@ describe Ledgerizer::Execution::Account do
   let(:account_name) { :cash }
   let(:account_type) { :asset }
   let(:currency) { "CLP" }
+  let(:mirror_currency) { "USD" }
 
   describe "#to_array" do
     let(:expected) do
@@ -31,7 +33,8 @@ describe Ledgerizer::Execution::Account do
         accountable_id.to_s,
         "asset",
         "cash",
-        "CLP"
+        "CLP",
+        mirror_currency.to_s
       ]
     end
 
@@ -44,7 +47,7 @@ describe Ledgerizer::Execution::Account do
 
   describe "#identifier" do
     let(:expected) do
-      "Portfolio::#{tenant_instance.id}::User::#{accountable_instance.id}::asset::cash::CLP"
+      "Portfolio::#{tenant_instance.id}::User::#{accountable_instance.id}::asset::cash::CLP::USD"
     end
 
     def perform
@@ -52,6 +55,17 @@ describe Ledgerizer::Execution::Account do
     end
 
     it { expect(perform).to eq(expected) }
+
+    context "with nil values" do
+      let(:mirror_currency) { nil }
+      let(:accountable_instance) { nil }
+
+      let(:expected) do
+        "Portfolio::#{tenant_instance.id}::::::asset::cash::CLP::"
+      end
+
+      it { expect(perform).to eq(expected) }
+    end
   end
 
   describe "#to_hash" do
@@ -63,7 +77,8 @@ describe Ledgerizer::Execution::Account do
         accountable_type: accountable_type,
         account_type: account_type,
         name: account_name,
-        currency: currency
+        currency: currency,
+        mirror_currency: mirror_currency
       }
     end
 
@@ -80,6 +95,7 @@ describe Ledgerizer::Execution::Account do
     let(:other_account_name) { account_name }
     let(:other_account_type) { account_type }
     let(:other_currency) { currency }
+    let(:other_mirror_currency) { mirror_currency }
 
     let(:other_account) do
       build(
@@ -88,7 +104,8 @@ describe Ledgerizer::Execution::Account do
         accountable: other_accountable_instance,
         account_name: other_account_name,
         account_type: other_account_type,
-        currency: other_currency
+        currency: other_currency,
+        mirror_currency: other_mirror_currency
       )
     end
 
@@ -117,6 +134,12 @@ describe Ledgerizer::Execution::Account do
 
       it { expect(execution_account).not_to eq(other_account) }
     end
+
+    context "when different mirror currency" do
+      let(:other_currency) { "BTC" }
+
+      it { expect(execution_account).not_to eq(other_account) }
+    end
   end
 
   describe "#balance" do
@@ -127,7 +150,8 @@ describe Ledgerizer::Execution::Account do
         accountable_id: accountable_id,
         accountable_type: accountable_type,
         account_type: account_type,
-        account_name: account_name
+        account_name: account_name,
+        account_mirror_currency: mirror_currency
       }
     end
 

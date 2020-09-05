@@ -20,14 +20,15 @@ module Ledgerizer
           entry_code_from_method(method_name) || super
         end
 
-        def execute_entry(entry_code, tenant:, document:, datetime:, &block)
+        def execute_entry(entry_code, tenant:, document:, datetime:, conversion_amount: nil, &block)
           in_context(:execute_entry) do
             @executor = Ledgerizer::EntryExecutor.new(
               config: definition,
               tenant: tenant,
               document: document,
               entry_code: entry_code,
-              entry_time: datetime
+              entry_time: datetime,
+              conversion_amount: conversion_amount
             )
 
             instance_eval(&block) if block

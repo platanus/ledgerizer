@@ -6,7 +6,7 @@ class CreateLedgerizerEntries < ActiveRecord::Migration[5.2]
       t.references :document, polymorphic: true
       t.datetime :entry_time
       t.string :mirror_currency
-      t.monetize :conversion_amount, amount: { null: true }
+      t.monetize :conversion_amount, amount: { null: true, default: nil }
     end
 
     change_column :ledgerizer_entries, :conversion_amount_cents, :integer, limit: 8

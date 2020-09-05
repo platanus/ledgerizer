@@ -2,6 +2,7 @@ FactoryBot.define do
   factory :executable_account, class: "Ledgerizer::Execution::Account" do
     account_name { :cash }
     currency { "CLP" }
+    mirror_currency { nil }
 
     transient do
       tenant { create(:portfolio) }
@@ -19,8 +20,11 @@ FactoryBot.define do
       end
 
       if accountable
-        attrs[:accountable_id] = accountable.id
+        attrs[:accountable_id] = accountable&.id
         attrs[:accountable_type] = accountable.class.to_s
+      else
+        attrs[:accountable_id] = nil
+        attrs[:accountable_type] = nil
       end
 
       new(attrs)

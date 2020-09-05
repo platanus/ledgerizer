@@ -14,16 +14,12 @@ module Ledgerizer
     validates :mirror_currency, ledgerizer_currency: true
     validates :code, :tenant_type, :tenant_id, :document_type, :document_id,
       :entry_time, presence: true
-    validates :conversion_amount_cents,
-      numericality: { greater_than: 0.0 }, if: -> { mirror_currency? }
-    validates :conversion_amount_cents,
-      numericality: { equal_to: 0.0 }, unless: -> { mirror_currency? }
 
     before_save :load_formatted_mirror_currency
 
     delegate :currency, to: :tenant, prefix: false # TODO: denormalize
 
-    monetize :conversion_amount_cents
+    monetize :conversion_amount_cents, allow_nil: true, numericality: { greater_than: 0.0 }
 
     def mirror_currency?
       mirror_currency.present?
@@ -65,7 +61,7 @@ end
 #  document_id                :bigint(8)
 #  entry_time                 :datetime
 #  mirror_currency            :string
-#  conversion_amount_cents    :bigint(8)        default(0)
+#  conversion_amount_cents    :bigint(8)
 #  conversion_amount_currency :string           default("CLP"), not null
 #
 # Indexes

@@ -116,7 +116,7 @@ describe Ledgerizer::Execution::Dsl do
       it do
         expect { perform }.to raise_error(
           "invalid movement with account: account1, accountable: " +
-            "User and currency: ars for given entry1 entry in debits"
+            "User and currency: ars (NO mirror currency) for given entry1 entry in debits"
         )
       end
     end

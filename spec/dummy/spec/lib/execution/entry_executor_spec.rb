@@ -7,6 +7,7 @@ describe Ledgerizer::EntryExecutor do
   let(:accountable_instance) { create(:user) }
   let(:entry_code) { :entry1 }
   let(:entry_time) { "1984-06-04".to_datetime }
+  let(:conversion_amount) { nil }
   let(:ledgerizer_config) { LedgerizerTestDefinition.definition }
 
   let(:executor) do
@@ -15,15 +16,16 @@ describe Ledgerizer::EntryExecutor do
       tenant: tenant_instance,
       document: document_instance,
       entry_code: entry_code,
-      entry_time: entry_time
+      entry_time: entry_time,
+      conversion_amount: conversion_amount
     )
   end
 
   let_definition_class do
     tenant('portfolio', currency: :clp) do
-      asset(:account1)
-      liability(:account2)
-      asset(:account3)
+      asset(:account1, currencies: [:usd])
+      liability(:account2, currencies: [:usd])
+      asset(:account3, currencies: [:usd])
 
       entry(:entry1, document: :deposit) do
         debit(account: :account1, accountable: :user)
@@ -43,38 +45,18 @@ describe Ledgerizer::EntryExecutor do
     end
   end
 
-  describe "#initialize" do
-    context "with non AR tenant" do
-      let(:tenant_instance) { LedgerizerTest.new }
-
-      it { expect { executor }.to raise_error(/instance of a class including LedgerizerTenant/) }
-    end
-
-    context "with invalid AR tenant" do
-      let(:tenant_instance) { create(:user) }
-
-      it { expect { executor }.to raise_error(/tenant must be an instance of a class including/) }
-    end
-
-    context "when entry code is not in tenant" do
-      let(:entry_code) { :entry666 }
-
-      it { expect { executor }.to raise_error("invalid entry code entry666 for given tenant") }
-    end
-  end
-
   describe "#add_new_movement" do
     def perform
       executor.add_new_movement(
         movement_type: :debit,
         account_name: :account1,
         accountable: accountable_instance,
-        amount: clp(1000)
+        amount: usd(1000)
       )
     end
 
     it { expect(perform).to be_a(Ledgerizer::Execution::Movement) }
-    it { expect { perform }.to change { executor.new_movements.count }.from(0).to(1) }
+    it { expect { perform }.to change { executor.send(:new_movements).count }.from(0).to(1) }
   end
 
   describe "#execute" do
@@ -158,6 +140,65 @@ describe Ledgerizer::EntryExecutor do
       it { expect(tenant_instance.entries.last).to have_ledger_line(expected_m2) }
     end
 
+    context "with defined conversion_amount" do
+      let(:conversion_amount) { clp(600) }
+      let(:mirror_currency) { "USD" }
+      let(:original_amount) { usd(2) }
+      let(:converted_amount) { clp(1200) }
+
+      let(:expected_entry) do
+        {
+          entry_code: entry_code,
+          entry_time: entry_time,
+          document: document_instance,
+          conversion_amount: conversion_amount,
+          mirror_currency: mirror_currency
+        }
+      end
+
+      let(:expected_m1) do
+        {
+          account_name: :account1,
+          accountable: accountable_instance,
+          amount: converted_amount,
+          balance: converted_amount,
+          mirror_currency: mirror_currency
+        }
+      end
+
+      let(:expected_m2) do
+        {
+          account_name: :account2,
+          accountable: accountable_instance,
+          amount: converted_amount,
+          balance: converted_amount,
+          mirror_currency: mirror_currency
+        }
+      end
+
+      before do
+        executor.add_new_movement(
+          movement_type: :debit,
+          account_name: :account1,
+          accountable: accountable_instance,
+          amount: original_amount
+        )
+
+        executor.add_new_movement(
+          movement_type: :credit,
+          account_name: :account2,
+          accountable: accountable_instance,
+          amount: original_amount
+        )
+
+        perform
+      end
+
+      it { expect(tenant_instance).to have_ledger_entry(expected_entry) }
+      it { expect(tenant_instance.entries.last).to have_ledger_line(expected_m1) }
+      it { expect(tenant_instance.entries.last).to have_ledger_line(expected_m2) }
+    end
+
     context "with multiple movements" do
       let(:entry_code) { :entry2 }
 
@@ -230,13 +271,15 @@ describe Ledgerizer::EntryExecutor do
     context "with adjustments" do
       let(:another_entry_code) { entry_code }
       let(:another_entry_time) { entry_time }
+      let(:another_conversion_amount) { conversion_amount }
       let(:another_executor) do
         described_class.new(
           config: ledgerizer_config,
           tenant: tenant_instance,
           document: document_instance,
           entry_code: another_entry_code,
-          entry_time: another_entry_time
+          entry_time: another_entry_time,
+          conversion_amount: another_conversion_amount
         )
       end
 

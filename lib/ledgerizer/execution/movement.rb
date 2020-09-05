@@ -7,7 +7,7 @@ module Ledgerizer
       attr_reader :accountable, :movement_definition
       attr_accessor :amount, :account_identifier
 
-      delegate :credit?, :debit?, :contra, :account_currency,
+      delegate :credit?, :debit?, :contra, :account_currency, :mirror_currency,
         :movement_type, :account_name, :account_type,
         to: :movement_definition, prefix: false
 
@@ -39,6 +39,10 @@ module Ledgerizer
 
       def signed_amount_currency
         signed_amount&.currency
+      end
+
+      def upcase_mirror_currency
+        format_to_upcase(mirror_currency)
       end
 
       private

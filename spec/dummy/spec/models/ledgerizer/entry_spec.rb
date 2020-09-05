@@ -18,42 +18,9 @@ module Ledgerizer
       it { is_expected.to validate_presence_of(:entry_time) }
       it { is_expected.to validate_presence_of(:tenant_type) }
       it { is_expected.to validate_presence_of(:tenant_id) }
-      it { is_expected.to monetize(:conversion_amount) }
+      it { is_expected.to monetize(:conversion_amount).allow_nil }
 
       it_behaves_like 'currency', :ledgerizer_entry, :mirror_currency
-
-      describe "conversion_amount presence" do
-        let(:conversion_amount) { clp(0) }
-        let(:mirror_currency) { nil }
-
-        let(:entry) do
-          build(
-            :ledgerizer_entry,
-            mirror_currency: mirror_currency,
-            conversion_amount: conversion_amount
-          )
-        end
-
-        it { expect(entry.save).to eq(true) }
-
-        context "with conversion_amount greater than zero" do
-          let(:conversion_amount) { clp(0.1) }
-
-          it { expect(entry.save).to eq(false) }
-        end
-
-        context "with mirror_currency entry" do
-          let(:mirror_currency) { "BTC" }
-
-          it { expect(entry.save).to eq(false) }
-
-          context "with conversion_amount greater than zero" do
-            let(:conversion_amount) { clp(0.1) }
-
-            it { expect(entry.save).to eq(true) }
-          end
-        end
-      end
     end
 
     describe "mirror_currency?" do

@@ -47,7 +47,7 @@ ActiveRecord::Schema.define(version: 2019_09_26_151926) do
     t.bigint "document_id"
     t.datetime "entry_time"
     t.string "mirror_currency"
-    t.bigint "conversion_amount_cents", default: 0
+    t.bigint "conversion_amount_cents"
     t.string "conversion_amount_currency", default: "CLP", null: false
     t.index ["document_type", "document_id"], name: "index_ledgerizer_entries_on_document_type_and_document_id"
     t.index ["tenant_id", "tenant_type", "document_id", "document_type", "code", "mirror_currency"], name: "unique_entry_index", unique: true
