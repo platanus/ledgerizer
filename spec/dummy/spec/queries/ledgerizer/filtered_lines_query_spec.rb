@@ -26,7 +26,7 @@ describe Ledgerizer::FilteredLinesQuery do
   it_behaves_like "filtered lines by syms collection", :force_account_name, :account_name
 
   it_behaves_like "filtered lines by predicated attribute",
-                  :amount, :amount, Money.from_amount(10, 'CLP')
+    :amount, :amount, Money.from_amount(10, 'CLP')
   it_behaves_like "filtered lines by predicated attribute",
-                  :force_entry_time, :entry_time, Date.current
+    :force_entry_time, :entry_time, Date.current
 end

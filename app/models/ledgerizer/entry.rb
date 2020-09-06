@@ -31,7 +31,8 @@ module Ledgerizer
         :entry, :entries,
         :entry_code, :entry_codes,
         :entry_time, :entry_times,
-        :document, :documents
+        :document, :documents,
+        :account_mirror_currency, :amount_currency
       ]
     end
 

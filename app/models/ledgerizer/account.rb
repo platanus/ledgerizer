@@ -29,7 +29,8 @@ module Ledgerizer
         :account_name, :account_names,
         :accountable, :accountables,
         :account_type, :account_types,
-        :account, :accounts
+        :account, :accounts,
+        :account_mirror_currency, :amount_currency
       ]
     end
 
