@@ -177,6 +177,85 @@ describe Ledgerizer::Execution::Dsl do
       it { expect(Ledgerizer::Entry.last).to have_ledger_line(credit_data) }
     end
 
+    context "with defined conversion_amount" do
+      let(:accountable1) { create(:user) }
+      let(:accountable2) { create(:user) }
+      let(:conversion_amount) { clp(600) }
+      let(:mirror_currency) { "USD" }
+      let(:expected_entry) do
+        {
+          entry_code: :entry1,
+          entry_time: datetime,
+          document: document,
+          conversion_amount: nil,
+          mirror_currency: nil
+        }
+      end
+
+      let(:expected_mirror_entry) do
+        {
+          entry_code: :entry1,
+          entry_time: datetime,
+          document: document,
+          conversion_amount: conversion_amount,
+          mirror_currency: mirror_currency
+        }
+      end
+
+      let(:debit_data) do
+        {
+          account: :account1,
+          accountable: accountable1,
+          amount: usd(2)
+        }
+      end
+
+      let(:credit_data) do
+        {
+          account: :account2,
+          accountable: accountable2,
+          amount: usd(2)
+        }
+      end
+
+      let(:mirror_debit_data) do
+        {
+          account: :account1,
+          accountable: accountable1,
+          amount: clp(1200),
+          mirror_currency: mirror_currency
+        }
+      end
+
+      let(:mirror_credit_data) do
+        {
+          account: :account2,
+          accountable: accountable2,
+          amount: clp(1200),
+          mirror_currency: mirror_currency
+        }
+      end
+
+      before do
+        LedgerizerTestExecution.new(debit: debit_data, credit: credit_data).execute_entry1_entry(
+          tenant: tenant,
+          document: document,
+          datetime: datetime,
+          conversion_amount: conversion_amount
+        ) do
+          debit(data[:debit])
+          credit(data[:credit])
+        end
+      end
+
+      it { expect(tenant).to have_ledger_entry(expected_entry) }
+      it { expect(tenant).to have_ledger_entry(expected_mirror_entry) }
+      it { expect(Ledgerizer::Entry.first).to have_ledger_line(debit_data) }
+      it { expect(Ledgerizer::Entry.first).to have_ledger_line(credit_data) }
+      it { expect(Ledgerizer::Entry.last).to have_ledger_line(mirror_debit_data) }
+      it { expect(Ledgerizer::Entry.last).to have_ledger_line(mirror_credit_data) }
+    end
+
     context "with valid movements in another valid currency" do
       let(:expected_entry) do
         {
