@@ -53,10 +53,15 @@ describe Ledgerizer::Definition::Tenant do
       )
     end
 
+    def accounts
+      tenant.send(:accounts)
+    end
+
     it { expect(perform.name).to eq(account_name) }
     it { expect(perform.type).to eq(account_type) }
     it { expect(perform.contra).to eq(contra) }
     it { expect(perform.currency).to eq(tenant.currency) }
+    it { expect(perform.mirror_currency).to be_nil }
 
     context "with repeated account" do
       let(:expected) do
@@ -71,8 +76,19 @@ describe Ledgerizer::Definition::Tenant do
     context "with different account currency" do
       let(:account_currency) { "USD" }
 
-      it { expect(perform.currency).to eq(:usd) }
-      it { expect(perform.currency).not_to eq(tenant.currency) }
+      before { perform }
+
+      it { expect(accounts.first.name).to eq(account_name) }
+      it { expect(accounts.first.type).to eq(account_type) }
+      it { expect(accounts.first.contra).to eq(contra) }
+      it { expect(accounts.first.currency).to eq(:usd) }
+      it { expect(accounts.first.mirror_currency).to be_nil }
+
+      it { expect(accounts.last.name).to eq(account_name) }
+      it { expect(accounts.last.type).to eq(account_type) }
+      it { expect(accounts.last.contra).to eq(contra) }
+      it { expect(accounts.last.currency).to eq(:clp) }
+      it { expect(accounts.last.mirror_currency).to eq(:usd) }
     end
   end
 

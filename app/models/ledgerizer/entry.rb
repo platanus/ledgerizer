@@ -21,10 +21,6 @@ module Ledgerizer
 
     monetize :conversion_amount_cents, allow_nil: true, numericality: { greater_than: 0.0 }
 
-    def mirror_currency?
-      mirror_currency.present?
-    end
-
     def forbidden_line_filters
       [
         :tenant, :tenants,

@@ -77,7 +77,7 @@ describe Ledgerizer::Definition::Entry do
     end
 
     context "with account currency having invalid format" do
-      before { search_params[:account_currency] = "CLP" }
+      before { search_params[:account_currency] = "USD" }
 
       it { expect(perform).to be_nil }
     end
@@ -95,7 +95,7 @@ describe Ledgerizer::Definition::Entry do
     end
 
     context "with mirror currency having invalid format" do
-      before { search_params[:mirror_currency] = "USD" }
+      before { search_params[:mirror_currency] = "CLP" }
 
       it { expect(perform).to be_nil }
     end

@@ -23,18 +23,6 @@ module Ledgerizer
       it_behaves_like 'currency', :ledgerizer_entry, :mirror_currency
     end
 
-    describe "mirror_currency?" do
-      let(:entry) { build(:ledgerizer_entry) }
-
-      it { expect(entry.mirror_currency?).to eq(false) }
-
-      context "with mirror_currency entry" do
-        let(:entry) { build(:ledgerizer_entry, :mirror_currency) }
-
-        it { expect(entry.mirror_currency?).to eq(true) }
-      end
-    end
-
     it_behaves_like "ledgerizer lines related", :ledgerizer_entry
 
     describe "#to_table" do

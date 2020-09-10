@@ -136,7 +136,7 @@ describe Ledgerizer::Execution::Account do
     end
 
     context "when different mirror currency" do
-      let(:other_currency) { "BTC" }
+      let(:other_mirror_currency) { "BTC" }
 
       it { expect(execution_account).not_to eq(other_account) }
     end

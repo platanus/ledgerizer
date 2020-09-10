@@ -102,7 +102,7 @@ describe Ledgerizer::Execution::Entry do
     it { expect { execution_entry }.to raise_error("invalid datetime given") }
   end
 
-  context "with conversion_amount" do
+  context "with invalid conversion_amount" do
     let(:conversion_amount) { "invalid" }
 
     it { expect { execution_entry }.to raise_error("invalid money") }
@@ -306,76 +306,32 @@ describe Ledgerizer::Execution::Entry do
       execution_entry.related_accounts.sort
     end
 
-    context "with no conversion amount" do
-      let(:conversion_amount) { nil }
-      let(:mirror_currency) { nil }
-      let(:amount) { clp(1) }
-
-      let(:expected_accounts) do
-        [
-          build(
-            :executable_account,
-            tenant: tenant_instance,
-            accountable: accountable1,
-            account_name: account_name1,
-            account_type: account_type1,
-            currency: amount.currency.to_s,
-            mirror_currency: mirror_currency
-          ),
-          build(
-            :executable_account,
-            tenant: tenant_instance,
-            accountable: accountable2,
-            account_name: account_name2,
-            account_type: account_type2,
-            currency: amount.currency.to_s,
-            mirror_currency: mirror_currency
-          ),
-          build(
-            :executable_account,
-            tenant: tenant_instance,
-            accountable: accountable3,
-            account_name: account_name2,
-            account_type: account_type2,
-            currency: amount.currency.to_s,
-            mirror_currency: mirror_currency
-          )
-        ]
-      end
-
-      before do
-        execution_entry.add_new_movement(
-          movement_type: :debit,
-          account_name: account_name1,
-          accountable: accountable1,
-          amount: amount
-        )
-
-        execution_entry.add_new_movement(
-          movement_type: :credit,
-          account_name: account_name2,
-          accountable: accountable2,
-          amount: amount
-        )
-
-        execution_entry.add_new_movement(
-          movement_type: :credit,
-          account_name: account_name2,
-          accountable: accountable3,
-          amount: amount
-        )
-      end
-
-      it { expect(perform).to eq(expected_accounts) }
-
-      context "with persisted entry adding a new account" do
-        let(:accountable4) { create(:user) }
-        let(:updated_expected_accounts) do
-          expected_accounts + [
+    shared_examples 'related_accounts' do
+      context "with no conversion amount" do
+        let(:expected_accounts) do
+          [
             build(
               :executable_account,
               tenant: tenant_instance,
-              accountable: accountable4,
+              accountable: accountable1,
+              account_name: account_name1,
+              account_type: account_type1,
+              currency: amount.currency.to_s,
+              mirror_currency: mirror_currency
+            ),
+            build(
+              :executable_account,
+              tenant: tenant_instance,
+              accountable: accountable2,
+              account_name: account_name2,
+              account_type: account_type2,
+              currency: amount.currency.to_s,
+              mirror_currency: mirror_currency
+            ),
+            build(
+              :executable_account,
+              tenant: tenant_instance,
+              accountable: accountable3,
               account_name: account_name2,
               account_type: account_type2,
               currency: amount.currency.to_s,
@@ -385,160 +341,96 @@ describe Ledgerizer::Execution::Entry do
         end
 
         before do
-          create(
-            :ledgerizer_line,
-            entry: entry,
-            account: create(
-              :ledgerizer_account,
-              tenant: tenant_instance,
-              name: account_name2,
-              accountable: accountable4,
-              account_type: account_type2,
-              currency: amount.currency.to_s,
-              mirror_currency: mirror_currency
-            )
-          )
-        end
-
-        it { expect(perform).to eq(updated_expected_accounts) }
-      end
-
-      context "with previous entry not adding a new account" do
-        before do
-          create(
-            :ledgerizer_line,
-            entry: entry,
-            account: create(
-              :ledgerizer_account,
-              tenant: tenant_instance,
-              name: account_name1,
-              accountable: accountable1,
-              account_type: account_type1,
-              currency: amount.currency.to_s,
-              mirror_currency: mirror_currency
-            )
-          )
-        end
-
-        it { expect(perform).to eq(expected_accounts) }
-      end
-    end
-
-    context "with entry with defined conversion amount" do
-      let(:conversion_amount) { clp(600) }
-      let(:amount) { usd(1) }
-      let(:mirror_currency) { "USD" }
-
-      let(:expected_accounts) do
-        [
-          build(
-            :executable_account,
-            tenant: tenant_instance,
-            accountable: accountable1,
+          execution_entry.add_new_movement(
+            movement_type: :debit,
             account_name: account_name1,
-            account_type: account_type1,
-            currency: conversion_amount.currency.to_s,
-            mirror_currency: amount.currency.to_s
-          ),
-          build(
-            :executable_account,
-            tenant: tenant_instance,
+            accountable: accountable1,
+            amount: amount
+          )
+
+          execution_entry.add_new_movement(
+            movement_type: :credit,
+            account_name: account_name2,
             accountable: accountable2,
+            amount: amount
+          )
+
+          execution_entry.add_new_movement(
+            movement_type: :credit,
             account_name: account_name2,
-            account_type: account_type2,
-            currency: conversion_amount.currency.to_s,
-            mirror_currency: amount.currency.to_s
-          ),
-          build(
-            :executable_account,
-            tenant: tenant_instance,
             accountable: accountable3,
-            account_name: account_name2,
-            account_type: account_type2,
-            currency: conversion_amount.currency.to_s,
-            mirror_currency: amount.currency.to_s
-          )
-        ]
-      end
-
-      before do
-        execution_entry.add_new_movement(
-          movement_type: :debit,
-          account_name: account_name1,
-          accountable: accountable1,
-          amount: amount
-        )
-
-        execution_entry.add_new_movement(
-          movement_type: :credit,
-          account_name: account_name2,
-          accountable: accountable2,
-          amount: amount
-        )
-
-        execution_entry.add_new_movement(
-          movement_type: :credit,
-          account_name: account_name2,
-          accountable: accountable3,
-          amount: amount
-        )
-      end
-
-      it { expect(perform).to eq(expected_accounts) }
-
-      context "with persisted entry adding a new account" do
-        let(:accountable4) { create(:user) }
-        let(:updated_expected_accounts) do
-          expected_accounts + [
-            build(
-              :executable_account,
-              tenant: tenant_instance,
-              accountable: accountable4,
-              account_name: account_name2,
-              account_type: account_type2,
-              currency: conversion_amount.currency.to_s,
-              mirror_currency: amount.currency.to_s
-            )
-          ]
-        end
-
-        before do
-          create(
-            :ledgerizer_line,
-            entry: entry,
-            account: create(
-              :ledgerizer_account,
-              tenant: tenant_instance,
-              name: account_name2,
-              accountable: accountable4,
-              account_type: account_type2,
-              currency: conversion_amount.currency.to_s,
-              mirror_currency: amount.currency.to_s
-            )
-          )
-        end
-
-        it { expect(perform).to eq(updated_expected_accounts) }
-      end
-
-      context "with previous entry not adding a new account" do
-        before do
-          create(
-            :ledgerizer_line,
-            entry: entry,
-            account: create(
-              :ledgerizer_account,
-              tenant: tenant_instance,
-              name: account_name1,
-              accountable: accountable1,
-              account_type: account_type1,
-              currency: conversion_amount.currency.to_s,
-              mirror_currency: amount.currency.to_s
-            )
+            amount: amount
           )
         end
 
         it { expect(perform).to eq(expected_accounts) }
+
+        context "with persisted entry adding a new account" do
+          let(:accountable4) { create(:user) }
+          let(:updated_expected_accounts) do
+            expected_accounts + [
+              build(
+                :executable_account,
+                tenant: tenant_instance,
+                accountable: accountable4,
+                account_name: account_name2,
+                account_type: account_type2,
+                currency: amount.currency.to_s,
+                mirror_currency: mirror_currency
+              )
+            ]
+          end
+
+          before do
+            create(
+              :ledgerizer_line,
+              entry: entry,
+              account: create(
+                :ledgerizer_account,
+                tenant: tenant_instance,
+                name: account_name2,
+                accountable: accountable4,
+                account_type: account_type2,
+                currency: amount.currency.to_s,
+                mirror_currency: mirror_currency
+              )
+            )
+          end
+
+          it { expect(perform).to eq(updated_expected_accounts) }
+        end
+
+        context "with previous entry not adding a new account" do
+          before do
+            create(
+              :ledgerizer_line,
+              entry: entry,
+              account: create(
+                :ledgerizer_account,
+                tenant: tenant_instance,
+                name: account_name1,
+                accountable: accountable1,
+                account_type: account_type1,
+                currency: amount.currency.to_s,
+                mirror_currency: mirror_currency
+              )
+            )
+          end
+
+          it { expect(perform).to eq(expected_accounts) }
+        end
+      end
+
+      it_behaves_like 'related_accounts' do
+        let(:conversion_amount) { nil }
+        let(:mirror_currency) { nil }
+        let(:amount) { clp(1) }
+      end
+
+      it_behaves_like 'related_accounts' do
+        let(:conversion_amount) { clp(600) }
+        let(:amount) { usd(1) }
+        let(:mirror_currency) { "USD" }
       end
     end
   end

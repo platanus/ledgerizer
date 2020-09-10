@@ -431,7 +431,7 @@ class DepositCreator
 end
 ```
 
-obtendermos 2 entries. La primera contendrá líneas por los 10 USD (monto original) y la segunda por su equivalente en la moneda del tenant (CLP). En este caso, dos líneas de 6000 CLP que es el resultado de multiplicar 10 USD x 600 CLP (valor de conversión).
+obtendremos 2 entries. La primera contendrá líneas por los 10 USD (monto original) y la segunda por su equivalente en la moneda del tenant (CLP). En este caso, dos líneas de 6000 CLP que es el resultado de multiplicar 10 USD x 600 CLP (valor de conversión).
 > Cabe destacar que además se generarán cuentas especiales para llevar el balance de estos montos convertidos.
 
 
