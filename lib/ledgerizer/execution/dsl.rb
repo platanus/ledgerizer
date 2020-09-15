@@ -20,22 +20,22 @@ module Ledgerizer
           entry_code_from_method(method_name) || super
         end
 
-        def execute_entry(entry_code, tenant:, document:, datetime:, &block)
+        def execute_entry(entry_code, tenant:, document:, datetime:, conversion_amount: nil, &block)
           in_context(:execute_entry) do
-            @executor = Ledgerizer::EntryExecutor.new(
-              config: definition,
-              tenant: tenant,
-              document: document,
-              entry_code: entry_code,
-              entry_time: datetime
-            )
+            executor_params = {
+              config: definition, tenant: tenant,
+              document: document, entry_code: entry_code, entry_time: datetime,
+              conversion_amount: nil
+            }
 
-            instance_eval(&block) if block
-            @executor.execute
+            create_entry(executor_params, &block)
+
+            if conversion_amount
+              executor_params[:conversion_amount] = conversion_amount
+              create_entry(executor_params, &block)
+            end
           end
           nil
-        ensure
-          @executor = nil
         end
 
         def debit(account:, amount:, accountable: nil)
@@ -66,6 +66,14 @@ module Ledgerizer
           return if method_parts.first != 'execute' || method_parts.last != 'entry'
 
           method_parts[1].to_sym
+        end
+
+        def create_entry(executor_params, &block)
+          @executor = Ledgerizer::EntryExecutor.new(executor_params)
+          instance_eval(&block) if block
+          @executor.execute
+        ensure
+          @executor = nil
         end
 
         def definition

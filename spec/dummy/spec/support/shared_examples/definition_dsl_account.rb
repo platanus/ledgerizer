@@ -7,7 +7,9 @@ shared_examples 'definition dsl account' do |acc_type|
     end
 
     it "raises error with repeated accounts" do
-      expect_error_in_definition_class(/the account1 account with clp currency already exist/) do
+      expect_error_in_definition_class(
+        /the account1 account with clp currency and no mirror currency already exists in tenant/
+      ) do
         tenant('portfolio') do
           send(acc_type, :account1)
           send(acc_type, :account1)
@@ -52,20 +54,30 @@ shared_examples 'definition dsl account' do |acc_type|
       end
 
       let(:expected_clp) do
-        expected_account.merge(account_currency: :clp)
+        expected_account.merge(account_currency: :clp, mirror_currency: nil)
       end
 
       let(:expected_usd) do
-        expected_account.merge(account_currency: :usd)
+        expected_account.merge(account_currency: :usd, mirror_currency: nil)
       end
 
       let(:expected_ars) do
-        expected_account.merge(account_currency: :ars)
+        expected_account.merge(account_currency: :ars, mirror_currency: nil)
+      end
+
+      let(:expected_usd_mirror) do
+        expected_account.merge(account_currency: :clp, mirror_currency: :usd)
+      end
+
+      let(:expected_ars_mirror) do
+        expected_account.merge(account_currency: :clp, mirror_currency: :ars)
       end
 
       it { expect(LedgerizerTestDefinition).to have_ledger_account_definition(expected_clp) }
       it { expect(LedgerizerTestDefinition).to have_ledger_account_definition(expected_usd) }
       it { expect(LedgerizerTestDefinition).to have_ledger_account_definition(expected_ars) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_account_definition(expected_usd_mirror) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_account_definition(expected_ars_mirror) }
     end
 
     context "with account with another currency and explicit tenant's currency" do

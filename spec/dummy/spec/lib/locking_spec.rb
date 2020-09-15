@@ -149,6 +149,7 @@ describe Ledgerizer::Locking do
     let(:entry_code) { :entry1 }
     let(:entry_time) { "1984-06-04" }
     let(:ledgerizer_config) { LedgerizerTestDefinition.definition }
+    let(:conversion_amount) { nil }
 
     let(:executor) do
       Ledgerizer::EntryExecutor.new(
@@ -156,7 +157,8 @@ describe Ledgerizer::Locking do
         tenant: tenant_instance,
         document: document_instance,
         entry_code: entry_code,
-        entry_time: entry_time
+        entry_time: entry_time,
+        conversion_amount: conversion_amount
       )
     end
 

@@ -3,6 +3,8 @@ module Ledgerizer
     class Account
       include Ledgerizer::Formatters
 
+      attr_reader :mirror_currency
+
       def initialize(
         tenant_id:,
         tenant_type:,
@@ -10,7 +12,8 @@ module Ledgerizer
         accountable_type:,
         account_type:,
         account_name:,
-        currency:
+        currency:,
+        mirror_currency:
       )
         @tenant_id = tenant_id
         @tenant_type = tenant_type
@@ -19,6 +22,7 @@ module Ledgerizer
         @account_type = account_type
         @account_name = account_name
         @currency = format_currency(currency, strategy: :upcase, use_default: false)
+        @mirror_currency = format_currency(mirror_currency, strategy: :upcase, use_default: false)
       end
 
       def ==(other)
@@ -41,7 +45,8 @@ module Ledgerizer
           accountable_id,
           account_type,
           account_name,
-          currency
+          currency,
+          mirror_currency
         ].map(&:to_s)
       end
 
@@ -53,7 +58,8 @@ module Ledgerizer
           accountable_type: accountable_type,
           account_type: account_type,
           name: account_name,
-          currency: currency
+          currency: currency,
+          mirror_currency: mirror_currency
         }
       end
 
@@ -64,6 +70,7 @@ module Ledgerizer
       def balance
         params = to_hash.dup
         params[:account_name] = params.delete(:name)
+        params[:account_mirror_currency] = params.delete(:mirror_currency)
         balance_currency = params.delete(:currency)
         Ledgerizer::Line.where(params).amounts_sum(balance_currency)
       end

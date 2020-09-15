@@ -1,13 +1,23 @@
-RSpec::Matchers.define :have_ledger_entry do |entry_code:, entry_time:, document:|
+# rubocop:disable Layout/LineLength
+RSpec::Matchers.define :have_ledger_entry do |entry_code:, entry_time:, document:, conversion_amount: nil, mirror_currency: nil|
   match do |tenant|
-    !!Ledgerizer::Entry.find_by(
+    entry_params = {
       tenant_id: tenant.id,
       tenant_type: tenant.class.to_s,
       code: entry_code,
       document_id: document.id,
       document_type: document.class.to_s,
-      entry_time: entry_time
-    )
+      entry_time: entry_time,
+      mirror_currency: mirror_currency,
+      conversion_amount_cents: nil
+    }
+
+    if conversion_amount
+      entry_params[:conversion_amount_cents] = conversion_amount.cents
+      entry_params[:conversion_amount_currency] = conversion_amount.currency.to_s
+    end
+
+    !!Ledgerizer::Entry.find_by(entry_params)
   end
 
   description do
@@ -19,9 +29,7 @@ RSpec::Matchers.define :have_ledger_entry do |entry_code:, entry_time:, document
   end
 end
 
-RSpec::Matchers.define :have_ledger_line do |
-  accountable:, amount:, balance: nil, account_name: nil, account: nil
-|
+RSpec::Matchers.define :have_ledger_line do |accountable:, amount:, balance: nil, account_name: nil, account: nil, mirror_currency: nil|
   acc = account_name || account
   fail "missing account_name" unless acc
 
@@ -33,13 +41,13 @@ RSpec::Matchers.define :have_ledger_line do |
       name: acc,
       accountable_id: accountable&.id,
       accountable_type: accountable.blank? ? nil : accountable.class.to_s,
+      mirror_currency: mirror_currency,
       currency: currency
     )
 
     line_params = {
       amount_cents: amount.cents,
-      amount_currency: currency,
-      account: account
+      amount_currency: currency
     }
 
     if balance
@@ -58,3 +66,4 @@ RSpec::Matchers.define :have_ledger_line do |
     "line with given params is not in entry"
   end
 end
+# rubocop:enable Layout/LineLength

@@ -9,6 +9,7 @@ module Ledgerizer
       { name: :entry_code, filter_type: :attribute },
       { name: :account_type, filter_type: :attribute },
       { name: :amount_currency, filter_type: :attribute },
+      { name: :account_mirror_currency, filter_type: :attribute },
 
       { name: :tenant, filter_type: :polym_attr },
       { name: :document, filter_type: :polym_attr },
@@ -86,9 +87,9 @@ module Ledgerizer
     end
 
     def filter_by_attribute(query, config)
-      filter_value = filters[config[:name]]
-      return query if filter_value.blank?
+      return query unless filters.has_key?(config[:name])
 
+      filter_value = filters[config[:name]]
       query.where(config[:name] => filter_value)
     end
 

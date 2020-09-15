@@ -4,7 +4,7 @@ describe Ledgerizer::Definition::Tenant do
   subject(:tenant) { build(:tenant_definition, model_name: model_name, currency: currency) }
 
   let(:model_name) { "portfolio" }
-  let(:currency) { nil }
+  let(:currency) { "CLP" }
 
   describe "#model_name" do
     it { expect(tenant.model_name).to eq(:portfolio) }
@@ -53,22 +53,42 @@ describe Ledgerizer::Definition::Tenant do
       )
     end
 
+    def accounts
+      tenant.send(:accounts)
+    end
+
     it { expect(perform.name).to eq(account_name) }
     it { expect(perform.type).to eq(account_type) }
     it { expect(perform.contra).to eq(contra) }
     it { expect(perform.currency).to eq(tenant.currency) }
+    it { expect(perform.mirror_currency).to be_nil }
 
     context "with repeated account" do
+      let(:expected) do
+        /cash account with clp currency and no mirror currency already exists/
+      end
+
       before { perform }
 
-      it { expect { perform }.to raise_error(/cash account with clp currency already exists/) }
+      it { expect { perform }.to raise_error(expected) }
     end
 
     context "with different account currency" do
       let(:account_currency) { "USD" }
 
-      it { expect(perform.currency).to eq(:usd) }
-      it { expect(perform.currency).not_to eq(tenant.currency) }
+      before { perform }
+
+      it { expect(accounts.first.name).to eq(account_name) }
+      it { expect(accounts.first.type).to eq(account_type) }
+      it { expect(accounts.first.contra).to eq(contra) }
+      it { expect(accounts.first.currency).to eq(:usd) }
+      it { expect(accounts.first.mirror_currency).to be_nil }
+
+      it { expect(accounts.last.name).to eq(account_name) }
+      it { expect(accounts.last.type).to eq(account_type) }
+      it { expect(accounts.last.contra).to eq(contra) }
+      it { expect(accounts.last.currency).to eq(:clp) }
+      it { expect(accounts.last.mirror_currency).to eq(:usd) }
     end
   end
 
@@ -116,21 +136,29 @@ describe Ledgerizer::Definition::Tenant do
     it { expect { movements }.to change { entry.movements.count }.from(0).to(1) }
     it { expect(movements.first.account_name).to eq(:cash) }
     it { expect(movements.first.account_currency).to eq(:clp) }
+    it { expect(movements.first.mirror_currency).to be_nil }
     it { expect(movements.first.accountable).to eq(:user) }
 
-    context "with another account with same config but different currency" do
+    context "with another account with same config but not tenant's currency" do
       let!(:another_account) do
         tenant.add_account(name: :cash, type: :asset, account_currency: :usd)
       end
 
-      it { expect { movements }.to change { entry.movements.count }.from(0).to(2) }
+      it { expect { movements }.to change { entry.movements.count }.from(0).to(3) }
 
       it { expect(movements.first.account_name).to eq(:cash) }
       it { expect(movements.first.account_currency).to eq(:clp) }
+      it { expect(movements.first.mirror_currency).to be_nil }
       it { expect(movements.first.accountable).to eq(:user) }
 
+      it { expect(movements.second.account_name).to eq(:cash) }
+      it { expect(movements.second.account_currency).to eq(:usd) }
+      it { expect(movements.second.mirror_currency).to be_nil }
+      it { expect(movements.second.accountable).to eq(:user) }
+
       it { expect(movements.last.account_name).to eq(:cash) }
-      it { expect(movements.last.account_currency).to eq(:usd) }
+      it { expect(movements.last.account_currency).to eq(:clp) }
+      it { expect(movements.last.mirror_currency).to eq(:usd) }
       it { expect(movements.last.accountable).to eq(:user) }
     end
 

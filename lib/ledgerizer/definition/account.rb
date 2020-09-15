@@ -4,17 +4,18 @@ module Ledgerizer
       include Ledgerizer::Formatters
       include Ledgerizer::Validators
 
-      attr_reader :name, :type, :contra, :currency
+      attr_reader :name, :type, :contra, :currency, :mirror_currency
 
       DEBIT_TYPES = %i{asset expense}
       CREDIT_TYPES = %i{liability income equity}
       TYPES = CREDIT_TYPES + DEBIT_TYPES
 
-      def initialize(name:, type:, currency:, contra: false)
+      def initialize(name:, type:, currency:, mirror_currency: nil, contra: false)
         validate_account_type!(type)
         @name = format_to_symbol_identifier(name)
         @type = format_to_symbol_identifier(type)
         @currency = format_currency(currency)
+        @mirror_currency = format_currency(mirror_currency, use_default: false)
         @contra = !!contra
       end
 

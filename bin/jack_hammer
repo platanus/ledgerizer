@@ -158,7 +158,8 @@ def run_process(iterations, process_num)
       tenant: $tenant,
       document: $test_dup_entries ? doc : Deposit.create!,
       entry_code: :test,
-      entry_time: time
+      entry_time: time,
+      conversion_amount: nil
     )
 
     executor.add_new_movement(

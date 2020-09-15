@@ -19,7 +19,8 @@ describe Ledgerizer::Execution::Movement do
         name: account_name,
         type: account_type,
         contra: contra,
-        currency: currency
+        currency: currency,
+        mirror_currency: mirror_currency
       }
     }
   end
@@ -33,12 +34,14 @@ describe Ledgerizer::Execution::Movement do
   let(:contra) { false }
   let(:allow_negative_amount) { false }
   let(:currency) { "CLP" }
+  let(:mirror_currency) { "USD" }
 
   it { expect(movement.credit?).to eq(false) }
   it { expect(movement.debit?).to eq(true) }
   it { expect(movement.contra).to eq(contra) }
   it { expect(movement.account_currency).to eq(:clp) }
   it { expect(movement.movement_type).to eq(movement_type) }
+  it { expect(movement.mirror_currency).to eq(:usd) }
 
   context "with amount with currency that is not the tenant's currency" do
     let(:amount) { usd(1000) }

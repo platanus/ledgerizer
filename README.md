@@ -414,6 +414,27 @@ Tener en cuenta:
 - Siempre las cuentas se crean en la moneda base definida en el tenant. Es decir que si omites la opción `currencies`, se asumirá que esa cuenta tiene la misma moneda que el tenant.
 - Si no se define la opción `currency` en el tenant, se usará la que viene por defecto en la gema Money (`Money.default_currency`). Es decir, siempre existirá una moneda base.
 
+#### Cuentas espejo
+
+Opcionalmente en entries que trabajan con cuentas multicurrency se puede especificar un `conversion_amount`. Al hacer esto, si corremos el siguiente código:
+
+```ruby
+class DepositCreator
+  include Ledgerizer::Execution::Dsl
+
+  def perform
+    execute_user_deposit_entry(tenant: Portfolio.new, document: UserDeposit.first, datetime: "1984-06-04", conversion_amount: Money.from_amount(600, 'CLP')) do
+      debit(account: :bank, accountable: Bank.first, amount: Money.from_amount(10, 'USD'))
+      credit(account: :funds_to_invest, accountable: User.first, amount: Money.from_amount(10, 'USD'))
+    end
+  end
+end
+```
+
+obtendremos 2 entries. La primera contendrá líneas por los 10 USD (monto original) y la segunda por su equivalente en la moneda del tenant (CLP). En este caso, dos líneas de 6000 CLP que es el resultado de multiplicar 10 USD x 600 CLP (valor de conversión).
+> Cabe destacar que además se generarán cuentas especiales para llevar el balance de estos montos convertidos.
+
+
 ## Testing
 
 To run the specs you need to execute, **in the root path of the gem**, the following command:

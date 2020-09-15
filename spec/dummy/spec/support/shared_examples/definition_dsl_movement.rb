@@ -54,6 +54,7 @@ shared_examples 'definition dsl movement' do |type|
           movement_type: type,
           account_name: :cash,
           account_currency: :clp,
+          mirror_currency: nil,
           accountable: :user
         }
       end
@@ -79,6 +80,7 @@ shared_examples 'definition dsl movement' do |type|
           movement_type: type,
           account_name: :cash,
           account_currency: :clp,
+          mirror_currency: nil,
           accountable: nil
         }
       end
@@ -106,6 +108,7 @@ shared_examples 'definition dsl movement' do |type|
           movement_type: type,
           account_name: :cash,
           account_currency: :clp,
+          mirror_currency: nil,
           accountable: :user
         }
       end
@@ -117,6 +120,7 @@ shared_examples 'definition dsl movement' do |type|
           movement_type: type,
           account_name: :bank,
           account_currency: :clp,
+          mirror_currency: nil,
           accountable: :user
         }
       end
@@ -149,6 +153,7 @@ shared_examples 'definition dsl movement' do |type|
           movement_type: type,
           account_name: :cash,
           account_currency: :clp,
+          mirror_currency: nil,
           accountable: :user
         }
       end
@@ -160,6 +165,7 @@ shared_examples 'definition dsl movement' do |type|
           movement_type: type,
           account_name: :bank,
           account_currency: :clp,
+          mirror_currency: nil,
           accountable: :user
         }
       end
@@ -171,6 +177,7 @@ shared_examples 'definition dsl movement' do |type|
           movement_type: type,
           account_name: :cash,
           account_currency: :clp,
+          mirror_currency: nil,
           accountable: :user
         }
       end
@@ -178,6 +185,99 @@ shared_examples 'definition dsl movement' do |type|
       it { expect(LedgerizerTestDefinition).to have_ledger_movement_definition(expected_cash) }
       it { expect(LedgerizerTestDefinition).to have_ledger_movement_definition(expected_bank) }
       it { expect(LedgerizerTestDefinition).to have_ledger_movement_definition(expected_cash1) }
+    end
+
+    context "with entries working with currencies different than tenant's currency" do
+      let_definition_class do
+        tenant('portfolio', currency: :clp) do
+          asset(:cash, currencies: [:clp, :usd])
+          asset(:bank, currencies: [:clp, :usd])
+
+          entry(:deposit, document: :deposit) do
+            send(type, account: :cash, accountable: :user)
+            send(type, account: :bank, accountable: :user)
+          end
+        end
+      end
+
+      let(:cash_clp) do
+        {
+          tenant_class: :portfolio,
+          entry_code: :deposit,
+          movement_type: type,
+          account_name: :cash,
+          account_currency: :clp,
+          mirror_currency: nil,
+          accountable: :user
+        }
+      end
+
+      let(:bank_clp) do
+        {
+          tenant_class: :portfolio,
+          entry_code: :deposit,
+          movement_type: type,
+          account_name: :bank,
+          account_currency: :clp,
+          mirror_currency: nil,
+          accountable: :user
+        }
+      end
+
+      let(:cash_usd) do
+        {
+          tenant_class: :portfolio,
+          entry_code: :deposit,
+          movement_type: type,
+          account_name: :cash,
+          account_currency: :usd,
+          mirror_currency: nil,
+          accountable: :user
+        }
+      end
+
+      let(:bank_usd) do
+        {
+          tenant_class: :portfolio,
+          entry_code: :deposit,
+          movement_type: type,
+          account_name: :bank,
+          account_currency: :usd,
+          mirror_currency: nil,
+          accountable: :user
+        }
+      end
+
+      let(:cash_mirror) do
+        {
+          tenant_class: :portfolio,
+          entry_code: :deposit,
+          movement_type: type,
+          account_name: :cash,
+          account_currency: :clp,
+          mirror_currency: :usd,
+          accountable: :user
+        }
+      end
+
+      let(:bank_mirror) do
+        {
+          tenant_class: :portfolio,
+          entry_code: :deposit,
+          movement_type: type,
+          account_name: :bank,
+          account_currency: :clp,
+          mirror_currency: :usd,
+          accountable: :user
+        }
+      end
+
+      it { expect(LedgerizerTestDefinition).to have_ledger_movement_definition(cash_clp) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_movement_definition(bank_clp) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_movement_definition(cash_usd) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_movement_definition(bank_usd) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_movement_definition(cash_mirror) }
+      it { expect(LedgerizerTestDefinition).to have_ledger_movement_definition(bank_mirror) }
     end
   end
 end

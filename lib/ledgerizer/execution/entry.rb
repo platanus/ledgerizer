@@ -6,12 +6,11 @@ module Ledgerizer
 
       attr_reader :document, :entry_time
 
-      delegate :code, to: :entry_definition, prefix: false
-
-      def initialize(config:, tenant:, document:, entry_code:, entry_time:)
-        tenant_definition = get_tenant_definition!(config, tenant)
+      def initialize(config:, tenant:, document:, entry_code:, entry_time:, conversion_amount:)
+        @tenant_definition = get_tenant_definition!(config, tenant)
         @tenant = tenant
-        @entry_definition = get_entry_definition!(tenant_definition, entry_code)
+        @entry_definition = get_entry_definition!(@tenant_definition, entry_code)
+        @conversion_amount = get_conversion_amount!(conversion_amount)
         validate_entry_document!(document)
         @document = document
         validate_datetime!(entry_time)
@@ -19,13 +18,17 @@ module Ledgerizer
       end
 
       def add_new_movement(movement_type:, account_name:, accountable:, amount:)
+        validate_money!(amount)
+        validate_accountable!(accountable)
+        calculated_amount = calculate_amount(amount)
+        mirror_currency = get_movement_mirror_currency(amount)
         movement_definition = get_movement_definition!(
-          movement_type, account_name, accountable, amount
+          movement_type, account_name, accountable, calculated_amount, mirror_currency
         )
         movement = Ledgerizer::Execution::Movement.new(
           movement_definition: movement_definition,
           accountable: accountable,
-          amount: amount
+          amount: calculated_amount
         )
 
         new_movements << movement
@@ -51,21 +54,13 @@ module Ledgerizer
 
       private
 
-      attr_reader :entry_definition, :tenant
+      attr_reader :entry_definition, :tenant_definition, :tenant, :conversion_amount
 
       def find_or_create_entry_instance
-        entry_data = {
-          code: code,
-          document_id: document.to_id_attr,
-          document_type: document.to_type_attr,
-          entry_time: entry_time,
-          tenant_id: tenant.to_id_attr,
-          tenant_type: tenant.to_type_attr
-        }
-        entry = tenant.entries.find_by(entry_data)
+        entry = tenant.entries.find_by(find_entry_params)
         return entry if entry
 
-        Ledgerizer::Entry.create!(entry_data)
+        Ledgerizer::Entry.create!(create_entry_params)
       end
 
       def accounts_from_new_movements
@@ -77,7 +72,8 @@ module Ledgerizer
             accountable_type: movement.accountable&.to_type_attr,
             account_name: movement.account_name.to_sym,
             account_type: movement.account_type.to_sym,
-            currency: movement.signed_amount_currency.to_s
+            currency: movement.signed_amount_currency.to_s,
+            mirror_currency: movement.upcase_mirror_currency
           )
           movement.account_identifier = account.identifier
           account
@@ -93,9 +89,77 @@ module Ledgerizer
             accountable_type: account.accountable_type,
             account_name: account.name.to_sym,
             account_type: get_movement_definition_from_account(account).account_type.to_sym,
-            currency: account.balance_currency
+            currency: account.balance_currency,
+            mirror_currency: account.mirror_currency
           )
         end
+      end
+
+      def find_entry_params
+        @find_entry_params ||= begin
+          {
+            code: entry_definition.code,
+            tenant_id: tenant.to_id_attr,
+            tenant_type: tenant.to_type_attr,
+            document_id: document.to_id_attr,
+            document_type: document.to_type_attr,
+            entry_time: entry_time,
+            mirror_currency: get_entry_mirror_currency
+          }
+        end
+      end
+
+      def create_entry_params
+        @create_entry_params ||= begin
+          if conversion_amount.blank?
+            find_entry_params
+          else
+            conversion_amount_data = {
+              conversion_amount_cents: conversion_amount_cents,
+              conversion_amount_currency: conversion_amount_currency
+            }
+
+            find_entry_params.merge(conversion_amount_data)
+          end
+        end
+      end
+
+      def calculate_amount(original_amount)
+        return original_amount if conversion_amount.blank?
+
+        validate_amount_currency_different_from_conversion_amount_currency!(original_amount)
+        original_amount.convert_to(conversion_amount)
+      end
+
+      def get_conversion_amount!(amount)
+        return if amount.blank?
+
+        validate_money!(amount)
+        validate_conversion_amount_currency!(amount)
+        validate_positive_money!(amount)
+        amount
+      end
+
+      def conversion_amount_cents
+        conversion_amount&.cents
+      end
+
+      def conversion_amount_currency
+        return if conversion_amount.blank?
+
+        conversion_amount.currency.to_s
+      end
+
+      def get_movement_mirror_currency(amount)
+        return if conversion_amount.blank?
+
+        format_currency(amount.currency.to_s, strategy: :symbol, use_default: false)
+      end
+
+      def get_entry_mirror_currency
+        mirror_currencies = accounts_from_new_movements.map(&:mirror_currency).uniq
+        raise_error("accounts with mixed mirror currency") if mirror_currencies.count > 1
+        mirror_currencies.first
       end
 
       def validate_entry_document!(document)
@@ -106,12 +170,13 @@ module Ledgerizer
         end
       end
 
-      def get_movement_definition!(movement_type, account_name, accountable, amount)
-        validate_accountable(accountable)
-        account_currency = extract_currency_from_amount(amount)
+      def get_movement_definition!(
+        movement_type, account_name, accountable, amount, mirror_currency
+      )
+        account_currency = format_currency(amount.currency.to_s, strategy: :symbol)
         movement_definition = entry_definition.find_movement(
-          account_name: account_name, account_currency: account_currency,
-          movement_type: movement_type, accountable: accountable
+          account_name: account_name, movement_type: movement_type, accountable: accountable,
+          account_currency: account_currency, mirror_currency: mirror_currency
         )
         return movement_definition if movement_definition
 
@@ -120,16 +185,12 @@ module Ledgerizer
           entry_definition: entry_definition,
           account_name: account_name,
           account_currency: account_currency,
+          mirror_currency: mirror_currency,
           accountable: accountable
         )
       end
 
-      def extract_currency_from_amount(amount)
-        validate_money!(amount)
-        format_currency(amount.currency.to_s, strategy: :symbol)
-      end
-
-      def validate_accountable(accountable)
+      def validate_accountable!(accountable)
         if accountable
           validate_ledgerized_instance!(
             accountable, "accountable", LedgerizerAccountable
@@ -143,6 +204,9 @@ module Ledgerizer
             movement_type: movement_type,
             account_name: format_to_symbol_identifier(account.name),
             account_currency: format_currency(account.currency, strategy: :symbol),
+            mirror_currency: format_currency(
+              account.mirror_currency, strategy: :symbol, use_default: false
+            ),
             accountable: format_to_symbol_identifier(account.accountable_type)
           )
         end.compact.first
@@ -164,12 +228,32 @@ module Ledgerizer
         raise_error("invalid entry code #{entry_code} for given tenant")
       end
 
+      def validate_conversion_amount_currency!(amount)
+        return if amount.currency.id == tenant_definition.currency
+
+        raise_error(
+          "conversion amount currency (#{amount.currency.id}) " +
+            "is not the tenant's currency (#{tenant_definition.currency})"
+        )
+      end
+
+      def validate_amount_currency_different_from_conversion_amount_currency!(amount)
+        return if amount.currency.id != conversion_amount.currency.id
+
+        raise_error(
+          "the amount currency (#{amount.currency.id}) " +
+            "can't be the same as conversion amount currency"
+        )
+      end
+
       def raise_invalid_movement_error(
-        movement_type:, entry_definition:, account_name:, account_currency:, accountable:
+        movement_type:, entry_definition:, account_name:, accountable:,
+        account_currency:, mirror_currency:
       )
         raise_error(
           "invalid movement with account: #{account_name}, accountable: " +
-            "#{accountable.class} and currency: #{account_currency} for given " +
+            "#{accountable.class} and currency: #{account_currency} " +
+            "(#{mirror_currency.presence || 'NO'} mirror currency) for given " +
             "#{entry_definition.code} entry in #{movement_type.to_s.pluralize}"
         )
       end

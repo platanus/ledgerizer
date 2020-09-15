@@ -34,14 +34,12 @@ module Ledgerizer
         end
 
         def add_account(account_name, account_type, currency, contra)
-          @current_account = @current_tenant.add_account(
+          @current_tenant.add_account(
             name: account_name,
             type: account_type,
             contra: contra,
             account_currency: currency
           )
-        ensure
-          @current_account = nil
         end
 
         def entry(entry_code, document: nil, &block)

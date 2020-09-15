@@ -4,15 +4,17 @@ module Ledgerizer
     include Ledgerizer::Formatters
 
     delegate :new_movements, :add_new_movement, :related_accounts, :entry_instance,
-             to: :executable_entry, prefix: false
+      to: :executable_entry, prefix: false
+    private :new_movements, :related_accounts, :entry_instance
 
-    def initialize(config:, tenant:, document:, entry_code:, entry_time:)
+    def initialize(config:, tenant:, document:, entry_code:, entry_time:, conversion_amount:)
       @executable_entry = Ledgerizer::Execution::Entry.new(
         config: config,
         tenant: tenant,
         document: document,
         entry_code: entry_code,
-        entry_time: entry_time
+        entry_time: entry_time,
+        conversion_amount: conversion_amount
       )
     end
 
@@ -100,11 +102,11 @@ module Ledgerizer
     end
 
     def validate_zero_trial_balance!
-      raise_error("trial balance must be zero") unless zero_trial_balance?(new_movements)
+      raise_error("trial balance must be zero") unless zero_trial_balance?
     end
 
-    def zero_trial_balance?(movements)
-      movements.inject(0) do |sum, movement|
+    def zero_trial_balance?
+      new_movements.inject(0) do |sum, movement|
         amount = movement.signed_amount
         amount = -amount if movement.credit?
         sum += amount

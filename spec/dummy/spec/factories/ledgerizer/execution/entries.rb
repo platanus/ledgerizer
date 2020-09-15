@@ -4,6 +4,7 @@ FactoryBot.define do
     sequence(:entry_time) { |n| DateTime.current + n.seconds }
     tenant { create(:portfolio) }
     entry_code { :deposit }
+    conversion_amount { nil }
 
     skip_create
     initialize_with { new(attributes) }

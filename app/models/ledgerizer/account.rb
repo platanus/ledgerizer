@@ -19,8 +19,9 @@ module Ledgerizer
     validates :name, :currency, :account_type,
       :tenant_type, :tenant_id, :balance_cents, presence: true
     validates :currency, ledgerizer_currency: true
+    validates :mirror_currency, ledgerizer_currency: true
 
-    before_save :load_format_currency
+    before_save :load_formatted_currencies
 
     def forbidden_line_filters
       [
@@ -28,7 +29,8 @@ module Ledgerizer
         :account_name, :account_names,
         :accountable, :accountables,
         :account_type, :account_types,
-        :account, :accounts
+        :account, :accounts,
+        :account_mirror_currency, :amount_currency
       ]
     end
 
@@ -57,8 +59,10 @@ module Ledgerizer
 
     private
 
-    def load_format_currency
-      self.currency = format_currency(currency, strategy: :upcase, use_default: false) if currency
+    def load_formatted_currencies
+      formatter_config = { strategy: :upcase, use_default: false }
+      self.currency = format_currency(currency, formatter_config) if currency
+      self.mirror_currency = format_currency(mirror_currency, formatter_config) if mirror_currency
     end
   end
 end
@@ -75,6 +79,7 @@ end
 #  name             :string
 #  currency         :string
 #  account_type     :string
+#  mirror_currency  :string
 #  balance_cents    :bigint(8)        default(0), not null
 #  balance_currency :string           default("CLP"), not null
 #  created_at       :datetime         not null
@@ -84,5 +89,5 @@ end
 #
 #  index_ledgerizer_accounts_on_acc_type_and_acc_id        (accountable_type,accountable_id)
 #  index_ledgerizer_accounts_on_tenant_type_and_tenant_id  (tenant_type,tenant_id)
-#  unique_account_index                                    (accountable_type,accountable_id,name,account_type,currency,tenant_id,tenant_type) UNIQUE
+#  unique_account_index                                    (accountable_type,accountable_id,name,mirror_currency,currency,tenant_id,tenant_type) UNIQUE
 #

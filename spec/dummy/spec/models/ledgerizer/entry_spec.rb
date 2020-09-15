@@ -18,6 +18,9 @@ module Ledgerizer
       it { is_expected.to validate_presence_of(:entry_time) }
       it { is_expected.to validate_presence_of(:tenant_type) }
       it { is_expected.to validate_presence_of(:tenant_id) }
+      it { is_expected.to monetize(:conversion_amount).allow_nil }
+
+      it_behaves_like 'currency', :ledgerizer_entry, :mirror_currency
     end
 
     it_behaves_like "ledgerizer lines related", :ledgerizer_entry
@@ -27,6 +30,8 @@ module Ledgerizer
       let(:table_print_attrs) do
         %w{
           id
+          conversion_amount_cents
+          mirror_currency
           entry_time
           document_id
           document_type
