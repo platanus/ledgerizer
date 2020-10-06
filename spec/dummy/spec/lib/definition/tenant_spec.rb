@@ -174,4 +174,20 @@ describe Ledgerizer::Definition::Tenant do
       it { expect { movements }.to raise_error('the bank account does not exist in tenant') }
     end
   end
+
+  describe "#add_revaluation" do
+    let(:name) { :rev1 }
+
+    def perform
+      tenant.add_revaluation(name: name)
+    end
+
+    it { expect(perform.name).to eq(name) }
+
+    context "with repeated account" do
+      before { perform }
+
+      it { expect { perform }.to raise_error("the rev1 revaluation already exists in tenant") }
+    end
+  end
 end

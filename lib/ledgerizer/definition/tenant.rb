@@ -37,7 +37,7 @@ module Ledgerizer
       end
 
       def find_entry(code)
-        entries.find { |account| account.code == code }
+        entries.find { |entry| entry.code == code }
       end
 
       def add_movement(movement_type:, entry_code:, account_name:, accountable:)
@@ -57,6 +57,17 @@ module Ledgerizer
         end
 
         movements
+      end
+
+      def add_revaluation(name:)
+        validate_unique_revaluation!(name)
+        Ledgerizer::Definition::Revaluation.new(name: name).tap do |revaluation|
+          revaluations << revaluation
+        end
+      end
+
+      def find_revaluation(name)
+        revaluations.find { |revaluation| revaluation.name == name }
       end
 
       private
@@ -85,6 +96,10 @@ module Ledgerizer
 
       def entries
         @entries ||= []
+      end
+
+      def revaluations
+        @revaluations ||= []
       end
 
       def find_account(account_name, account_currency, mirror_currency)
@@ -126,6 +141,12 @@ and #{account.mirror_currency.presence || 'no'} mirror currency already exists i
 
       def validate_unique_entry!(code)
         raise_config_error("the #{code} entry already exists in tenant") if find_entry(code)
+      end
+
+      def validate_unique_revaluation!(name)
+        if find_revaluation(name)
+          raise_config_error("the #{name} revaluation already exists in tenant")
+        end
       end
     end
   end
