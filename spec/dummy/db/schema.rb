@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_09_26_151926) do
+ActiveRecord::Schema.define(version: 2020_10_06_134238) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -77,6 +77,13 @@ ActiveRecord::Schema.define(version: 2019_09_26_151926) do
     t.index ["document_type", "document_id"], name: "index_ledgerizer_lines_on_document_type_and_document_id"
     t.index ["entry_id"], name: "index_ledgerizer_lines_on_entry_id"
     t.index ["tenant_type", "tenant_id"], name: "index_ledgerizer_lines_on_tenant_type_and_tenant_id"
+  end
+
+  create_table "ledgerizer_revaluations", force: :cascade do |t|
+    t.datetime "revaluation_time"
+    t.bigint "amount_cents", default: 0, null: false
+    t.string "amount_currency", default: "CLP", null: false
+    t.index ["revaluation_time", "amount_currency"], name: "unique_revaluations_index", unique: true
   end
 
   create_table "portfolios", force: :cascade do |t|
