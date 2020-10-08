@@ -3,6 +3,7 @@ module Ledgerizer
     class RevaluationAccount
       include Ledgerizer::Formatters
 
+      attr_accessor :type
       attr_reader :name, :accountable
 
       def initialize(name:, accountable: nil)

@@ -40,11 +40,13 @@ module Ledgerizer
         entries.find { |entry| entry.code == code }
       end
 
-      def add_movement(movement_type:, entry_code:, account_name:, accountable:)
+      def add_movement(movement_type:, entry_code:, account_name:, accountable:, mirror_only: false)
         validate_existent_entry!(entry_code)
         tenant_entry = find_entry(entry_code)
 
         movements = accounts_by_name(account_name).map do |account|
+          next if mirror_only && account.mirror_currency.blank?
+
           tenant_entry.add_movement(
             movement_type: movement_type,
             account: account,
@@ -66,17 +68,21 @@ module Ledgerizer
         end
       end
 
-      def find_revaluation(name)
-        revaluations.find { |revaluation| revaluation.name == name }
+      def accounts_by_name(name)
+        accounts.select { |account| account.name == name }
       end
-
-      private
 
       def add_mirror_account(main_account_config)
         mirror_account_config = main_account_config.dup
         mirror_account_config[:mirror_currency] = main_account_config[:currency]
         mirror_account_config[:currency] = currency
         add_account_to_collection(mirror_account_config)
+      end
+
+      private
+
+      def find_revaluation(name)
+        revaluations.find { |revaluation| revaluation.name == name }
       end
 
       def add_main_account(account_config)
@@ -108,10 +114,6 @@ module Ledgerizer
             tenant_account.currency == account_currency &&
             tenant_account.mirror_currency == mirror_currency
         end
-      end
-
-      def accounts_by_name(name)
-        accounts.select { |account| account.name == name }
       end
 
       def account_or_tenant_currency(account_currency)

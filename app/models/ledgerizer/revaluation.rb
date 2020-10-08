@@ -1,5 +1,7 @@
 module Ledgerizer
   class Revaluation < ApplicationRecord
+    include LedgerizerDocument
+
     monetize :amount_cents
 
     validates :amount_cents, :revaluation_time, presence: true

@@ -10,24 +10,30 @@ describe Ledgerizer::Definition::Revaluation do
 
   let(:name) { :crypto_exposure }
 
-  it { expect(account.name).to eq(:crypto_exposure) }
-  it { expect(account.income_revaluation_account).to eq(:positive_crypto_exposure) }
-  it { expect(account.expense_revaluation_account).to eq(:negative_crypto_exposure) }
+  # rubocop:disable Layout/LineLength
+  shared_examples 'valid revaluation' do
+    it { expect(account.name).to eq(:crypto_exposure) }
+    it { expect(account.income_revaluation_account).to eq(:positive_crypto_exposure) }
+    it { expect(account.expense_revaluation_account).to eq(:negative_crypto_exposure) }
+    it { expect(account.positive_asset_entry_code).to eq(:positive_crypto_exposure_asset_revaluation) }
+    it { expect(account.negative_asset_entry_code).to eq(:negative_crypto_exposure_asset_revaluation) }
+    it { expect(account.positive_liability_entry_code).to eq(:positive_crypto_exposure_liability_revaluation) }
+    it { expect(account.negative_liability_entry_code).to eq(:negative_crypto_exposure_liability_revaluation) }
+  end
+  # rubocop:enable Layout/LineLength
+
+  it_behaves_like 'valid revaluation'
 
   context "with string name" do
     let(:name) { "crypto_exposure" }
 
-    it { expect(account.name).to eq(:crypto_exposure) }
-    it { expect(account.income_revaluation_account).to eq(:positive_crypto_exposure) }
-    it { expect(account.expense_revaluation_account).to eq(:negative_crypto_exposure) }
+    it_behaves_like 'valid revaluation'
   end
 
   context "with uppcase name" do
     let(:name) { "CRYPTO_EXPOSURE" }
 
-    it { expect(account.name).to eq(:crypto_exposure) }
-    it { expect(account.income_revaluation_account).to eq(:positive_crypto_exposure) }
-    it { expect(account.expense_revaluation_account).to eq(:negative_crypto_exposure) }
+    it_behaves_like 'valid revaluation'
   end
 
   describe "add_account" do

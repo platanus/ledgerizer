@@ -5,11 +5,18 @@ module Ledgerizer
 
       attr_reader :name
       attr_reader :income_revaluation_account, :expense_revaluation_account
+      attr_reader :positive_asset_entry_code, :negative_asset_entry_code
+      attr_reader :positive_liability_entry_code, :negative_liability_entry_code
 
       def initialize(name:)
         @name = format_to_symbol_identifier(name)
-        @income_revaluation_account = format_to_symbol_identifier("positive_#{name}")
-        @expense_revaluation_account = format_to_symbol_identifier("negative_#{name}")
+        formatted_name = format_to_symbol_identifier(name)
+        @income_revaluation_account = "positive_#{formatted_name}".to_sym
+        @expense_revaluation_account = "negative_#{formatted_name}".to_sym
+        @positive_asset_entry_code = "positive_#{formatted_name}_asset_revaluation".to_sym
+        @negative_asset_entry_code = "negative_#{formatted_name}_asset_revaluation".to_sym
+        @positive_liability_entry_code = "positive_#{formatted_name}_liability_revaluation".to_sym
+        @negative_liability_entry_code = "negative_#{formatted_name}_liability_revaluation".to_sym
       end
 
       def add_account(account_name:, accountable:)
