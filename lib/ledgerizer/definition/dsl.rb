@@ -76,6 +76,25 @@ module Ledgerizer
           end
         end
 
+        def revaluation(revaluation_name, &block)
+          in_context do
+            @current_revaluation = @current_tenant.add_revaluation(name: revaluation_name)
+            block&.call
+            @current_tenant.create_revaluation_entries(revaluation_name: revaluation_name)
+          end
+        ensure
+          @current_revaluation = nil
+        end
+
+        def account(account_name, accountable: nil)
+          in_context do
+            @current_revaluation.add_account(
+              account_name: account_name,
+              accountable: accountable
+            )
+          end
+        end
+
         def ctx_dependencies_map
           {
             tenant: [],
@@ -85,8 +104,10 @@ module Ledgerizer
             expense: [:tenant],
             equity: [:tenant],
             entry: [:tenant],
+            revaluation: [:tenant],
             debit: [:tenant, :entry],
-            credit: [:tenant, :entry]
+            credit: [:tenant, :entry],
+            account: [:tenant, :revaluation]
           }
         end
 
