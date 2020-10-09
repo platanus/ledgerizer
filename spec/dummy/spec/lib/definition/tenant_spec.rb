@@ -190,4 +190,40 @@ describe Ledgerizer::Definition::Tenant do
       it { expect { perform }.to raise_error("the rev1 revaluation already exists in tenant") }
     end
   end
+
+  describe "#create_revaluation_entries" do
+    let(:name) { :rev1 }
+    let(:entries_creator) do
+      instance_double(Ledgerizer::Definition::RevaluationEntiresCreator)
+    end
+
+    def perform
+      tenant.create_revaluation_entries(revaluation_name: name)
+    end
+
+    before do
+      allow(Ledgerizer::Definition::RevaluationEntiresCreator).to receive(:new).and_return(
+        entries_creator
+      )
+      allow(entries_creator).to receive(:create)
+    end
+
+    it "does not create entries" do
+      expect(Ledgerizer::Definition::RevaluationEntiresCreator).not_to receive(:new)
+      expect(entries_creator).not_to receive(:create)
+      expect { perform }.to raise_error("missing rev1 revaluation")
+    end
+
+    context "with existent revaluation" do
+      before { tenant.add_revaluation(name: name) }
+
+      it "creates revaluation related entries and accounts" do
+        expect(Ledgerizer::Definition::RevaluationEntiresCreator).to receive(:new)
+          .with(tenant: tenant, revaluation: kind_of(Ledgerizer::Definition::Revaluation)).once
+        expect(entries_creator).to receive(:create).with(no_args).once
+
+        perform
+      end
+    end
+  end
 end

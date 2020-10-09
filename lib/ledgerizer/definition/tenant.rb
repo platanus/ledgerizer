@@ -68,6 +68,16 @@ module Ledgerizer
         end
       end
 
+      def create_revaluation_entries(revaluation_name:)
+        validate_existent_revaluation!(revaluation_name)
+        revaluation = find_revaluation(revaluation_name)
+
+        Ledgerizer::Definition::RevaluationEntiresCreator.new(
+          tenant: self,
+          revaluation: revaluation
+        ).create
+      end
+
       def accounts_by_name(name)
         accounts.select { |account| account.name == name }
       end
@@ -149,6 +159,10 @@ and #{account.mirror_currency.presence || 'no'} mirror currency already exists i
         if find_revaluation(name)
           raise_config_error("the #{name} revaluation already exists in tenant")
         end
+      end
+
+      def validate_existent_revaluation!(name)
+        raise_config_error("missing #{name} revaluation") unless find_revaluation(name)
       end
     end
   end
