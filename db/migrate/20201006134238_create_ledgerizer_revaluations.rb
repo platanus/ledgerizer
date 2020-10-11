@@ -1,6 +1,8 @@
 class CreateLedgerizerRevaluations < ActiveRecord::Migration[5.2]
   def change
     create_table :ledgerizer_revaluations do |t|
+      t.references :tenant, polymorphic: true
+      t.string :currency
       t.datetime :revaluation_time
       t.monetize :amount, amount: { null: false, default: 0 }
     end
@@ -10,8 +12,10 @@ class CreateLedgerizerRevaluations < ActiveRecord::Migration[5.2]
     add_index(
       :ledgerizer_revaluations,
       [
+        :tenant_id,
+        :tenant_type,
         :revaluation_time,
-        :amount_currency,
+        :currency,
       ],
       unique: true,
       name: 'unique_revaluations_index'

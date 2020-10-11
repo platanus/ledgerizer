@@ -9,7 +9,10 @@ module Ledgerizer
     describe "validations" do
       it { is_expected.to validate_presence_of(:amount_cents) }
       it { is_expected.to validate_presence_of(:revaluation_time) }
+      it { is_expected.to validate_presence_of(:currency) }
       it { is_expected.to monetize(:amount) }
     end
+
+    it_behaves_like "polymorphic attr", :ledgerizer_revaluation, :tenant, :portfolio, :company
   end
 end

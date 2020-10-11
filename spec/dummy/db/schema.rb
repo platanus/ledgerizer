@@ -80,10 +80,14 @@ ActiveRecord::Schema.define(version: 2020_10_06_134238) do
   end
 
   create_table "ledgerizer_revaluations", force: :cascade do |t|
+    t.string "tenant_type"
+    t.bigint "tenant_id"
+    t.string "currency"
     t.datetime "revaluation_time"
     t.bigint "amount_cents", default: 0, null: false
     t.string "amount_currency", default: "CLP", null: false
-    t.index ["revaluation_time", "amount_currency"], name: "unique_revaluations_index", unique: true
+    t.index ["tenant_id", "tenant_type", "revaluation_time", "currency"], name: "unique_revaluations_index", unique: true
+    t.index ["tenant_type", "tenant_id"], name: "index_ledgerizer_revaluations_on_tenant_type_and_tenant_id"
   end
 
   create_table "portfolios", force: :cascade do |t|
