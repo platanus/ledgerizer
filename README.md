@@ -157,7 +157,7 @@ La ejecución de `DepositCreator.new.perform` creará:
 
   - Una con `name: 'bank'`, `tenant: Portfolio.new`, `accountable: Bank.first`, `account_type: 'asset'` y `currency: 'CLP'`
 
-  - Otra con `name: 'funds_to_invest'`, `tenant: Portfolio.new`, `accountable: User.first`, `account_type: 'liability' y `currency: 'CLP'`
+  - Otra con `name: 'funds_to_invest'`, `tenant: Portfolio.new`, `accountable: User.first`, `account_type: 'liability'` y `currency: 'CLP'`
 
 
 2. Una `Ledgerizer::Entry` con: `code: 'user_deposit'`, `tenant: Portfolio.new`, `document: UserDeposit.first` y `entry_time: '1984-06-04'`
