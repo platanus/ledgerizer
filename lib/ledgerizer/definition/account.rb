@@ -27,6 +27,14 @@ module Ledgerizer
         DEBIT_TYPES.include?(type)
       end
 
+      def asset?
+        type == :asset
+      end
+
+      def liability?
+        type == :liability
+      end
+
       private
 
       def validate_account_type!(type)

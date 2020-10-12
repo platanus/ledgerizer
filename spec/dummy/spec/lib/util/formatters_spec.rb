@@ -133,5 +133,11 @@ RSpec.describe Ledgerizer::Formatters do
 
       it { expect(perform).to eq(:client) }
     end
+
+    context "with AR model with namespace" do
+      let(:value) { build(:ledgerizer_revaluation) }
+
+      it { expect(perform).to eq(:"ledgerizer/revaluation") }
+    end
   end
 end

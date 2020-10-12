@@ -46,6 +46,7 @@ RSpec::Matchers.define :have_ledger_line do |accountable:, amount:, balance: nil
     )
 
     line_params = {
+      account: account,
       amount_cents: amount.cents,
       amount_currency: currency
     }

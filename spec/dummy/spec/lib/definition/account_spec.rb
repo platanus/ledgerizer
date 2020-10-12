@@ -25,6 +25,7 @@ describe Ledgerizer::Definition::Account do
   it { expect(account.mirror_currency).to be_nil }
   it { expect(account.credit?).to eq(false) }
   it { expect(account.debit?).to eq(true) }
+  it { expect(account.asset?).to eq(true) }
 
   context "with string name" do
     let(:account_name) { "cash" }
@@ -73,5 +74,6 @@ describe Ledgerizer::Definition::Account do
 
     it { expect(account.credit?).to eq(true) }
     it { expect(account.debit?).to eq(false) }
+    it { expect(account.liability?).to eq(true) }
   end
 end
