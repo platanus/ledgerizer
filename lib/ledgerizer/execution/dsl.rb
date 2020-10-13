@@ -3,21 +3,28 @@ module Ledgerizer
     module Dsl
       extend ActiveSupport::Concern
 
-      EXECUTE_ENTRY_METHOD_REG_EXP = /\A(execute)_([^\-]*)_(entry)\z/
-      EXECUTE_ENTRY_METHOD_PARTS = 3
+      EXECUTE_METHOD_REG_EXP = /\A(execute)_([^\-]*)_(entry|revaluation)\z/
+      EXECUTE_METHOD_PARTS = 3
+      EXECUTE_METHOD_ACTIONS = %i{entry revaluation}
 
       included do
         include Ledgerizer::DslBase
 
         def method_missing(method_name, *arguments, &block)
-          entry_code = entry_code_from_method(method_name)
-          return execute_entry(entry_code, *arguments, &block) if entry_code
+          dsl_action_config = get_dsl_action_config(method_name)
 
-          super
+          case dsl_action_config[:action]
+          when :entry
+            execute_entry(dsl_action_config[:identifier], *arguments, &block)
+          when :revaluation
+            execute_revaluation(dsl_action_config[:identifier], *arguments, &block)
+          else
+            super
+          end
         end
 
         def respond_to_missing?(method_name, include_private = false)
-          entry_code_from_method(method_name) || super
+          get_dsl_action_config(method_name).blank? || super
         end
 
         def execute_entry(entry_code, tenant:, document:, datetime:, conversion_amount: nil, &block)
@@ -34,6 +41,23 @@ module Ledgerizer
               executor_params[:conversion_amount] = conversion_amount
               create_entry(executor_params, &block)
             end
+          end
+          nil
+        end
+
+        def execute_revaluation(
+          revaluation_name,
+          tenant:, account_name:, accountable:, currency:, datetime:, conversion_amount:
+        )
+          in_context(:execute_revaluation) do
+            executor_params = {
+              config: definition, tenant: tenant,
+              revaluation_name: revaluation_name, revaluation_time: datetime,
+              account_name: account_name, accountable: accountable, currency: currency,
+              conversion_amount: conversion_amount
+            }
+
+            Ledgerizer::RevaluationExecutor.new(executor_params).execute
           end
           nil
         end
@@ -60,12 +84,16 @@ module Ledgerizer
           end
         end
 
-        def entry_code_from_method(method_name)
-          method_parts = method_name.to_s.match(EXECUTE_ENTRY_METHOD_REG_EXP)&.captures || []
-          return if method_parts.count != EXECUTE_ENTRY_METHOD_PARTS
-          return if method_parts.first != 'execute' || method_parts.last != 'entry'
+        def get_dsl_action_config(method_name)
+          method_parts = method_name.to_s.match(EXECUTE_METHOD_REG_EXP)&.captures || []
+          return {} if method_parts.count != EXECUTE_METHOD_PARTS
 
-          method_parts[1].to_sym
+          first_part = method_parts[0].to_sym
+          identifier = method_parts[1].to_sym
+          action = method_parts[2].to_sym
+          return {} if first_part != :execute || !EXECUTE_METHOD_ACTIONS.include?(action)
+
+          { identifier: identifier, action: action }
         end
 
         def create_entry(executor_params, &block)
@@ -82,6 +110,7 @@ module Ledgerizer
 
         def ctx_dependencies_map
           {
+            execute_revaluation: [],
             execute_entry: [],
             debit: [:execute_entry],
             credit: [:execute_entry]
