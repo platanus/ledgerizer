@@ -1,6 +1,6 @@
 module Ledgerizer
   module Definition
-    class RevaluationEntiresCreator
+    class RevaluationEntriesCreator
       include Ledgerizer::Formatters
       include Ledgerizer::Validators
 

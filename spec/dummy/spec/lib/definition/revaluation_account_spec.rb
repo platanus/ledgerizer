@@ -21,7 +21,7 @@ describe Ledgerizer::Definition::RevaluationAccount do
     it { expect(account.name).to eq(:cash) }
   end
 
-  context "with uppcase name" do
+  context "with upcase name" do
     let(:account_name) { "CASH" }
 
     it { expect(account.name).to eq(:cash) }
@@ -33,7 +33,7 @@ describe Ledgerizer::Definition::RevaluationAccount do
     it { expect(account.accountable).to eq(:user) }
   end
 
-  context "with uppcase accountable" do
+  context "with upcase accountable" do
     let(:accountable) { "user" }
 
     it { expect(account.accountable).to eq(:user) }

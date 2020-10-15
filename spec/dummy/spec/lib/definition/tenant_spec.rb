@@ -194,7 +194,7 @@ describe Ledgerizer::Definition::Tenant do
   describe "#create_revaluation_entries" do
     let(:name) { :rev1 }
     let(:entries_creator) do
-      instance_double(Ledgerizer::Definition::RevaluationEntiresCreator)
+      instance_double(Ledgerizer::Definition::RevaluationEntriesCreator)
     end
 
     def perform
@@ -202,14 +202,14 @@ describe Ledgerizer::Definition::Tenant do
     end
 
     before do
-      allow(Ledgerizer::Definition::RevaluationEntiresCreator).to receive(:new).and_return(
+      allow(Ledgerizer::Definition::RevaluationEntriesCreator).to receive(:new).and_return(
         entries_creator
       )
       allow(entries_creator).to receive(:create)
     end
 
     it "does not create entries" do
-      expect(Ledgerizer::Definition::RevaluationEntiresCreator).not_to receive(:new)
+      expect(Ledgerizer::Definition::RevaluationEntriesCreator).not_to receive(:new)
       expect(entries_creator).not_to receive(:create)
       expect { perform }.to raise_error("missing rev1 revaluation")
     end
@@ -218,7 +218,7 @@ describe Ledgerizer::Definition::Tenant do
       before { tenant.add_revaluation(name: name) }
 
       it "creates revaluation related entries and accounts" do
-        expect(Ledgerizer::Definition::RevaluationEntiresCreator).to receive(:new)
+        expect(Ledgerizer::Definition::RevaluationEntriesCreator).to receive(:new)
           .with(tenant: tenant, revaluation: kind_of(Ledgerizer::Definition::Revaluation)).once
         expect(entries_creator).to receive(:create).with(no_args).once
 

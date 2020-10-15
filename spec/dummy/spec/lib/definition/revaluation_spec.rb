@@ -30,7 +30,7 @@ describe Ledgerizer::Definition::Revaluation do
     it_behaves_like 'valid revaluation'
   end
 
-  context "with uppcase name" do
+  context "with upcase name" do
     let(:name) { "CRYPTO_EXPOSURE" }
 
     it_behaves_like 'valid revaluation'

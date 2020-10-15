@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe Ledgerizer::Definition::RevaluationEntiresCreator do
+describe Ledgerizer::Definition::RevaluationEntriesCreator do
   subject(:creator) { described_class.new(tenant: tenant, revaluation: revaluation) }
 
   let(:tenant_currency) { "CLP" }

@@ -119,7 +119,7 @@ describe Ledgerizer::Definition::Dsl do
       end
     end
 
-    it "raises error with missing revaluation revaluations" do
+    it "raises error with missing revaluation accounts" do
       expect_error_in_definition_class("missing revaluation accounts") do
         tenant('portfolio') do
           revaluation(:revaluation1)

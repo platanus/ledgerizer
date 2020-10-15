@@ -8,9 +8,9 @@ module Ledgerizer
       revaluation_name:, revaluation_time:, conversion_amount:,
       account_name:, accountable:, currency:
     )
-      tenant_definition = get_tenant_definition!(config, tenant)
       @config = config
       @tenant = tenant
+      tenant_definition = get_tenant_definition!
       @revaluation_definition = get_revaluation_definition!(tenant_definition, revaluation_name)
       @revaluation_time = get_revaluation_time!(revaluation_time)
       @conversion_amount = get_conversion_amount!(conversion_amount)
@@ -60,23 +60,11 @@ module Ledgerizer
     attr_reader :tenant, :accountable, :revaluation_time, :conversion_amount, :currency
 
     def add_debit_movement
-      entry_executor.add_new_movement(
-        movement_type: :debit,
-        account_name: get_movement_config(:debit_account_name),
-        accountable: get_movement_config(:debit_accountable),
-        mirror_currency: account_instance.currency,
-        amount: revaluation_diff_abs
-      )
+      add_movement(:debit)
     end
 
     def add_credit_movement
-      entry_executor.add_new_movement(
-        movement_type: :credit,
-        account_name: get_movement_config(:credit_account_name),
-        accountable: get_movement_config(:credit_accountable),
-        mirror_currency: account_instance.currency,
-        amount: revaluation_diff_abs
-      )
+      add_movement(:credit)
     end
 
     def add_movement(movement_type)
@@ -90,7 +78,7 @@ module Ledgerizer
     end
 
     def get_movement_config(key)
-      instance_eval(&REVALUATION_ENTRY_MOVEMENTS_CONFIG[movement_config_key.to_sym][key])
+      instance_eval(&REVALUATION_ENTRY_MOVEMENTS_CONFIG[movement_config_key.to_sym][key.to_sym])
     end
 
     def movement_config_key
@@ -278,7 +266,7 @@ module Ledgerizer
       accountable
     end
 
-    def get_tenant_definition!(config, tenant)
+    def get_tenant_definition!
       validate_ledgerized_instance!(tenant, "tenant", LedgerizerTenant)
       tenant_definition = config.find_tenant(tenant)
       return tenant_definition if tenant_definition

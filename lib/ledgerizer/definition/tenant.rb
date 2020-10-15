@@ -72,7 +72,7 @@ module Ledgerizer
         validate_existent_revaluation!(revaluation_name)
         revaluation = find_revaluation(revaluation_name)
 
-        Ledgerizer::Definition::RevaluationEntiresCreator.new(
+        Ledgerizer::Definition::RevaluationEntriesCreator.new(
           tenant: self,
           revaluation: revaluation
         ).create

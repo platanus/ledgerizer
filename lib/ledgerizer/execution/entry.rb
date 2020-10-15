@@ -7,9 +7,9 @@ module Ledgerizer
       attr_reader :document, :entry_time
 
       def initialize(config:, tenant:, document:, entry_code:, entry_time:, conversion_amount:)
-        @tenant_definition = get_tenant_definition!(config, tenant)
         @tenant = tenant
-        @entry_definition = get_entry_definition!(@tenant_definition, entry_code)
+        @tenant_definition = get_tenant_definition!(config)
+        @entry_definition = get_entry_definition!(entry_code)
         @conversion_amount = get_conversion_amount!(conversion_amount)
         validate_entry_document!(document)
         @document = document
@@ -216,7 +216,7 @@ module Ledgerizer
         end.compact.first
       end
 
-      def get_tenant_definition!(config, tenant)
+      def get_tenant_definition!(config)
         validate_ledgerized_instance!(tenant, "tenant", LedgerizerTenant)
         tenant_definition = config.find_tenant(tenant)
         return tenant_definition if tenant_definition
@@ -224,7 +224,7 @@ module Ledgerizer
         raise_error("can't find tenant for given #{tenant.model_name} model")
       end
 
-      def get_entry_definition!(tenant_definition, entry_code)
+      def get_entry_definition!(entry_code)
         code = format_to_symbol_identifier(entry_code)
         entry_definition = tenant_definition.find_entry(code)
         return entry_definition if entry_definition
