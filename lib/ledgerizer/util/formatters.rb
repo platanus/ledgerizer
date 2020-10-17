@@ -24,7 +24,7 @@ module Ledgerizer
     end
 
     def format_ledgerizer_instance_to_sym(value)
-      return value.model_name.singular.to_sym if value.is_a?(ActiveRecord::Base)
+      return value.model_name.i18n_key if value.is_a?(ActiveRecord::Base)
 
       format_to_symbol_identifier(value.class)
     end

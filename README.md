@@ -434,6 +434,108 @@ end
 obtendremos 2 entries. La primera contendrá líneas por los 10 USD (monto original) y la segunda por su equivalente en la moneda del tenant (CLP). En este caso, dos líneas de 6000 CLP que es el resultado de multiplicar 10 USD x 600 CLP (valor de conversión).
 > Cabe destacar que además se generarán cuentas especiales para llevar el balance de estos montos convertidos.
 
+#### Revalorizaciones
+
+Como vimos anteriormente, Ledgerizer nos permite registrar entries en una currency distinta a la del tenant. Además, permite llevar esos montos en la moneda del tenant haciendo uso de las cuentas espejo. Ejemplo:
+
+La siguiente configuración representa el cobro de una comisión por el intercambio de criptomonedas en un exchange:
+
+```ruby
+Ledgerizer.setup do |conf|
+  conf.tenant(:portfolio, currency: :clp) do
+    conf.asset :funds, currencies: [:btc]
+    conf.income :trade_transaction_fee, currencies: [:btc]
+
+    conf.entry :user_trade_fee, document: :bank_movement do
+      conf.debit account: :funds, accountable: :wallet
+      conf.credit account: :trade_transaction_fee
+    end
+  end
+end
+```
+
+Si ejecuto la entry que registra el cobro de la comisión así:
+
+```ruby
+execute_user_trade_fee_entry(tenant: Portfolio.new, document: BankMovement.first, datetime: "2020-01-01", conversion_amount: Money.from_amount(9000000, 'CLP')) do
+  debit(account: :funds, accountable: Wallet.first, amount: Money.from_amount(2, 'BTC'))
+  credit(account: :trade_transaction_fee, amount: Money.from_amount(2, 'BTC'))
+end
+```
+
+En el día 2020-01-01:
+
+- Se registarán los 2 BTC en las cuentas que corresponda.
+- Se registrará su equivalente en CLP (2 BTC * 9000000 CLP = 18000000 CLP) en las cuentas espejo.
+
+Supongamos que pasa el tiempo (es 2020-10-01) y el BTC aumenta su valor a 12000000 CLP.
+Si miramos la cuenta espejo, nos dirá que tenemos 18000000 CLP algo que al día de hoy no es cierto ya que en realidad tenemos 2 BTC * 12000000 CLP = 24000000 CLP.
+Para lograr que la cuenta espejo refleje esta realidad es que necesitamos del mecanismo de revalorización. Se configura así:
+
+```ruby
+Ledgerizer.setup do |conf|
+  conf.tenant(:portfolio, currency: :clp) do
+    conf.asset :funds, currencies: [:btc]
+    conf.income :trade_transaction_fee, currencies: [:btc]
+
+    config.revaluation :crypto_exposure do
+      conf.account :funds, accountable: :wallet
+    end
+
+    conf.entry :user_trade_fee, document: :bank_movement do
+      conf.debit account: :funds, accountable: :wallet
+      conf.credit account: :trade_transaction_fee
+    end
+  end
+end
+```
+
+A `config.revaluation` se le pasa el nombre que identifica la revalorización. En este caso: `:crypto_exposure` y dentro, todas aquellas cuentas que necesitan ser revalorizadas. En este caso, el `asset` llamado `funds`.
+
+La ejecución es así:
+
+```ruby
+execute_crypto_exposure_revaluation(
+  tenant: Portfolio.first,
+  currency: :btc,
+  datetime: "2020-01-01".to_datetime,
+  conversion_amount: Money.new(12000000, :clp),
+  account_name: :funds,
+  accountable: Wallet.first
+)
+```
+
+Por debajo este código calculará la diferencia (en la moneda del tenant) entre lo que tenía en la cuenta espejo y lo que debería tener en la actualidad así:
+
+```
+valor_registrado = 18000000 CLP
+valor_actual = 2 BTC * conversion_amount (12000000 CLP) = 24000000 CLP
+diferencia = valor_actual - valor_registrado (6000000 CLP)
+```
+
+Esta diferencia luego se registrará como un `income` en una cuenta `positive_crypto_exposure_asset_revaluation` y también en la cuenta espejo `funds` (`asset`)
+
+Tener en cuenta:
+
+- Si la diferencia resultara ser negativa, se contabilizará en el `expense` llamado `negative_crypto_exposure_asset_revaluation` y también en la cuenta espejo `funds` (`asset`) pero esta vez como un crédito para reducir su valor.
+- Las revalorizaciones también pueden hacerse contra cuentas de tipo `liability`.
+- Es posible revalorizar múltiples cuentas contra una `revaluation` así:
+
+  ```ruby
+  Ledgerizer.setup do |conf|
+    conf.tenant(:tenant1, currency: :clp) do
+      conf.asset :account1, currencies: [:btc]
+      conf.asset :account2, currencies: [:btc]
+
+      config.revaluation :rev1 do
+        conf.account :account1, accountable: :accountable1
+        conf.account :account2, accountable: :accountable2
+      end
+    end
+  end
+  ```
+- Solo pueden revalorizarse cuentas con moneda distinta al tenant. Es decir, que tengan cuenta espejo.
+
 
 ## Testing
 

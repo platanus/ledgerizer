@@ -37,14 +37,16 @@ module Ledgerizer
       end
 
       def find_entry(code)
-        entries.find { |account| account.code == code }
+        entries.find { |entry| entry.code == code }
       end
 
-      def add_movement(movement_type:, entry_code:, account_name:, accountable:)
+      def add_movement(movement_type:, entry_code:, account_name:, accountable:, mirror_only: false)
         validate_existent_entry!(entry_code)
         tenant_entry = find_entry(entry_code)
 
         movements = accounts_by_name(account_name).map do |account|
+          next if mirror_only && account.mirror_currency.blank?
+
           tenant_entry.add_movement(
             movement_type: movement_type,
             account: account,
@@ -59,7 +61,26 @@ module Ledgerizer
         movements
       end
 
-      private
+      def add_revaluation(name:)
+        validate_unique_revaluation!(name)
+        Ledgerizer::Definition::Revaluation.new(name: name).tap do |revaluation|
+          revaluations << revaluation
+        end
+      end
+
+      def create_revaluation_entries(revaluation_name:)
+        validate_existent_revaluation!(revaluation_name)
+        revaluation = find_revaluation(revaluation_name)
+
+        Ledgerizer::Definition::RevaluationEntriesCreator.new(
+          tenant: self,
+          revaluation: revaluation
+        ).create
+      end
+
+      def accounts_by_name(name)
+        accounts.select { |account| account.name == name }
+      end
 
       def add_mirror_account(main_account_config)
         mirror_account_config = main_account_config.dup
@@ -67,6 +88,12 @@ module Ledgerizer
         mirror_account_config[:currency] = currency
         add_account_to_collection(mirror_account_config)
       end
+
+      def find_revaluation(name)
+        revaluations.find { |revaluation| revaluation.name == name }
+      end
+
+      private
 
       def add_main_account(account_config)
         add_account_to_collection(account_config)
@@ -87,16 +114,16 @@ module Ledgerizer
         @entries ||= []
       end
 
+      def revaluations
+        @revaluations ||= []
+      end
+
       def find_account(account_name, account_currency, mirror_currency)
         accounts.find do |tenant_account|
           tenant_account.name == account_name &&
             tenant_account.currency == account_currency &&
             tenant_account.mirror_currency == mirror_currency
         end
-      end
-
-      def accounts_by_name(name)
-        accounts.select { |account| account.name == name }
       end
 
       def account_or_tenant_currency(account_currency)
@@ -126,6 +153,16 @@ and #{account.mirror_currency.presence || 'no'} mirror currency already exists i
 
       def validate_unique_entry!(code)
         raise_config_error("the #{code} entry already exists in tenant") if find_entry(code)
+      end
+
+      def validate_unique_revaluation!(name)
+        if find_revaluation(name)
+          raise_config_error("the #{name} revaluation already exists in tenant")
+        end
+      end
+
+      def validate_existent_revaluation!(name)
+        raise_config_error("missing #{name} revaluation") unless find_revaluation(name)
       end
     end
   end

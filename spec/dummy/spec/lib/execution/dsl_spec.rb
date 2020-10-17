@@ -7,6 +7,14 @@ describe Ledgerizer::Execution::Dsl do
       liability(:account2, currencies: [:usd])
       asset(:account3)
 
+      revaluation(:rev1) do
+        account(:account1, accountable: :user)
+      end
+
+      revaluation(:rev2) do
+        account(:account2, accountable: :user)
+      end
+
       entry(:entry1, document: :deposit) do
         debit(account: :account1, accountable: :user)
         credit(account: :account2, accountable: :user)
@@ -29,7 +37,7 @@ describe Ledgerizer::Execution::Dsl do
   let(:document) { create(:deposit) }
   let(:datetime) { "1984-06-04".to_datetime }
 
-  describe '#executor_xxx_entry' do
+  describe '#execute_xxx_entry' do
     context "with invalid entry" do
       def perform
         LedgerizerTestExecution.new.execute_fake_entry(
@@ -388,6 +396,284 @@ describe Ledgerizer::Execution::Dsl do
       it { expect(Ledgerizer::Entry.last).to have_ledger_line(debit_data) }
       it { expect(Ledgerizer::Entry.last).to have_ledger_line(credit_data1) }
       it { expect(Ledgerizer::Entry.last).to have_ledger_line(expected_credit_data2) }
+    end
+  end
+
+  describe '#execute_xxx_revaluation' do
+    let(:account_name) { :account1 }
+    let(:accountable) { create(:user) }
+    let(:currency) { "USD" }
+    let(:conversion_amount) { clp(600) }
+    let(:revaluation_params) do
+      {
+        tenant: tenant,
+        datetime: datetime,
+        account_name: account_name,
+        accountable: accountable,
+        currency: currency,
+        conversion_amount: conversion_amount
+      }
+    end
+
+    context "with invalid revaluation name" do
+      def perform
+        LedgerizerTestExecution.new.execute_invalid_revaluation(revaluation_params)
+      end
+
+      it { expect { perform }.to raise_error("can't find revaluation with name: invalid") }
+    end
+
+    context "with invalid tenant" do
+      let(:tenant) { create(:user) }
+      let(:error) do
+        "tenant must be an instance of a class including LedgerizerTenant"
+      end
+
+      def perform
+        LedgerizerTestExecution.new.execute_rev1_revaluation(revaluation_params)
+      end
+
+      it { expect { perform }.to raise_error(error) }
+    end
+
+    context "with invalid account_name" do
+      let(:account_name) { "invalid" }
+
+      def perform
+        LedgerizerTestExecution.new.execute_rev1_revaluation(revaluation_params)
+      end
+
+      it { expect { perform }.to raise_error("can't find account with name: invalid") }
+    end
+
+    context "with invalid conversion_amount" do
+      let(:conversion_amount) { usd(2) }
+      let(:error) do
+        "given currency (usd) must be the tenant's currency (clp)"
+      end
+
+      def perform
+        LedgerizerTestExecution.new.execute_rev1_revaluation(revaluation_params)
+      end
+
+      it { expect { perform }.to raise_error(error) }
+    end
+
+    context "with missing account" do
+      let(:error) do
+        "missing Ledgerizer::Account with name account1 and currency USD"
+      end
+
+      def perform
+        LedgerizerTestExecution.new.execute_rev1_revaluation(revaluation_params)
+      end
+
+      it { expect { perform }.to raise_error(error) }
+    end
+
+    context "with existent revaluable accounts" do
+      let(:entry_conversion_amount) { clp(600) }
+      let(:debit_data) do
+        {
+          account: :account1,
+          accountable: accountable,
+          amount: usd(2)
+        }
+      end
+
+      let(:credit_data) do
+        {
+          account: :account2,
+          accountable: accountable,
+          amount: usd(2)
+        }
+      end
+
+      before do
+        LedgerizerTestExecution.new(debit: debit_data, credit: credit_data).execute_entry1_entry(
+          tenant: tenant,
+          document: document,
+          datetime: datetime,
+          conversion_amount: entry_conversion_amount
+        ) do
+          debit(data[:debit])
+          credit(data[:credit])
+        end
+      end
+
+      context "with asset revaluation" do
+        def perform
+          LedgerizerTestExecution.new.execute_rev1_revaluation(revaluation_params)
+        end
+
+        context "with positive revaluation" do
+          let(:conversion_amount) { entry_conversion_amount + clp(100) }
+
+          let(:expected_entry) do
+            {
+              entry_code: :positive_rev1_asset_revaluation,
+              entry_time: datetime,
+              document: Ledgerizer::Revaluation.last,
+              conversion_amount: nil,
+              mirror_currency: "USD"
+            }
+          end
+
+          let(:expected_m1) do
+            {
+              account_name: :positive_rev1,
+              accountable: nil,
+              mirror_currency: "USD",
+              amount: clp(200),
+              balance: clp(200)
+            }
+          end
+
+          let(:expected_m2) do
+            {
+              account_name: :account1,
+              accountable: accountable,
+              mirror_currency: "USD",
+              amount: clp(200),
+              balance: clp(1400)
+            }
+          end
+
+          before { perform }
+
+          it { expect(tenant).to have_ledger_entry(expected_entry) }
+          it { expect(tenant.entries.last).to have_ledger_line(expected_m1) }
+          it { expect(tenant.entries.last).to have_ledger_line(expected_m2) }
+        end
+
+        context "with negative revaluation" do
+          let(:conversion_amount) { entry_conversion_amount - clp(100) }
+
+          let(:expected_entry) do
+            {
+              entry_code: :negative_rev1_asset_revaluation,
+              entry_time: datetime,
+              document: Ledgerizer::Revaluation.last,
+              conversion_amount: nil,
+              mirror_currency: "USD"
+            }
+          end
+
+          let(:expected_m1) do
+            {
+              account_name: :negative_rev1,
+              accountable: nil,
+              mirror_currency: "USD",
+              amount: clp(200),
+              balance: clp(200)
+            }
+          end
+
+          let(:expected_m2) do
+            {
+              account_name: :account1,
+              accountable: accountable,
+              mirror_currency: "USD",
+              amount: -clp(200),
+              balance: clp(1000)
+            }
+          end
+
+          before { perform }
+
+          it { expect(tenant).to have_ledger_entry(expected_entry) }
+          it { expect(tenant.entries.last).to have_ledger_line(expected_m1) }
+          it { expect(tenant.entries.last).to have_ledger_line(expected_m2) }
+        end
+      end
+
+      context "with liability revaluation" do
+        let(:account_name) { :account2 }
+
+        def perform
+          LedgerizerTestExecution.new.execute_rev2_revaluation(revaluation_params)
+        end
+
+        context "with positive revaluation" do
+          let(:conversion_amount) { entry_conversion_amount - clp(100) }
+
+          let(:expected_entry) do
+            {
+              entry_code: :positive_rev2_liability_revaluation,
+              entry_time: datetime,
+              document: Ledgerizer::Revaluation.last,
+              conversion_amount: nil,
+              mirror_currency: "USD"
+            }
+          end
+
+          let(:expected_m1) do
+            {
+              account_name: :negative_rev2,
+              accountable: nil,
+              mirror_currency: "USD",
+              amount: -clp(200),
+              balance: -clp(200)
+            }
+          end
+
+          let(:expected_m2) do
+            {
+              account_name: :account2,
+              accountable: accountable,
+              mirror_currency: "USD",
+              amount: -clp(200),
+              balance: clp(1000)
+            }
+          end
+
+          before { perform }
+
+          it { expect(tenant).to have_ledger_entry(expected_entry) }
+          it { expect(tenant.entries.last).to have_ledger_line(expected_m1) }
+          it { expect(tenant.entries.last).to have_ledger_line(expected_m2) }
+        end
+
+        context "with negative revaluation" do
+          let(:conversion_amount) { entry_conversion_amount + clp(100) }
+
+          let(:expected_entry) do
+            {
+              entry_code: :negative_rev2_liability_revaluation,
+              entry_time: datetime,
+              document: Ledgerizer::Revaluation.last,
+              conversion_amount: nil,
+              mirror_currency: "USD"
+            }
+          end
+
+          let(:expected_m1) do
+            {
+              account_name: :positive_rev2,
+              accountable: nil,
+              mirror_currency: "USD",
+              amount: -clp(200),
+              balance: -clp(200)
+            }
+          end
+
+          let(:expected_m2) do
+            {
+              account_name: :account2,
+              accountable: accountable,
+              mirror_currency: "USD",
+              amount: clp(200),
+              balance: clp(1400)
+            }
+          end
+
+          before { perform }
+
+          it { expect(tenant).to have_ledger_entry(expected_entry) }
+          it { expect(tenant.entries.last).to have_ledger_line(expected_m1) }
+          it { expect(tenant.entries.last).to have_ledger_line(expected_m2) }
+        end
+      end
     end
   end
 end
