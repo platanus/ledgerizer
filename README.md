@@ -538,6 +538,17 @@ Tener en cuenta:
 
 
 ## Testing
+Para poder correr los tests necesitarás agregar al `spec/rails_helper.rb` lo siguiente:
+
+```ruby
+config.before do
+  allow_any_instance_of(Ledgerizer::Definition::Config).to receive(
+    :running_inside_transactional_fixtures
+  ).and_return(true)
+end
+```
+
+También puedes agregar [`execution_matchers`](spec/dummy/spec/support/custom_matchers/execution_matchers.rb) y [`definition_dsl_matchers`](https://github.com/platanus/ledgerizer/blob/master/spec/dummy/spec/support/custom_matchers/definition_dsl_matchers.rb) que te ayudarán a definir tus tests.
 
 To run the specs you need to execute, **in the root path of the gem**, the following command:
 
