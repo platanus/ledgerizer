@@ -48,7 +48,7 @@ module Ledgerizer
         end
 
         last_account_line = update_related_account_lines_balances(locked_account)
-        locked_account.update_attributes(
+        locked_account.update(
           balance_cents: last_account_line.balance_cents,
           balance_currency: last_account_line.balance_currency
         )
